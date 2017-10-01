@@ -182,3 +182,10 @@ decorator函数中原函数的信息被破坏了 例如__name__ docstring 参数
             return func(*args)
         return wrapper
 ```
+
+参考文章: 
+1. https://foofish.net/python-decorator.html
+2. https://coolshell.cn/articles/11265.html
+3. https://coolshell.cn/articles/10822.html
+4. http://book.pythontips.com/en/latest/lambdas.html
+
