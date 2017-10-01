@@ -38,6 +38,8 @@ tags: python
 
 上面三个代码片段就是map/reduce/filter和lambda表达式结合的一个例子,python在支持lambda时,为了不让开发者乱用这个特性,lambda设计的比较简单,就是在lamba后面加函数以及操作,只要使用得当lambda可以让代码看起来更加简洁优雅,但是如果使用不当代码可读性会很差
 
+<!-- more -->
+
 ## 函数式编程特性
 
 其实对于纯正的函数式编程,我接触的比较少,像lisp Haskell Scheme以及更兴起的Clojure都不是很了解,下次可以好好的学习下Clojure

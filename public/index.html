@@ -280,6 +280,174 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/24/python装饰器函数式编程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/lufei.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/09/24/python装饰器函数式编程/" itemprop="url">python装饰器函数式编程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-24T13:52:36+08:00">
+                2017-09-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="函数式编程"><a href="#函数式编程" class="headerlink" title="函数式编程"></a>函数式编程</h1><blockquote>
+<p>函数式编程（英语：functional programming）或称函数程序设计,又称泛函编程,是一种编程典范,它将电脑运算视为数学上的函数计算,并且避免使用程序状态以及易变对象,函数编程语言最重要的基础是λ演算（lambda calculus,而且λ演算的函数可以接受函数当作输入（引数）和输出（传出值）</p>
+</blockquote>
+<p>函数式编程范式相对命令式编程(Imperative programming),函数式编程更加强调程序执行的结果而非执行的过程,倡导利用若干简单的执行单元让计算结果不断渐进,逐层推导复杂的运算,而不是设计一个复杂的执行过程.而命令式编程使用各种变量以及复杂的控制语句来编写逻辑代码,最初图灵机的设计就是属于命令式编程,在纸带上面刻各种孔,然后机器根据纸带上的孔执行各种命令.C/C++ Java Python等各种面向对象编程其实都属于命令式编程范围,虽然现在这些高级语言或多或少都已经支持Lambda表达式以开始支持函数式编程,但是相比Lisp Haskell Clojure等这些纯正函数式语言,Python在函数式编程方面支持的相对少一点.</p>
+<h2 id="Python-Lambda"><a href="#Python-Lambda" class="headerlink" title="Python Lambda"></a>Python Lambda</h2><blockquote>
+<p>λ演算（英语：lambda calculus，λ-calculus）是一套从数学逻辑中发展，以变量绑定和替换的规则，来研究函数如何抽象化定义、函数如何被应用以及递归的形式系统。它由数学家阿隆佐·邱奇在20世纪30年代首次发表。Lambda演算作为一种广泛用途的计算模型，可以清晰地定义什么是一个可计算函数，而任何可计算函数都能以这种形式表达和求值，它能模拟单一磁带图灵机的计算过程；尽管如此，Lambda演算强调的是变换规则的运用，而非实现它们的具体机器。</p>
+</blockquote>
+<p>说到Python支持函数式编程必须得说道Lambda表达式,Lambda按照wiki上说法比较复杂,其实简单的说Lambda表达式就是匿名函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">    lambda argument: manipulate(argument)</div><div class="line">```</div></pre></td></tr></table></figure>
+<pre><code>squares = map(lambda x: x * x, range(9))
+print squares
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">```</div><div class="line">    number_list = range(-5, 5)</div><div class="line">    less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</div><div class="line">    print(less_than_zero)</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">number_list = range(-5, 5)</div><div class="line">less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</div><div class="line">print(less_than_zero)</div></pre></td></tr></table></figure>
+<p>上面三个代码片段就是map/reduce/filter和lambda表达式结合的一个例子,python在支持lambda时,为了不让开发者乱用这个特性,lambda设计的比较简单,就是在lamba后面加函数以及操作,只要使用得当lambda可以让代码看起来更加简洁优雅,但是如果使用不当代码可读性会很差</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/09/24/python装饰器函数式编程/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/15/sock5协议原理分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -333,6 +501,37 @@
           
 
           
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  
+                </span>
+              
+            </div>
+          
 
           
 
@@ -350,8 +549,7 @@
 
       
         
-          
-            <h1 id="shadowsocks翻墙原理"><a href="#shadowsocks翻墙原理" class="headerlink" title="shadowsocks翻墙原理"></a>shadowsocks翻墙原理</h1><p>早点两年前就开始使用shadowsocks了,那时候买了搬瓦工一年19$的vps,由于搬瓦工数据中心比较少,且大部分位于美国,经过测试选了个在凤凰城的机房,但是网速一直不稳定时不时的断线,前阵子买了vultr位于东京数据中心的vps,网络稳定,看youtube 1080p 毫无压力.虽然用了很久的shandowsock5,但是一直对sock5协知之甚少,决定解下这个牛逼的翻墙协议,简单的说就是在墙外搭一个sock5服务器,墙内的客户端把tcp数据加密后发往墙外的服务器,server按照sock5协议解密后再发往目标机器</p>
+          <h1 id="shadowsocks翻墙原理"><a href="#shadowsocks翻墙原理" class="headerlink" title="shadowsocks翻墙原理"></a>shadowsocks翻墙原理</h1><p>早点两年前就开始使用shadowsocks了,那时候买了搬瓦工一年19$的vps,由于搬瓦工数据中心比较少,且大部分位于美国,经过测试选了个在凤凰城的机房,但是网速一直不稳定时不时的断线,前阵子买了vultr位于东京数据中心的vps,网络稳定,看youtube 1080p 毫无压力.虽然用了很久的shandowsock5,但是一直对sock5协知之甚少,决定解下这个牛逼的翻墙协议,简单的说就是在墙外搭一个sock5服务器,墙内的客户端把tcp数据加密后发往墙外的服务器,server按照sock5协议解密后再发往目标机器</p>
 <div style="align: center"><br><img src="https://yuerblog.cc/wp-content/uploads/2016/11/WechatIMG938.jpeg" width="100%" height="100%"><br></div>
 
 <ol>
@@ -359,150 +557,13 @@
 <li>SS-Local和SS-Server两端通过多种可选的加密方法(“aes-256-cfb”等)进行通讯，经过GFW的时候因为是常规的TCP包，没有明显特征码GFW也无法对通讯数据进行解密</li>
 <li>SS-Server将收到的加密数据进行解密，还原初始请求，再发送到用户需要访问的服务网站，获取响应原路再返回SS-04，返回途中依然使用了加密，使得流量是普通TCP包，并成功穿过GFW防火墙</li>
 </ol>
-<h1 id="sock5协议简介"><a href="#sock5协议简介" class="headerlink" title="sock5协议简介"></a>sock5协议简介</h1><blockquote>
-<p>wiki:SOCKS是一种网络传输协议，主要用于客户端与外网服务器之间通讯的中间传递,根据OSI模型，SOCKS是会话层的协议，位于表示层与传输层之间</p>
-</blockquote>
-<p>根据<a href="https://www.ietf.org/rfc/rfc1928.txt" title="rfc1928" target="_blank" rel="external">rfc1928</a>文档的说明,sock5协议设计之初就是为了解决翻墙问题,该协议工作在应用层和传输层,不提供例如转发ICMP消息的网关服务,sock5在sock4协议基础上增加了对udp和ipv6的支持,rfc文档中制定了报文格式:</p>
-<ol>
-<li>sock5客户端先给服务端发版本协商报文</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>VER</th>
-<th>NMETHODS</th>
-<th>METHODS</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>1</td>
-<td>1-255</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>VER字段为0x05</li>
-<li>NMETHODSB表示加密算法的格式</li>
-<li>METHODS表示具体的加密算法</li>
-</ul>
-<ol>
-<li>服务端版本协商响应报文</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">VER</th>
-<th style="text-align:center">METHOD</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">1</td>
-<td style="text-align:center">1</td>
-</tr>
-</tbody>
-</table>
-<p>METHOD字段表示含义</p>
-<ul>
-<li>X’00’ NO AUTHENTICATION REQUIRED</li>
-<li>X’01’ GSSAPI</li>
-<li>X’02’ USERNAME/PASSWORD</li>
-<li>X’03’ to X’7F’ IANA ASSIGNED</li>
-<li>X’80’ to X’FE’ RESERVED FOR PRIVATE METHODS</li>
-<li>X’FF’ NO ACCEPTABLE METHODS</li>
-</ul>
-<ol>
-<li>协商完毕后client的正常请求</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>VER</th>
-<th>CMD</th>
-<th>RSV</th>
-<th>ATYP</th>
-<th>DST ADDR</th>
-<th>DST PORT</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>1</td>
-<td>00</td>
-<td>1</td>
-<td>Variable</td>
-<td>2</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>VER   protocol version: X’05’</li>
-<li>CMD <ul>
-<li>CONNECT X’01’</li>
-<li>BIND X’02’</li>
-<li>UDP ASSOCIATE X’03’</li>
-</ul>
-</li>
-<li>RSV    RESERVED</li>
-<li>ATYP   address type of following address<ul>
-<li>IP V4 address: X’01’</li>
-<li>DOMAINNAME: X’03’</li>
-<li>P V6 address: X’04’</li>
-</ul>
-</li>
-<li>DST.ADDR       desired destination address</li>
-<li>DST.PORT desired destination port in network octet order</li>
-</ul>
-<p>当客户端和服务端建立连接后,client会给server发送这样上面格式的请求</p>
-<ol>
-<li>server的响应</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>VER</th>
-<th>REP</th>
-<th>RSV</th>
-<th>ATPY</th>
-<th>BND ADDR</th>
-<th>BND PORT</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>1</td>
-<td>00</td>
-<td>1</td>
-<td>Variable</td>
-<td>2</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>VER    protocol version: X’05’</li>
-<li>REP    Reply field:<ul>
-<li>X’00’ succeeded</li>
-<li>X’01’ general SOCKS server failure</li>
-<li>X’02’ connection not allowed by ruleset</li>
-<li>X’03’ Network unreachable</li>
-<li>X’04’ Host unreachable</li>
-<li>X’05’ Connection refused</li>
-<li>X’06’ TTL expired</li>
-<li>X’07’ Command not supported</li>
-<li>X’08’ Address type not supported</li>
-<li>X’09’ to X’FF’ unassigned</li>
-</ul>
-</li>
-<li>RSV    RESERVED</li>
-<li>ATYP   address type of following address</li>
-</ul>
-<p>具体的协议抓包可以参考这篇博客<a href="https://www.skyreal.me/tong-guo-wireshark-zhua-bao-xue-xi-socks5-xie-yi/" title="sock5抓包分析" target="_blank" rel="external">sock5抓包分析</a></p>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/09/15/sock5协议原理分析/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -582,7 +643,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -590,6 +651,15 @@
 
           
 
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
           
 
         </nav>
