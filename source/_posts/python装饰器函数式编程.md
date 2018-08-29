@@ -1,6 +1,6 @@
 ---
 title: python装饰器函数式编程
-date: 2017-09-24 13:52:36
+date: 2016-09-24 13:52:36
 tags: python
 ---
 
@@ -17,18 +17,20 @@ tags: python
 
 ```
     lambda argument: manipulate(argument)
-```    
-
+```
+---
 ```
     squares = map(lambda x: x * x, range(9))
     print squares
-
 ```
+
+---
 ```
     number_list = range(-5, 5)
     less_than_zero = list(filter(lambda x: x < 0, number_list))
     print(less_than_zero)
 ```
+---
 
 ```
     number_list = range(-5, 5)

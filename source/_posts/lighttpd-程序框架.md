@@ -1,16 +1,15 @@
 ---
 title: lighttpd 程序框架
-date: 2017-10-15 11:37:28
+date: 2016-10-15 11:37:28
 tags: lighttpd
 ---
 
-# lighttpd 程序框架分析
 由于历史的原因，公司部门在多个组件中使用了lighttpd，具体为何当时技术选型的时候没选nginx而选择lighttpd就不得而知了。lighttpd的社区相对nginx差距还是很大的，明显nginx的社区更活跃。lighttpd网上的资料以及第三方模块相对比较少，学习的成本会相对高一点。不过lighttpd的源码相对nginx会少一点，毕竟lighttpd比较轻量级，功能上没nginx那么多。网上nginx/lighttpd/appache 三种web server的测试结果，lighttpd占用内存最小，请求响应时间中等，apache最差。
-
---- 
 
 ## 进程模型
 lighttpd采用master-worker进程模型，master进程主要负责加载配置、fork worker进程、管理worker进程，worker进程主要负责接收请求、处理请求、返回请求结果，worker进程个数可以在配置文件中配置，master进程会根据配置的个数，fork worker进程
+
+<!-- more -->
 
 master进程的主要逻辑：
 - 根据命令行完成各种初始化工作

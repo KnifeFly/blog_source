@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="python," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="函数式编程 函数式编程（英语：functional programming）或称函数程序设计,又称泛函编程,是一种编程典范,它将电脑运算视为数学上的函数计算,并且避免使用程序状态以及易变对象,函数编程语言最重要的基础是λ演算（lambda calculus,而且λ演算的函数可以接受函数当作输入（引数）和输出（传出值）  函数式编程范式相对命令式编程(Imperative programming),">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python装饰器函数式编程">
+<meta property="og:url" content="http://yoursite.com/2016/09/24/python装饰器函数式编程/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="函数式编程 函数式编程（英语：functional programming）或称函数程序设计,又称泛函编程,是一种编程典范,它将电脑运算视为数学上的函数计算,并且避免使用程序状态以及易变对象,函数编程语言最重要的基础是λ演算（lambda calculus,而且λ演算的函数可以接受函数当作输入（引数）和输出（传出值）  函数式编程范式相对命令式编程(Imperative programming),">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-03-31T10:37:27.930Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="python装饰器函数式编程">
+<meta name="twitter:description" content="函数式编程 函数式编程（英语：functional programming）或称函数程序设计,又称泛函编程,是一种编程典范,它将电脑运算视为数学上的函数计算,并且避免使用程序状态以及易变对象,函数编程语言最重要的基础是λ演算（lambda calculus,而且λ演算的函数可以接受函数当作输入（引数）和输出（传出值）  函数式编程范式相对命令式编程(Imperative programming),">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/09/24/python装饰器函数式编程/"/>
+
+
+
+
+
+  <title>python装饰器函数式编程 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/09/24/python装饰器函数式编程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/lufei.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">python装饰器函数式编程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-24T13:52:36+08:00">
+                2016-09-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="函数式编程"><a href="#函数式编程" class="headerlink" title="函数式编程"></a>函数式编程</h1><blockquote>
+<p>函数式编程（英语：functional programming）或称函数程序设计,又称泛函编程,是一种编程典范,它将电脑运算视为数学上的函数计算,并且避免使用程序状态以及易变对象,函数编程语言最重要的基础是λ演算（lambda calculus,而且λ演算的函数可以接受函数当作输入（引数）和输出（传出值）</p>
+</blockquote>
+<p>函数式编程范式相对命令式编程(Imperative programming),函数式编程更加强调程序执行的结果而非执行的过程,倡导利用若干简单的执行单元让计算结果不断渐进,逐层推导复杂的运算,而不是设计一个复杂的执行过程.而命令式编程使用各种变量以及复杂的控制语句来编写逻辑代码,最初图灵机的设计就是属于命令式编程,在纸带上面刻各种孔,然后机器根据纸带上的孔执行各种命令.C/C++ Java Python等各种面向对象编程其实都属于命令式编程范围,虽然现在这些高级语言或多或少都已经支持Lambda表达式以开始支持函数式编程,但是相比Lisp Haskell Clojure等这些纯正函数式语言,Python在函数式编程方面支持的相对少一点.</p>
+<h2 id="Python-Lambda"><a href="#Python-Lambda" class="headerlink" title="Python Lambda"></a>Python Lambda</h2><blockquote>
+<p>λ演算（英语：lambda calculus，λ-calculus）是一套从数学逻辑中发展，以变量绑定和替换的规则，来研究函数如何抽象化定义、函数如何被应用以及递归的形式系统。它由数学家阿隆佐·邱奇在20世纪30年代首次发表。Lambda演算作为一种广泛用途的计算模型，可以清晰地定义什么是一个可计算函数，而任何可计算函数都能以这种形式表达和求值，它能模拟单一磁带图灵机的计算过程；尽管如此，Lambda演算强调的是变换规则的运用，而非实现它们的具体机器。</p>
+</blockquote>
+<p>说到Python支持函数式编程必须得说道Lambda表达式,Lambda按照wiki上说法比较复杂,其实简单的说Lambda表达式就是匿名函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lambda argument: manipulate(argument)</div></pre></td></tr></table></figure>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">squares = map(lambda x: x * x, range(9))</div><div class="line">print squares</div></pre></td></tr></table></figure>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">number_list = range(-5, 5)</div><div class="line">less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</div><div class="line">print(less_than_zero)</div></pre></td></tr></table></figure>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">number_list = range(-5, 5)</div><div class="line">less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</div><div class="line">print(less_than_zero)</div></pre></td></tr></table></figure>
+<p>上面三个代码片段就是map/reduce/filter和lambda表达式结合的一个例子,python在支持lambda时,为了不让开发者乱用这个特性,lambda设计的比较简单,就是在lamba后面加函数以及操作,只要使用得当lambda可以让代码看起来更加简洁优雅,但是如果使用不当代码可读性会很差</p>
+<a id="more"></a>
+<h2 id="函数式编程特性"><a href="#函数式编程特性" class="headerlink" title="函数式编程特性"></a>函数式编程特性</h2><p>其实对于纯正的函数式编程,我接触的比较少,像lisp Haskell Scheme以及更兴起的Clojure都不是很了解,下次可以好好的学习下Clojure<br>函数式编程主要有三大特性:</p>
+<ul>
+<li>immutable data 不可变数据: 不像命令式编程那样数据都是有状态的,函数式编程中采用无状态数据,像Clojure中变量是不可变的</li>
+<li>first class functions: 函数和变量一样使用,只要变量有的特性函数都有</li>
+<li>尾递归优化: 使用尾递归优化技术——每次递归时都会重用stack,这样一来能够提升性能,Python就不支持</li>
+</ul>
+<p>函数式编程的几个技术:</p>
+<ul>
+<li>map &amp; reduce: python中有这两个函数</li>
+<li>pipeline: 这个技术的意思是，把函数实例成一个一个的action，然后，把一组action放到一个数组或是列表中，然后把数据传给这个action list，数据就像一个pipeline一样顺序地被各个函数所操作，最终得到我们想要的结果</li>
+<li>recursing 递归: 递归最大的好处就简化代码，他可以把一个复杂的问题用很简单的代码描述出来。注意：递归的精髓是描述问题，而这正是函数式编程的精髓</li>
+<li>currying：把一个函数的多个参数分解成多个函数， 然后把函数多层封装起来，每层函数都返回一个函数去接收下一个参数这样,可以简化函数的多个参数</li>
+<li>higher order function 高阶函数：所谓高阶函数就是函数当参数，把传入的函数做一个封装，然后返回这个封装函数。现象上就是函数传进传出，就像面向对象对象满天飞一样</li>
+</ul>
+<hr>
+<h1 id="函数装饰器"><a href="#函数装饰器" class="headerlink" title="函数装饰器"></a>函数装饰器</h1><p>python中的函数也是一个对象,可以用来传递,例如:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">def foo():</div><div class="line">    print(&quot;foo&quot;)</div><div class="line"></div><div class="line">def bar(func):</div><div class="line">    func()</div><div class="line"></div><div class="line">bar(foo)</div></pre></td></tr></table></figure>
+<blockquote>
+<p>装饰器本质上是一个 Python 函数或类，它可以让其他函数或类在不需要做任何代码修改的前提下增加额外功能，装饰器的返回值也是一个函数/类对象。它经常用于有切面需求的场景，比如：插入日志、性能测试、事务处理、缓存、权限校验等场景，装饰器是解决这类问题的绝佳设计。有了装饰器，我们就可以抽离出大量与函数功能本身无关的雷同代码到装饰器中并继续重用。概括的讲，装饰器的作用就是为已经存在的对象添加额外的功能</p>
+</blockquote>
+<p>说到装饰器,网上举的例子大部分都是关于日志打印的,这个确实很经典,简单的说就是想要在一个已经定义好的函数中打印一些日志,需要自己再封装一个函数,然后在该函数中再调用,但是采用这种方法的话会破坏原先代码的逻辑,于是装饰器方案诞生了:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">def use_logging(func):</div><div class="line"></div><div class="line">    def wrapper():</div><div class="line">        logging.warn(&quot;%s is running&quot; % func.__name__)</div><div class="line">        return func()</div><div class="line">    return wrapper      #返回函数</div><div class="line"></div><div class="line">def foo():</div><div class="line">    print(&apos;i am foo&apos;)</div><div class="line"></div><div class="line">foo = use_logging(foo)  #函数作为参数传递</div><div class="line">foo()                   #还是调用foo() 没有破坏原程序逻辑 调用foo()可以打印日志信息还执行了原代码</div></pre></td></tr></table></figure>
+<p>python中对装饰器的支持采用@这个符号,这个是个语法糖,把@放在use_logging函数定义的开头,相当于foo = use_logging(foo), 只需要在foo()函数的开头加上@use_logging即可在不改变原函数逻辑的情况实现日志打印ongn<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">def use_logging(func):</div><div class="line"></div><div class="line">    def wrapper():</div><div class="line">        logging.warn(&quot;%s is running&quot; % func.__name__)</div><div class="line">        return func()</div><div class="line">    return wrapper</div><div class="line"></div><div class="line">@use_logging</div><div class="line">def foo():</div><div class="line">    print(&quot;i am foo&quot;)</div><div class="line"></div><div class="line">foo()</div></pre></td></tr></table></figure></p>
+<p>如果foo()函数需要传参,<em>args/*</em>kargs 利用这这两个参数可以传类似多个参数或者关键字参数,这个时候use_logging(func)中的内部函数可以更改为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">def wrapper(*args, **kargs):</div><div class="line">    logging.warn(&quot;%s is running&quot; % func.__name__)</div><div class="line">    return func(*args, **kargs)</div><div class="line">return wrapper</div></pre></td></tr></table></figure></p>
+<p>装饰器的使用非常灵活,例如还可以定义带参数的装饰器.拿上面日志的例子来说,如果日志打印需要打印不同的等级信息,那么use_logging参数需要有一个日志等级参数.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">def use_logging(level):</div><div class="line">    def decorator(func):</div><div class="line">        def wrapper(*args, **kwargs):</div><div class="line">            if level == &quot;warn&quot;:</div><div class="line">                logging.warn(&quot;%s is running&quot; % func.__name__)</div><div class="line">            elif level == &quot;info&quot;:</div><div class="line">                logging.info(&quot;%s is running&quot; % func.__name__)</div><div class="line">            return func(*args)</div><div class="line">        return wrapper</div><div class="line"></div><div class="line">return decorator</div><div class="line"></div><div class="line">@use_logging(level=&quot;warn&quot;)</div><div class="line">def foo(name=&apos;foo&apos;):</div><div class="line">    print(&quot;i am %s&quot; % name)</div><div class="line"></div><div class="line">foo()</div></pre></td></tr></table></figure></p>
+<p>use_logging函数定义看起来有点绕, @use_logging(level=”warn”) 会被python解析为foo = use_logging(level)(foo) 这样的话use_logging(level)需要返回一个装饰器, 也就不难理解上面的那段代码了</p>
+<hr>
+<h1 id="类装饰器"><a href="#类装饰器" class="headerlink" title="类装饰器"></a>类装饰器</h1><p>装饰器也可用来装饰类,此时被修饰的函数会调用类的<strong>call</strong>方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">class Foo(object):</div><div class="line">    def __init__(self, func):</div><div class="line">        print &quot;sinit in Foo&quot;</div><div class="line">        self._func = func</div><div class="line"></div><div class="line">    def __call__(self):</div><div class="line">        print (&apos;class decorator runing&apos;)</div><div class="line">        self._func()</div><div class="line">        print (&apos;class decorator ending&apos;)</div><div class="line"></div><div class="line">@Foo</div><div class="line">def bar():</div><div class="line">    print (&apos;bar&apos;)</div><div class="line"></div><div class="line">bar()</div></pre></td></tr></table></figure></p>
+<p>上面代码执行完毕后会打印:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">init in Foo</div><div class="line">class decorator runing</div><div class="line">bar</div><div class="line">class decorator ending</div></pre></td></tr></table></figure></p>
+<p>Foo函数定义了两个函数:</p>
+<ol>
+<li>一个是<strong>init</strong>()，这个方法是在我们给某个函数decorator时被调用，所以，需要有一个fn的参数，也就是被decorator的函数</li>
+<li>一个是<strong>call</strong>()，这个方法是在我们调用被decorator函数时被调用的</li>
+</ol>
+<h1 id="装饰器副作用"><a href="#装饰器副作用" class="headerlink" title="装饰器副作用"></a>装饰器副作用</h1><p>decorator函数中原函数的信息被破坏了 例如<strong>name</strong> docstring 参数列表等, 不过functools.wraps可以解决这个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">def use_logging(func):</div><div class="line">    @wraps(func)</div><div class="line">    def wrapper(*args, **kwargs):</div><div class="line">        if level == &quot;warn&quot;:</div><div class="line">            logging.warn(&quot;%s is running&quot; % func.__name__)</div><div class="line">        elif level == &quot;info&quot;:</div><div class="line">            logging.info(&quot;%s is running&quot; % func.__name__)</div><div class="line">        return func(*args)</div><div class="line">    return wrapper</div></pre></td></tr></table></figure></p>
+<p>参考文章: </p>
+<ol>
+<li><a href="https://foofish.net/python-decorator.html" target="_blank" rel="external">https://foofish.net/python-decorator.html</a></li>
+<li><a href="https://coolshell.cn/articles/11265.html" target="_blank" rel="external">https://coolshell.cn/articles/11265.html</a></li>
+<li><a href="https://coolshell.cn/articles/10822.html" target="_blank" rel="external">https://coolshell.cn/articles/10822.html</a></li>
+<li><a href="http://book.pythontips.com/en/latest/lambdas.html" target="_blank" rel="external">http://book.pythontips.com/en/latest/lambdas.html</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/15/sock5协议原理分析/" rel="next" title="sock5协议原理分析">
+                <i class="fa fa-chevron-left"></i> sock5协议原理分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/15/lighttpd-程序框架/" rel="prev" title="lighttpd 程序框架">
+                lighttpd 程序框架 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/lufei.jpg"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#函数式编程"><span class="nav-number">1.</span> <span class="nav-text">函数式编程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Python-Lambda"><span class="nav-number">1.1.</span> <span class="nav-text">Python Lambda</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数式编程特性"><span class="nav-number">1.2.</span> <span class="nav-text">函数式编程特性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#函数装饰器"><span class="nav-number">2.</span> <span class="nav-text">函数装饰器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#类装饰器"><span class="nav-number">3.</span> <span class="nav-text">类装饰器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#装饰器副作用"><span class="nav-number">4.</span> <span class="nav-text">装饰器副作用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

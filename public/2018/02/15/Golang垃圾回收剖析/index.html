@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="go," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="转载自：(http://legendtkl.com/2017/04/28/golang-gc/) 1.Golang GC 发展Golang 从第一个版本以来，GC 一直是大家诟病最多的。但是每一个版本的发布基本都伴随着 GC 的改进。下面列出一些比较重要的改动。  v1.1 STW v1.3 Mark STW, Sweep 并行 v1.5 三色标记法 v1.8 hybrid write barri">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang垃圾回收机制">
+<meta property="og:url" content="http://yoursite.com/2018/02/15/Golang垃圾回收剖析/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="转载自：(http://legendtkl.com/2017/04/28/golang-gc/) 1.Golang GC 发展Golang 从第一个版本以来，GC 一直是大家诟病最多的。但是每一个版本的发布基本都伴随着 GC 的改进。下面列出一些比较重要的改动。  v1.1 STW v1.3 Mark STW, Sweep 并行 v1.5 三色标记法 v1.8 hybrid write barri">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4a/Animation_of_the_Naive_Mark_and_Sweep_Garbage_Collector_Algorithm.gif">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/1/1d/Animation_of_tri-color_garbage_collection.gif">
+<meta property="og:image" content="http://legendtkl.com/img/uploads/2017/gc.png">
+<meta property="og:updated_time" content="2018-04-22T14:10:48.707Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Golang垃圾回收机制">
+<meta name="twitter:description" content="转载自：(http://legendtkl.com/2017/04/28/golang-gc/) 1.Golang GC 发展Golang 从第一个版本以来，GC 一直是大家诟病最多的。但是每一个版本的发布基本都伴随着 GC 的改进。下面列出一些比较重要的改动。  v1.1 STW v1.3 Mark STW, Sweep 并行 v1.5 三色标记法 v1.8 hybrid write barri">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4a/Animation_of_the_Naive_Mark_and_Sweep_Garbage_Collector_Algorithm.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/02/15/Golang垃圾回收剖析/"/>
+
+
+
+
+
+  <title>Golang垃圾回收机制 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/15/Golang垃圾回收剖析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/lufei.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Golang垃圾回收机制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-15T12:11:22+08:00">
+                2018-02-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>转载自：(<a href="http://legendtkl.com/2017/04/28/golang-gc/" target="_blank" rel="external">http://legendtkl.com/2017/04/28/golang-gc/</a>)</p>
+<h2 id="1-Golang-GC-发展"><a href="#1-Golang-GC-发展" class="headerlink" title="1.Golang GC 发展"></a>1.Golang GC 发展</h2><p>Golang 从第一个版本以来，GC 一直是大家诟病最多的。但是每一个版本的发布基本都伴随着 GC 的改进。下面列出一些比较重要的改动。</p>
+<ul>
+<li>v1.1 STW</li>
+<li>v1.3 Mark STW, Sweep 并行</li>
+<li>v1.5 三色标记法</li>
+<li>v1.8 hybrid write barrier</li>
+</ul>
+<h2 id="2-GC-算法简介"><a href="#2-GC-算法简介" class="headerlink" title="2. GC 算法简介"></a>2. GC 算法简介</h2><p>这一小节介绍三种经典的 GC 算法：引用计数（reference counting）、标记-清扫（mark &amp; sweep）、节点复制（Copying Garbage Collection），分代收集（Generational Garbage Collection）。</p>
+<h3 id="2-1-引用计数"><a href="#2-1-引用计数" class="headerlink" title="2.1 引用计数"></a>2.1 引用计数</h3><p>引用计数的思想非常简单：每个单元维护一个域，保存其它单元指向它的引用数量（类似有向图的入度）。当引用数量为 0 时，将其回收。引用计数是渐进式的，能够将内存管理的开销分布到整个程序之中。C++ 的 share_ptr 使用的就是引用计算方法。</p>
+<p>引用计数算法实现一般是把所有的单元放在一个单元池里，比如类似 free list。这样所有的单元就被串起来了，就可以进行引用计数了。新分配的单元计数值被设置为 1（注意不是 0，因为申请一般都说 ptr = new object 这种）。每次有一个指针被设为指向该单元时，该单元的计数值加 1；而每次删除某个指向它的指针时，它的计数值减 1。当其引用计数为 0 的时候，该单元会被进行回收。虽然这里说的比较简单，实现的时候还是有很多细节需要考虑，比如删除某个单元的时候，那么它指向的所有单元都需要对引用计数减 1。那么如果这个时候，发现其中某个指向的单元的引用计数又为 0，那么是递归的进行还是采用其他的策略呢？递归处理的话会导致系统颠簸。关于这些细节这里就不讨论了，可以参考文章后面的给的参考资料。</p>
+<a id="more"></a>
+<h5 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h5><ol>
+<li>渐进式。内存管理与用户程序的执行交织在一起，将 GC 的代价分散到整个程序。不像标记-清扫算法需要 STW (Stop The World，GC 的时候挂起用户程序)。</li>
+<li>算法易于实现。</li>
+<li>内存单元能够很快被回收。相比于其他垃圾回收算法，堆被耗尽或者达到某个阈值才会进行垃圾回收。</li>
+</ol>
+<h5 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h5><ol>
+<li>原始的引用计数不能处理循环引用。大概这是被诟病最多的缺点了。不过针对这个问题，也除了很多解决方案，比如强引用等。</li>
+<li>维护引用计数降低运行效率。内存单元的更新删除等都需要维护相关的内存单元的引用计数，相比于一些追踪式的垃圾回收算法并不需要这些代价。</li>
+<li>单元池 free list 实现的话不是 cache-friendly 的，这样会导致频繁的 cache miss，降低程序运行效率。</li>
+</ol>
+<h3 id="2-2-标记-清扫"><a href="#2-2-标记-清扫" class="headerlink" title="2.2 标记-清扫"></a>2.2 标记-清扫</h3><p>标记-清扫算法是第一种自动内存管理，基于追踪的垃圾收集算法。算法思想在 70 年代就提出了，是一种非常古老的算法。内存单元并不会在变成垃圾立刻回收，而是保持不可达状态，直到到达某个阈值或者固定时间长度。这个时候系统会挂起用户程序，也就是 STW，转而执行垃圾回收程序。垃圾回收程序对所有的存活单元进行一次全局遍历确定哪些单元可以回收。算法分两个部分：标记（mark）和清扫（sweep）。标记阶段表明所有的存活单元，清扫阶段将垃圾单元回收。可视化可以参考下图。</p>
+<p><a href="https://upload.wikimedia.org/wikipedia/commons/4/4a/Animation_of_the_Naive_Mark_and_Sweep_Garbage_Collector_Algorithm.gif" target="_blank" rel="external"><img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Animation_of_the_Naive_Mark_and_Sweep_Garbage_Collector_Algorithm.gif" alt="img"></a></p>
+<p>标记-清扫算法的优点也就是基于追踪的垃圾回收算法具有的优点：避免了引用计数算法的缺点（不能处理循环引用，需要维护指针）。缺点也很明显，需要 STW。</p>
+<h5 id="三色标记算法"><a href="#三色标记算法" class="headerlink" title="三色标记算法"></a>三色标记算法</h5><p>三色标记算法是对标记阶段的改进，原理如下：</p>
+<ol>
+<li>起初所有对象都是白色。</li>
+<li>从根出发扫描所有可达对象，标记为灰色，放入待处理队列。</li>
+<li>从队列取出灰色对象，将其引用对象标记为灰色放入队列，自身标记为黑色。</li>
+<li>重复 3，直到灰色对象队列为空。此时白色对象即为垃圾，进行回收。</li>
+</ol>
+<p>可视化如下。<br><a href="https://upload.wikimedia.org/wikipedia/commons/1/1d/Animation_of_tri-color_garbage_collection.gif" target="_blank" rel="external"><img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Animation_of_tri-color_garbage_collection.gif" alt="img"></a></p>
+<p>三色标记的一个明显好处是能够让用户程序和 mark 并发的进行，具体可以参考论文：《On-the-fly garbage collection: an exercise in cooperation.》。Golang 的 GC 实现也是基于这篇论文，后面再具体说明。</p>
+<h3 id="2-3-节点复制"><a href="#2-3-节点复制" class="headerlink" title="2.3 节点复制"></a>2.3 节点复制</h3><p>节点复制也是基于追踪的算法。其将整个堆等分为两个半区（semi-space），一个包含现有数据，另一个包含已被废弃的数据。节点复制式垃圾收集从切换（flip）两个半区的角色开始，然后收集器在老的半区，也就是 Fromspace 中遍历存活的数据结构，在第一次访问某个单元时把它复制到新半区，也就是 Tospace 中去。在 Fromspace 中所有存活单元都被访问过之后，收集器在 Tospace 中建立一个存活数据结构的副本，用户程序可以重新开始运行了。</p>
+<h5 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h5><ol>
+<li>所有存活的数据结构都缩并地排列在 Tospace 的底部，这样就不会存在内存碎片的问题。</li>
+<li>获取新内存可以简单地通过递增自由空间指针来实现。</li>
+</ol>
+<h5 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h5><ol>
+<li>内存得不到充分利用，总有一半的内存空间处于浪费状态。</li>
+</ol>
+<h3 id="2-4-分代收集"><a href="#2-4-分代收集" class="headerlink" title="2.4 分代收集"></a>2.4 分代收集</h3><p>基于追踪的垃圾回收算法（标记-清扫、节点复制）一个主要问题是在生命周期较长的对象上浪费时间（长生命周期的对象是不需要频繁扫描的）。同时，内存分配存在这么一个事实 “most object die young”。基于这两点，分代垃圾回收算法将对象按生命周期长短存放到堆上的两个（或者更多）区域，这些区域就是分代（generation）。对于新生代的区域的垃圾回收频率要明显高于老年代区域。</p>
+<p>分配对象的时候从新生代里面分配，如果后面发现对象的生命周期较长，则将其移到老年代，这个过程叫做 promote。随着不断 promote，最后新生代的大小在整个堆的占用比例不会特别大。收集的时候集中主要精力在新生代就会相对来说效率更高，STW 时间也会更短。</p>
+<h5 id="优点-2"><a href="#优点-2" class="headerlink" title="优点"></a>优点</h5><ol>
+<li>性能更优。</li>
+</ol>
+<h5 id="缺点-2"><a href="#缺点-2" class="headerlink" title="缺点"></a>缺点</h5><ol>
+<li>实现复杂</li>
+</ol>
+<h2 id="3-Golang-GC"><a href="#3-Golang-GC" class="headerlink" title="3. Golang GC"></a>3. Golang GC</h2><h3 id="3-1-Overview"><a href="#3-1-Overview" class="headerlink" title="3.1 Overview"></a>3.1 Overview</h3><p>在说 Golang 的具体垃圾回收流程时，我们先来看一下几个基本的问题。</p>
+<h5 id="1-何时触发-GC"><a href="#1-何时触发-GC" class="headerlink" title="1. 何时触发 GC"></a>1. 何时触发 GC</h5><p>在堆上分配大于 32K byte 对象的时候进行检测此时是否满足垃圾回收条件，如果满足则进行垃圾回收。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">mallocgc</span><span class="params">(size <span class="keyword">uintptr</span>, typ *_type, needzero <span class="keyword">bool</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span> &#123;</div><div class="line">    ...</div><div class="line">    shouldhelpgc := <span class="literal">false</span></div><div class="line">    <span class="comment">// 分配的对象小于 32K byte</span></div><div class="line">    <span class="keyword">if</span> size &lt;= maxSmallSize &#123;</div><div class="line">        ...</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        shouldhelpgc = <span class="literal">true</span></div><div class="line">        ...</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">    <span class="comment">// gcShouldStart() 函数进行触发条件检测</span></div><div class="line">    <span class="keyword">if</span> shouldhelpgc &amp;&amp; gcShouldStart(<span class="literal">false</span>) &#123;</div><div class="line">        <span class="comment">// gcStart() 函数进行垃圾回收</span></div><div class="line">        gcStart(gcBackgroundMode, <span class="literal">false</span>)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面是自动垃圾回收，还有一种是主动垃圾回收，通过调用 runtime.GC()，这是阻塞式的。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// GC runs a garbage collection and blocks the caller until the</span></div><div class="line"><span class="comment">// garbage collection is complete. It may also block the entire</span></div><div class="line"><span class="comment">// program.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">GC</span><span class="params">()</span></span> &#123;</div><div class="line">    gcStart(gcForceBlockMode, <span class="literal">false</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="2-GC-触发条件"><a href="#2-GC-触发条件" class="headerlink" title="2. GC 触发条件"></a>2. GC 触发条件</h5><p>触发条件主要关注下面代码中的中间部分：<code>forceTrigger || memstats.heap_live &gt;= memstats.gc_trigger</code> 。forceTrigger 是 forceGC 的标志；后面半句的意思是当前堆上的活跃对象大于我们初始化时候设置的 GC 触发阈值。在 malloc 以及 free 的时候 heap_live 会一直进行更新，这里就不再展开了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// gcShouldStart returns true if the exit condition for the _GCoff</span></div><div class="line"><span class="comment">// phase has been met. The exit condition should be tested when</span></div><div class="line"><span class="comment">// allocating.</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// If forceTrigger is true, it ignores the current heap size, but</span></div><div class="line"><span class="comment">// checks all other conditions. In general this should be false.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcShouldStart</span><span class="params">(forceTrigger <span class="keyword">bool</span>)</span> <span class="title">bool</span></span> &#123;</div><div class="line">    <span class="keyword">return</span> gcphase == _GCoff &amp;&amp; (forceTrigger || memstats.heap_live &gt;= memstats.gc_trigger) &amp;&amp; memstats.enablegc &amp;&amp; panicking == <span class="number">0</span> &amp;&amp; gcpercent &gt;= <span class="number">0</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//初始化的时候设置 GC 的触发阈值</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcinit</span><span class="params">()</span></span> &#123;</div><div class="line">    _ = setGCPercent(readgogc())</div><div class="line">    memstats.gc_trigger = heapminimum</div><div class="line">    ...</div><div class="line">&#125;</div><div class="line"><span class="comment">// 启动的时候通过 GOGC 传递百分比 x</span></div><div class="line"><span class="comment">// 触发阈值等于 x * defaultHeapMinimum (defaultHeapMinimum 默认是 4M)</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">readgogc</span><span class="params">()</span> <span class="title">int32</span></span> &#123;</div><div class="line">    p := gogetenv(<span class="string">"GOGC"</span>)</div><div class="line">    <span class="keyword">if</span> p == <span class="string">"off"</span> &#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> n, ok := atoi32(p); ok &#123;</div><div class="line">        <span class="keyword">return</span> n</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">100</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="3-垃圾回收的主要流程"><a href="#3-垃圾回收的主要流程" class="headerlink" title="3. 垃圾回收的主要流程"></a>3. 垃圾回收的主要流程</h5><p>三色标记法，主要流程如下：</p>
+<ul>
+<li>所有对象最开始都是白色。</li>
+<li>从 root 开始找到所有可达对象，标记为灰色，放入待处理队列。</li>
+<li>遍历灰色对象队列，将其引用对象标记为灰色放入待处理队列，自身标记为黑色。</li>
+<li>处理完灰色对象队列，执行清扫工作。</li>
+</ul>
+<p>详细的过程如下图所示，具体可参考 [9]。<br><a href="http://legendtkl.com/img/uploads/2017/gc.png" target="_blank" rel="external"><img src="http://legendtkl.com/img/uploads/2017/gc.png" alt="img"></a></p>
+<p>关于上图有几点需要说明的是。</p>
+<ol>
+<li>首先从 root 开始遍历，root 包括全局指针和 goroutine 栈上的指针。</li>
+<li>mark 有两个过程。<ol>
+<li>从 root 开始遍历，标记为灰色。遍历灰色队列。</li>
+<li>re-scan 全局指针和栈。因为 mark 和用户程序是并行的，所以在过程 1 的时候可能会有新的对象分配，这个时候就需要通过写屏障（write barrier）记录下来。re-scan 再完成检查一下。</li>
+</ol>
+</li>
+<li>Stop The World 有两个过程。<ol>
+<li>第一个是 GC 将要开始的时候，这个时候主要是一些准备工作，比如 enable write barrier。</li>
+<li>第二个过程就是上面提到的 re-scan 过程。如果这个时候没有 stw，那么 mark 将无休止。</li>
+</ol>
+</li>
+</ol>
+<p>另外针对上图各个阶段对应 GCPhase 如下：</p>
+<ul>
+<li>Off: _GCoff</li>
+<li>Stack scan ~ Mark: _GCmark</li>
+<li>Mark termination: _GCmarktermination</li>
+</ul>
+<h3 id="3-2-写屏障-write-barrier"><a href="#3-2-写屏障-write-barrier" class="headerlink" title="3.2 写屏障 (write barrier)"></a>3.2 写屏障 (write barrier)</h3><p>关于 write barrier，完全可以另外写成一篇文章，所以这里只简单介绍一下，这篇文章的重点还是 Golang 的 GC。垃圾回收中的 write barrier 可以理解为编译器在写操作时特意插入的一段代码，对应的还有 read barrier。</p>
+<p>为什么需要 write barrier，很简单，对于和用户程序并发运行的垃圾回收算法，用户程序会一直修改内存，所以需要记录下来。</p>
+<p>Golang 1.7 之前的 write barrier 使用的经典的 Dijkstra-style insertion write barrier [Dijkstra ‘78]， STW 的主要耗时就在 stack re-scan 的过程。自 1.8 之后采用一种混合的 write barrier 方式 （Yuasa-style deletion write barrier [Yuasa ‘90] 和 Dijkstra-style insertion write barrier [Dijkstra ‘78]）来避免 re-scan。具体的可以参考 <a href="https://github.com/golang/proposal/blob/master/design/17503-eliminate-rescan.md" target="_blank" rel="external">17503-eliminate-rescan</a>。</p>
+<h3 id="3-3-标记"><a href="#3-3-标记" class="headerlink" title="3.3 标记"></a>3.3 标记</h3><p>下面的源码还是基于 go1.8rc3。这个版本的 GC 代码相比之前改动还是挺大的，我们下面尽量只关注主流程。垃圾回收的代码主要集中在函数 <code>gcStart()</code> 中。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// gcStart 是 GC 的入口函数，根据 gcMode 做处理。</span></div><div class="line"><span class="comment">// 1. gcMode == gcBackgroundMode（后台运行，也就是并行）, _GCoff -&gt; _GCmark</span></div><div class="line"><span class="comment">// 2. 否则 GCoff -&gt; _GCmarktermination，这个时候就是主动 GC </span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcStart</span><span class="params">(mode gcMode, forceTrigger <span class="keyword">bool</span>)</span></span> &#123;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="1-STW-phase-1"><a href="#1-STW-phase-1" class="headerlink" title="1. STW phase 1"></a>1. STW phase 1</h5><p>在 GC 开始之前的准备工作。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcStart</span><span class="params">(mode gcMode, forceTrigger <span class="keyword">bool</span>)</span></span> &#123;</div><div class="line">    ...</div><div class="line">    <span class="comment">//在后台启动 mark worker </span></div><div class="line">    <span class="keyword">if</span> mode == gcBackgroundMode &#123;</div><div class="line">        gcBgMarkStartWorkers()</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">    <span class="comment">// Stop The World</span></div><div class="line">    systemstack(stopTheWorldWithSema)</div><div class="line">    ...</div><div class="line">    <span class="keyword">if</span> mode == gcBackgroundMode &#123;</div><div class="line">        <span class="comment">// GC 开始前的准备工作</span></div><div class="line"></div><div class="line">        <span class="comment">//处理设置 GCPhase，setGCPhase 还会 enable write barrier</span></div><div class="line">        setGCPhase(_GCmark)</div><div class="line">      	</div><div class="line">        gcBgMarkPrepare() <span class="comment">// Must happen before assist enable.</span></div><div class="line">        gcMarkRootPrepare()</div><div class="line"></div><div class="line">        <span class="comment">// Mark all active tinyalloc blocks. Since we're</span></div><div class="line">        <span class="comment">// allocating from these, they need to be black like</span></div><div class="line">        <span class="comment">// other allocations. The alternative is to blacken</span></div><div class="line">        <span class="comment">// the tiny block on every allocation from it, which</span></div><div class="line">        <span class="comment">// would slow down the tiny allocator.</span></div><div class="line">        gcMarkTinyAllocs()</div><div class="line">      	</div><div class="line">        <span class="comment">// Start The World</span></div><div class="line">        systemstack(startTheWorldWithSema)</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        ...</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="2-Mark"><a href="#2-Mark" class="headerlink" title="2. Mark"></a>2. Mark</h5><p>Mark 阶段是并行的运行，通过在后台一直运行 mark worker 来实现。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcStart</span><span class="params">(mode gcMode, forceTrigger <span class="keyword">bool</span>)</span></span> &#123;</div><div class="line">    ...</div><div class="line">    <span class="comment">//在后台启动 mark worker </span></div><div class="line">    <span class="keyword">if</span> mode == gcBackgroundMode &#123;</div><div class="line">        gcBgMarkStartWorkers()</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcBgMarkStartWorkers</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="comment">// Background marking is performed by per-P G's. Ensure that</span></div><div class="line">    <span class="comment">// each P has a background GC G.</span></div><div class="line">    <span class="keyword">for</span> _, p := <span class="keyword">range</span> &amp;allp &#123;</div><div class="line">        <span class="keyword">if</span> p == <span class="literal">nil</span> || p.status == _Pdead &#123;</div><div class="line">            <span class="keyword">break</span></div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> p.gcBgMarkWorker == <span class="number">0</span> &#123;</div><div class="line">            <span class="keyword">go</span> gcBgMarkWorker(p)</div><div class="line">            notetsleepg(&amp;work.bgMarkReady, <span class="number">-1</span>)</div><div class="line">            noteclear(&amp;work.bgMarkReady)</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment">// gcBgMarkWorker 是一直在后台运行的，大部分时候是休眠状态，通过 gcController 来调度</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcBgMarkWorker</span><span class="params">(_p_ *p)</span></span> &#123;</div><div class="line">    <span class="keyword">for</span> &#123;</div><div class="line">        <span class="comment">// 将当前 goroutine 休眠，直到满足某些条件</span></div><div class="line">        gopark(...)</div><div class="line">        ...</div><div class="line">        <span class="comment">// mark 过程</span></div><div class="line">        systemstack(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">        <span class="comment">// Mark our goroutine preemptible so its stack</span></div><div class="line">        <span class="comment">// can be scanned. This lets two mark workers</span></div><div class="line">        <span class="comment">// scan each other (otherwise, they would</span></div><div class="line">        <span class="comment">// deadlock). We must not modify anything on</span></div><div class="line">        <span class="comment">// the G stack. However, stack shrinking is</span></div><div class="line">        <span class="comment">// disabled for mark workers, so it is safe to</span></div><div class="line">        <span class="comment">// read from the G stack.</span></div><div class="line">        casgstatus(gp, _Grunning, _Gwaiting)</div><div class="line">        <span class="keyword">switch</span> _p_.gcMarkWorkerMode &#123;</div><div class="line">        <span class="keyword">default</span>:</div><div class="line">            throw(<span class="string">"gcBgMarkWorker: unexpected gcMarkWorkerMode"</span>)</div><div class="line">        <span class="keyword">case</span> gcMarkWorkerDedicatedMode:</div><div class="line">            gcDrain(&amp;_p_.gcw, gcDrainNoBlock|gcDrainFlushBgCredit)</div><div class="line">        <span class="keyword">case</span> gcMarkWorkerFractionalMode:</div><div class="line">            gcDrain(&amp;_p_.gcw, gcDrainUntilPreempt|gcDrainFlushBgCredit)</div><div class="line">        <span class="keyword">case</span> gcMarkWorkerIdleMode:</div><div class="line">            gcDrain(&amp;_p_.gcw, gcDrainIdle|gcDrainUntilPreempt|gcDrainFlushBgCredit)</div><div class="line">        &#125;</div><div class="line">        casgstatus(gp, _Gwaiting, _Grunning)</div><div class="line">        &#125;)</div><div class="line">        ...</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Mark 阶段的标记代码主要在函数 gcDrain() 中实现。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">// gcDrain scans roots and objects in work buffers, blackening grey</div><div class="line">// objects until all roots and work buffers have been drained.</div><div class="line">func gcDrain(gcw *gcWork, flags gcDrainFlags) &#123;</div><div class="line">    ...	</div><div class="line">    // Drain root marking jobs.</div><div class="line">    if work.markrootNext &lt; work.markrootJobs &#123;</div><div class="line">        for !(preemptible &amp;&amp; gp.preempt) &#123;</div><div class="line">            job := atomic.Xadd(&amp;work.markrootNext, +1) - 1</div><div class="line">            if job &gt;= work.markrootJobs &#123;</div><div class="line">                break</div><div class="line">            &#125;</div><div class="line">            markroot(gcw, job)</div><div class="line">            if idle &amp;&amp; pollWork() &#123;</div><div class="line">                goto done</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">  	</div><div class="line">    // 处理 heap 标记</div><div class="line">    // Drain heap marking jobs.</div><div class="line">    for !(preemptible &amp;&amp; gp.preempt) &#123;</div><div class="line">        ...</div><div class="line">        //从灰色列队中取出对象</div><div class="line">        var b uintptr</div><div class="line">        if blocking &#123;</div><div class="line">            b = gcw.get()</div><div class="line">        &#125; else &#123;</div><div class="line">            b = gcw.tryGetFast()</div><div class="line">            if b == 0 &#123;</div><div class="line">                b = gcw.tryGet()</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        if b == 0 &#123;</div><div class="line">            // work barrier reached or tryGet failed.</div><div class="line">            break</div><div class="line">        &#125;</div><div class="line">        //扫描灰色对象的引用对象，标记为灰色，入灰色队列</div><div class="line">        scanobject(b, gcw)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="3-Mark-termination-STW-phase-2"><a href="#3-Mark-termination-STW-phase-2" class="headerlink" title="3. Mark termination (STW phase 2)"></a>3. Mark termination (STW phase 2)</h5><p>mark termination 阶段会 stop the world。函数实现在 <code>gcMarkTermination()</code>。1.8 版本已经不会再对 goroutine stack 进行 re-scan 了。细节有点多，这里不细说了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcMarkTermination</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="comment">// World is stopped.</span></div><div class="line">    <span class="comment">// Run gc on the g0 stack. We do this so that the g stack</span></div><div class="line">    <span class="comment">// we're currently running on will no longer change. Cuts</span></div><div class="line">    <span class="comment">// the root set down a bit (g0 stacks are not scanned, and</span></div><div class="line">    <span class="comment">// we don't need to scan gc's internal state).  We also</span></div><div class="line">    <span class="comment">// need to switch to g0 so we can shrink the stack.</span></div><div class="line">    systemstack(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">        gcMark(startTime)</div><div class="line">        <span class="comment">// Must return immediately.</span></div><div class="line">        <span class="comment">// The outer function's stack may have moved</span></div><div class="line">        <span class="comment">// during gcMark (it shrinks stacks, including the</span></div><div class="line">        <span class="comment">// outer function's stack), so we must not refer</span></div><div class="line">        <span class="comment">// to any of its variables. Return back to the</span></div><div class="line">        <span class="comment">// non-system stack to pick up the new addresses</span></div><div class="line">        <span class="comment">// before continuing.</span></div><div class="line">    &#125;)</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="3-4-清扫"><a href="#3-4-清扫" class="headerlink" title="3.4 清扫"></a>3.4 清扫</h3><p>清扫相对来说就简单很多了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gcSweep</span><span class="params">(mode gcMode)</span></span> &#123;</div><div class="line">    ...</div><div class="line">    <span class="comment">//阻塞式</span></div><div class="line">    <span class="keyword">if</span> !_ConcurrentSweep || mode == gcForceBlockMode &#123;</div><div class="line">        <span class="comment">// Special case synchronous sweep.</span></div><div class="line">        ...</div><div class="line">        <span class="comment">// Sweep all spans eagerly.</span></div><div class="line">        <span class="keyword">for</span> sweepone() != ^<span class="keyword">uintptr</span>(<span class="number">0</span>) &#123;</div><div class="line">            sweep.npausesweep++</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// Do an additional mProf_GC, because all 'free' events are now real as well.</span></div><div class="line">        mProf_GC()</div><div class="line">        mProf_GC()</div><div class="line">        <span class="keyword">return</span></div><div class="line">    &#125;</div><div class="line">  	</div><div class="line">    <span class="comment">// 并行式</span></div><div class="line">    <span class="comment">// Background sweep.</span></div><div class="line">    lock(&amp;sweep.lock)</div><div class="line">    <span class="keyword">if</span> sweep.parked &#123;</div><div class="line">        sweep.parked = <span class="literal">false</span></div><div class="line">        ready(sweep.g, <span class="number">0</span>, <span class="literal">true</span>)</div><div class="line">    &#125;</div><div class="line">    unlock(&amp;sweep.lock)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对于并行式清扫，在 GC 初始化的时候就会启动 <code>bgsweep()</code>，然后在后台一直循环。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">bgsweep</span><span class="params">(c <span class="keyword">chan</span> <span class="keyword">int</span>)</span></span> &#123;</div><div class="line">    sweep.g = getg()</div><div class="line"></div><div class="line">    lock(&amp;sweep.lock)</div><div class="line">    sweep.parked = <span class="literal">true</span></div><div class="line">    c &lt;- <span class="number">1</span></div><div class="line">    goparkunlock(&amp;sweep.lock, <span class="string">"GC sweep wait"</span>, traceEvGoBlock, <span class="number">1</span>)</div><div class="line"></div><div class="line">    <span class="keyword">for</span> &#123;</div><div class="line">        <span class="keyword">for</span> gosweepone() != ^<span class="keyword">uintptr</span>(<span class="number">0</span>) &#123;</div><div class="line">            sweep.nbgsweep++</div><div class="line">            Gosched()</div><div class="line">        &#125;</div><div class="line">        lock(&amp;sweep.lock)</div><div class="line">        <span class="keyword">if</span> !gosweepdone() &#123;</div><div class="line">            <span class="comment">// This can happen if a GC runs between</span></div><div class="line">            <span class="comment">// gosweepone returning ^0 above</span></div><div class="line">            <span class="comment">// and the lock being acquired.</span></div><div class="line">            unlock(&amp;sweep.lock)</div><div class="line">            <span class="keyword">continue</span></div><div class="line">        &#125;</div><div class="line">        sweep.parked = <span class="literal">true</span></div><div class="line">        goparkunlock(&amp;sweep.lock, <span class="string">"GC sweep wait"</span>, traceEvGoBlock, <span class="number">1</span>)</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gosweepone</span><span class="params">()</span> <span class="title">uintptr</span></span> &#123;</div><div class="line">    <span class="keyword">var</span> ret <span class="keyword">uintptr</span></div><div class="line">    systemstack(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">        ret = sweepone()</div><div class="line">    &#125;)</div><div class="line">    <span class="keyword">return</span> ret</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>不管是阻塞式还是并行式，都是通过 <code>sweepone()</code>函数来做清扫工作的。如果对于上篇文章 <a href="http://legendtkl.com/2017/04/02/golang-alloc/" target="_blank" rel="external">Golang 内存管理</a> 熟悉的话，这个地方就很好理解。内存管理都是基于 span 的，mheap<em> 是一个全局的变量，所有分配的对象都会记录在 mheap</em> 中。在标记的时候，我们只要找到对对象对应的 span 进行标记，清扫的时候扫描 span，没有标记的 span 就可以回收了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// sweeps one span</span></div><div class="line"><span class="comment">// returns number of pages returned to heap, or ^uintptr(0) if there is nothing to sweep</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">sweepone</span><span class="params">()</span> <span class="title">uintptr</span></span> &#123;</div><div class="line">    ...</div><div class="line">    <span class="keyword">for</span> &#123;</div><div class="line">        s := mheap_.sweepSpans[<span class="number">1</span>-sg/<span class="number">2</span>%<span class="number">2</span>].pop()</div><div class="line">        ...</div><div class="line">        <span class="keyword">if</span> !s.sweep(<span class="literal">false</span>) &#123;</div><div class="line">            <span class="comment">// Span is still in-use, so this returned no</span></div><div class="line">            <span class="comment">// pages to the heap and the span needs to</span></div><div class="line">            <span class="comment">// move to the swept in-use list.</span></div><div class="line">            npages = <span class="number">0</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Sweep frees or collects finalizers for blocks not marked in the mark phase.</span></div><div class="line"><span class="comment">// It clears the mark bits in preparation for the next GC round.</span></div><div class="line"><span class="comment">// Returns true if the span was returned to heap.</span></div><div class="line"><span class="comment">// If preserve=true, don't return it to heap nor relink in MCentral lists;</span></div><div class="line"><span class="comment">// caller takes care of it.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *mspan)</span> <span class="title">sweep</span><span class="params">(preserve <span class="keyword">bool</span>)</span> <span class="title">bool</span></span> &#123;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="3-5-其他"><a href="#3-5-其他" class="headerlink" title="3.5 其他"></a>3.5 其他</h3><h5 id="1-gcWork"><a href="#1-gcWork" class="headerlink" title="1. gcWork"></a>1. gcWork</h5><p>这里介绍一下任务队列，或者说灰色对象管理。每个 P 上都有一个 gcw 用来管理灰色对象（get 和 put），gcw 的结构就是 gcWork。gcWork 中的核心是 wbuf1 和 wbuf2，里面存储就是灰色对象，或者说是 work（下面就全部统一叫做 work）。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">type</span> p <span class="keyword">struct</span> &#123;</div><div class="line">    ...</div><div class="line">    gcw gcWork</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> gcWork <span class="keyword">struct</span> &#123;</div><div class="line">    <span class="comment">// wbuf1 and wbuf2 are the primary and secondary work buffers.</span></div><div class="line">    wbuf1, wbuf2 wbufptr</div><div class="line">  </div><div class="line">    <span class="comment">// Bytes marked (blackened) on this gcWork. This is aggregated</span></div><div class="line">    <span class="comment">// into work.bytesMarked by dispose.</span></div><div class="line">    bytesMarked <span class="keyword">uint64</span></div><div class="line"></div><div class="line">    <span class="comment">// Scan work performed on this gcWork. This is aggregated into</span></div><div class="line">    <span class="comment">// gcController by dispose and may also be flushed by callers.</span></div><div class="line">    scanWork <span class="keyword">int64</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>既然每个 P 上有一个 work buffer，那么是不是还有一个全局的 work list 呢？是的。通过在每个 P 上绑定一个 work buffer 的好处和 cache 一样，不需要加锁。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> work <span class="keyword">struct</span> &#123;</div><div class="line">    full  <span class="keyword">uint64</span>                   <span class="comment">// lock-free list of full blocks workbuf</span></div><div class="line">    empty <span class="keyword">uint64</span>                   <span class="comment">// lock-free list of empty blocks workbuf</span></div><div class="line">    pad0  [sys.CacheLineSize]<span class="keyword">uint8</span> <span class="comment">// prevents false-sharing between full/empty and nproc/nwait</span></div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>那么为什么使用两个 work buffer （wbuf1 和 wbuf2）呢？我下面举个例子。比如我现在要 get 一个 work 出来，先从 wbuf1 中取，wbuf1 为空的话则与 wbuf2 swap 再 get。在其他时间将 work buffer 中的 full 或者 empty buffer 移到 global 的 work 中。这样的好处在于，在 get 的时候去全局的 work 里面取（多个 goroutine 去取会有竞争）。这里有趣的是 global 的 work list 是 lock-free 的，通过原子操作 cas 等实现。下面列举几个函数看一下 gcWrok。</p>
+<p>初始化。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *gcWork)</span> <span class="title">init</span><span class="params">()</span></span> &#123;</div><div class="line">    w.wbuf1 = wbufptrOf(getempty())</div><div class="line">    wbuf2 := trygetfull()</div><div class="line">    <span class="keyword">if</span> wbuf2 == <span class="literal">nil</span> &#123;</div><div class="line">        wbuf2 = getempty()</div><div class="line">    &#125;</div><div class="line">    w.wbuf2 = wbufptrOf(wbuf2)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>put。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// put enqueues a pointer for the garbage collector to trace.</span></div><div class="line"><span class="comment">// obj must point to the beginning of a heap object or an oblet.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *gcWork)</span> <span class="title">put</span><span class="params">(obj <span class="keyword">uintptr</span>)</span></span> &#123;</div><div class="line">    wbuf := w.wbuf1.ptr()</div><div class="line">    <span class="keyword">if</span> wbuf == <span class="literal">nil</span> &#123;</div><div class="line">        w.init()</div><div class="line">        wbuf = w.wbuf1.ptr()</div><div class="line">        <span class="comment">// wbuf is empty at this point.</span></div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> wbuf.nobj == <span class="built_in">len</span>(wbuf.obj) &#123;</div><div class="line">        w.wbuf1, w.wbuf2 = w.wbuf2, w.wbuf1</div><div class="line">        wbuf = w.wbuf1.ptr()</div><div class="line">        <span class="keyword">if</span> wbuf.nobj == <span class="built_in">len</span>(wbuf.obj) &#123;</div><div class="line">            putfull(wbuf)</div><div class="line">            wbuf = getempty()</div><div class="line">            w.wbuf1 = wbufptrOf(wbuf)</div><div class="line">            flushed = <span class="literal">true</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    wbuf.obj[wbuf.nobj] = obj</div><div class="line">    wbuf.nobj++</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>get。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// get dequeues a pointer for the garbage collector to trace, blocking</span></div><div class="line"><span class="comment">// if necessary to ensure all pointers from all queues and caches have</span></div><div class="line"><span class="comment">// been retrieved.  get returns 0 if there are no pointers remaining.</span></div><div class="line"><span class="comment">//go:nowritebarrier</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *gcWork)</span> <span class="title">get</span><span class="params">()</span> <span class="title">uintptr</span></span> &#123;</div><div class="line">    wbuf := w.wbuf1.ptr()</div><div class="line">    <span class="keyword">if</span> wbuf == <span class="literal">nil</span> &#123;</div><div class="line">        w.init()</div><div class="line">        wbuf = w.wbuf1.ptr()</div><div class="line">        <span class="comment">// wbuf is empty at this point.</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> wbuf.nobj == <span class="number">0</span> &#123;</div><div class="line">        w.wbuf1, w.wbuf2 = w.wbuf2, w.wbuf1</div><div class="line">        wbuf = w.wbuf1.ptr()</div><div class="line">        <span class="keyword">if</span> wbuf.nobj == <span class="number">0</span> &#123;</div><div class="line">            owbuf := wbuf</div><div class="line">            wbuf = getfull()</div><div class="line">            <span class="keyword">if</span> wbuf == <span class="literal">nil</span> &#123;</div><div class="line">                <span class="keyword">return</span> <span class="number">0</span></div><div class="line">            &#125;</div><div class="line">            putempty(owbuf)</div><div class="line">            w.wbuf1 = wbufptrOf(wbuf)</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// <span class="doctag">TODO:</span> This might be a good place to add prefetch code</span></div><div class="line"></div><div class="line">    wbuf.nobj--</div><div class="line">    <span class="keyword">return</span> wbuf.obj[wbuf.nobj]</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="2-forcegc"><a href="#2-forcegc" class="headerlink" title="2. forcegc"></a>2. forcegc</h5><p>我们上面讲了两种 GC 触发方式：自动检测和用户主动调用。除此之后 Golang 本身还会对运行状态进行监控，如果超过两分钟没有 GC，则触发 GC。监控函数是 <code>sysmon()</code>，在主 goroutine 中启动。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// The main goroutine</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">    ...</div><div class="line">    systemstack(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">      	newm(sysmon, <span class="literal">nil</span>)</div><div class="line">    &#125;)</div><div class="line">&#125;</div><div class="line"><span class="comment">// Always runs without a P, so write barriers are not allowed.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">sysmon</span><span class="params">()</span></span> &#123;</div><div class="line">    ...</div><div class="line">    <span class="keyword">for</span> &#123;</div><div class="line">        now := nanotime()</div><div class="line">        unixnow := unixnanotime()</div><div class="line">      	</div><div class="line">        lastgc := <span class="keyword">int64</span>(atomic.Load64(&amp;memstats.last_gc))</div><div class="line">        <span class="keyword">if</span> gcphase == _GCoff &amp;&amp; lastgc != <span class="number">0</span> &amp;&amp; unixnow-lastgc &gt; forcegcperiod &amp;&amp; atomic.Load(&amp;forcegc.idle) != <span class="number">0</span> &#123;</div><div class="line">            lock(&amp;forcegc.lock)</div><div class="line">            forcegc.idle = <span class="number">0</span></div><div class="line">            forcegc.g.schedlink = <span class="number">0</span></div><div class="line">            injectglist(forcegc.g)	<span class="comment">// 将 forcegc goroutine 加入 runnable queue</span></div><div class="line">            unlock(&amp;forcegc.lock)</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> forcegcperiod <span class="keyword">int64</span> = <span class="number">2</span> * <span class="number">60</span> *<span class="number">1e9</span>	<span class="comment">//两分钟</span></div></pre></td></tr></table></figure>
+<h2 id="4-参考资料"><a href="#4-参考资料" class="headerlink" title="4.参考资料"></a>4.参考资料</h2><ol>
+<li>《Go 语言学习笔记》</li>
+<li><a href="https://book.douban.com/subject/1157908/" target="_blank" rel="external">《垃圾收集》 - 豆瓣</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Tracing_garbage_collection#Na.C3.AFve_mark-and-sweep" target="_blank" rel="external">Tracing Garbage Collection - wikipedia</a></li>
+<li>《On-the-fly garbage collection: an exercise in cooperation.》 — Edsger W. Dijkstra, Leslie Lamport, A. J. Martin</li>
+<li><a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science" target="_blank" rel="external">Garbage Collection</a>)</li>
+<li><a href="https://en.wikipedia.org/wiki/Tracing_garbage_collection" target="_blank" rel="external">Tracing Garbage Collection</a></li>
+<li><a href="https://www.youtube.com/watch?v=P1rU_9IB414" target="_blank" rel="external">Copying Garbage Collection – youtube</a></li>
+<li><a href="https://www.youtube.com/watch?v=pJHISaOW6Vc" target="_blank" rel="external">Generational Garbage Collection – youtube</a></li>
+<li><a href="https://talks.golang.org/2015/go-gc.pdf" target="_blank" rel="external">golang gc talk</a></li>
+<li><a href="https://github.com/golang/proposal/blob/master/design/17503-eliminate-rescan.md" target="_blank" rel="external">17503-eliminate-rescan</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/15/nginx-信号处理/" rel="next" title="nginx 信号处理">
+                <i class="fa fa-chevron-left"></i> nginx 信号处理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/16/nginx互斥锁的实现/" rel="prev" title="nginx互斥锁的实现">
+                nginx互斥锁的实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/lufei.jpg"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Golang-GC-发展"><span class="nav-number">1.</span> <span class="nav-text">1.Golang GC 发展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-GC-算法简介"><span class="nav-number">2.</span> <span class="nav-text">2. GC 算法简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-引用计数"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 引用计数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#优点"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缺点"><span class="nav-number">2.1.0.2.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-标记-清扫"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 标记-清扫</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#三色标记算法"><span class="nav-number">2.2.0.1.</span> <span class="nav-text">三色标记算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-节点复制"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 节点复制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#优点-1"><span class="nav-number">2.3.0.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缺点-1"><span class="nav-number">2.3.0.2.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-分代收集"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 分代收集</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#优点-2"><span class="nav-number">2.4.0.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缺点-2"><span class="nav-number">2.4.0.2.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Golang-GC"><span class="nav-number">3.</span> <span class="nav-text">3. Golang GC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Overview"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-何时触发-GC"><span class="nav-number">3.1.0.1.</span> <span class="nav-text">1. 何时触发 GC</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-GC-触发条件"><span class="nav-number">3.1.0.2.</span> <span class="nav-text">2. GC 触发条件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-垃圾回收的主要流程"><span class="nav-number">3.1.0.3.</span> <span class="nav-text">3. 垃圾回收的主要流程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-写屏障-write-barrier"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 写屏障 (write barrier)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-标记"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 标记</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-STW-phase-1"><span class="nav-number">3.3.0.1.</span> <span class="nav-text">1. STW phase 1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-Mark"><span class="nav-number">3.3.0.2.</span> <span class="nav-text">2. Mark</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-Mark-termination-STW-phase-2"><span class="nav-number">3.3.0.3.</span> <span class="nav-text">3. Mark termination (STW phase 2)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-清扫"><span class="nav-number">3.4.</span> <span class="nav-text">3.4 清扫</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-其他"><span class="nav-number">3.5.</span> <span class="nav-text">3.5 其他</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-gcWork"><span class="nav-number">3.5.0.1.</span> <span class="nav-text">1. gcWork</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-forcegc"><span class="nav-number">3.5.0.2.</span> <span class="nav-text">2. forcegc</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-参考资料"><span class="nav-number">4.</span> <span class="nav-text">4.参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
