@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="NoSQL," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="ClickHouse系统架构概述ClickHouse独特功能真正的列式数据库管理系统在一个真正的列式数据库管理系统中，除了数据本身外不应该存在其他额外的数据。这意味着为了避免在值旁边存储它们的长度“number”，你必须支持固定长度数值类型。例如，10亿个UInt8类型的数据在未压缩的情况下大约消耗1GB左右的空间，如果不是这样的话，这将对CPU的使用产生强烈影响。即使是在未压缩的情况下，紧凑的存">
+<meta name="keywords" content="NoSQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ClickHouse系统架构概述">
+<meta property="og:url" content="http://yoursite.com/2019/05/27/ClickHouse 系统架构概览/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="ClickHouse系统架构概述ClickHouse独特功能真正的列式数据库管理系统在一个真正的列式数据库管理系统中，除了数据本身外不应该存在其他额外的数据。这意味着为了避免在值旁边存储它们的长度“number”，你必须支持固定长度数值类型。例如，10亿个UInt8类型的数据在未压缩的情况下大约消耗1GB左右的空间，如果不是这样的话，这将对CPU的使用产生强烈影响。即使是在未压缩的情况下，紧凑的存">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-05-27T13:02:11.448Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ClickHouse系统架构概述">
+<meta name="twitter:description" content="ClickHouse系统架构概述ClickHouse独特功能真正的列式数据库管理系统在一个真正的列式数据库管理系统中，除了数据本身外不应该存在其他额外的数据。这意味着为了避免在值旁边存储它们的长度“number”，你必须支持固定长度数值类型。例如，10亿个UInt8类型的数据在未压缩的情况下大约消耗1GB左右的空间，如果不是这样的话，这将对CPU的使用产生强烈影响。即使是在未压缩的情况下，紧凑的存">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/05/27/ClickHouse 系统架构概览/"/>
+
+
+
+
+
+  <title>ClickHouse系统架构概述 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/27/ClickHouse 系统架构概览/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ClickHouse系统架构概述</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-27T21:01:29+08:00">
+                2019-05-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="ClickHouse系统架构概述"><a href="#ClickHouse系统架构概述" class="headerlink" title="ClickHouse系统架构概述"></a>ClickHouse系统架构概述</h1><h2 id="ClickHouse独特功能"><a href="#ClickHouse独特功能" class="headerlink" title="ClickHouse独特功能"></a>ClickHouse独特功能</h2><h3 id="真正的列式数据库管理系统"><a href="#真正的列式数据库管理系统" class="headerlink" title="真正的列式数据库管理系统"></a>真正的列式数据库管理系统</h3><p>在一个真正的列式数据库管理系统中，除了数据本身外不应该存在其他额外的数据。这意味着为了避免在值旁边存储它们的长度“number”，你必须支持固定长度数值类型。例如，10亿个UInt8类型的数据在未压缩的情况下大约消耗1GB左右的空间，如果不是这样的话，这将对CPU的使用产生强烈影响。即使是在未压缩的情况下，紧凑的存储数据也是非常重要的，因为解压缩的速度主要取决于未压缩数据的大小。</p>
+<p>这是非常值得注意的，因为在一些其他系统中也可以将不同的列分别进行存储，但由于对其他场景进行的优化，使其无法有效的处理分析查询。例如： HBase，BigTable，Cassandra，HyperTable。在这些系统中，你可以得到每秒数十万的吞吐能力，但是无法得到每秒几亿行的吞吐能力。</p>
+<p>需要说明的是，ClickHouse不单单是一个数据库， 它是一个数据库管理系统。因为它允许在运行时创建表和数据库、加载数据和运行查询，而无需重新配置或重启服务。</p>
+<a id="more"></a>
+<h3 id="数据压缩"><a href="#数据压缩" class="headerlink" title="数据压缩"></a>数据压缩</h3><p>在一些列式数据库管理系统中(例如：InfiniDB CE and MonetDB) 不是用数据压缩。但是, 数据压缩在实现优异的存储系统中确实起着关键的作用。</p>
+<h3 id="数据的磁盘存储"><a href="#数据的磁盘存储" class="headerlink" title="数据的磁盘存储"></a>数据的磁盘存储</h3><p>许多的列式数据库(如 SAP HANA, Google PowerDrill)只能在内存中工作，这种方式会造成比实际更多的设备预算。ClickHouse被设计用于工作在传统磁盘上的系统，它提供每GB更低的存储成本，但如果有可以使用SSD和内存，它也会合理的利用这些资源</p>
+<h3 id="多核心并行处理"><a href="#多核心并行处理" class="headerlink" title="多核心并行处理"></a>多核心并行处理</h3><p>大型查询可以以很自然的方式在ClickHouse中进行并行化处理，以此来使用当前服务器上可用的所有资源。</p>
+<h3 id="多服务器分布式处理"><a href="#多服务器分布式处理" class="headerlink" title="多服务器分布式处理"></a>多服务器分布式处理</h3><p>上面提到的列式数据库管理系统中，几乎没有一个支持分布式的查询处理。 在ClickHouse中，数据可以保存在不同的shard上，每一个shard都由一组用于容错的replica组成，查询可以并行的在所有shard上进行处理。这些对用户来说是透明的</p>
+<h3 id="支持SQL"><a href="#支持SQL" class="headerlink" title="支持SQL"></a>支持SQL</h3><p>ClickHouse支持基于SQL的查询语言，该语言大部分情况下是与SQL标准兼容的。 支持的查询包括 GROUP BY，ORDER BY，IN，JOIN以及非相关子查询。 不支持窗口函数和相关子查询。</p>
+<h3 id="向量引擎"><a href="#向量引擎" class="headerlink" title="向量引擎"></a>向量引擎</h3><p>为了高效的使用CPU，数据不仅仅按列存储，同时还按向量(列的一部分)进行处理。</p>
+<h3 id="实时的数据更新"><a href="#实时的数据更新" class="headerlink" title="实时的数据更新"></a>实时的数据更新</h3><p>ClickHouse支持在表中定义主键。为了使查询能够快速在主键中进行范围查找，数据总是以增量的方式有序的存储在MergeTree中。因此，数据可以持续不断高效的写入到表中，并且写入的过程中不会存在任何加锁的行为。</p>
+<h3 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h3><p>按照主键对数据进行排序，这将帮助ClickHouse以几十毫秒的低延迟对数据进行特定值查找或范围查找。</p>
+<h3 id="适合在线查询"><a href="#适合在线查询" class="headerlink" title="适合在线查询"></a>适合在线查询</h3><p>在线查询意味着在没有对数据做任何预处理的情况下以极低的延迟处理查询并将结果加载到用户的页面中。</p>
+<h3 id="支持近似计算"><a href="#支持近似计算" class="headerlink" title="支持近似计算"></a>支持近似计算</h3><p>ClickHouse提供各种各样在允许牺牲数据精度的情况下对查询进行加速的方法：</p>
+<ol>
+<li>用于近似计算的各类聚合函数，如：distinct values, medians, quantiles</li>
+<li>基于数据的部分样本进行近似查询。这时，仅会从磁盘检索少部分比例的数据。</li>
+<li>不使用全部的聚合条件，通过随机选择有限个数据聚合条件进行聚合。这在数据聚合条件满足某些分布条件下，在提供相当准确的聚合结果的同时降低了计算资源的使用。</li>
+</ol>
+<h3 id="支持数据复制和数据完整性"><a href="#支持数据复制和数据完整性" class="headerlink" title="支持数据复制和数据完整性"></a>支持数据复制和数据完整性</h3><p>ClickHouse使用异步的多主复制技术。当数据被写入任何一个可用副本后，系统会在后台将数据分发给其他副本，以保证系统在不同副本上保持相同的数据。在大多数情况下ClickHouse能在故障后自动恢复，在一些复杂的情况下需要少量的手动恢复。</p>
+<h3 id="ClickHouse可以考虑缺点的功能"><a href="#ClickHouse可以考虑缺点的功能" class="headerlink" title="ClickHouse可以考虑缺点的功能"></a>ClickHouse可以考虑缺点的功能</h3><ol>
+<li>没有完整的事物支持。</li>
+<li>缺少高频率，低延迟的修改或删除已存在数据的能力。仅能用于批量删除或修改数据，但这符合 <a href="https://gdpr-info.eu/" target="_blank" rel="noopener">GDPR</a>。</li>
+<li>稀疏索引使得ClickHouse不适合通过其键检索单行的点查询</li>
+</ol>
+<h1 id="ClickHouse性能"><a href="#ClickHouse性能" class="headerlink" title="ClickHouse性能"></a>ClickHouse性能</h1><p>根据Yandex的内部测试结果，ClickHouse表现出了比同类可比较产品更优的性能。你可以在 <a href="https://clickhouse.yandex/benchmark.html" target="_blank" rel="noopener">这里</a> 查看具体的测试结果。</p>
+<p>许多其他的测试也证实这一点。你可以使用互联网搜索到它们，或者你也可以从 <a href="https://clickhouse.yandex/#independent-benchmarks" target="_blank" rel="noopener">我们收集的部分相关连接</a> 中查看。</p>
+<h2 id="单个大查询的吞吐量"><a href="#单个大查询的吞吐量" class="headerlink" title="单个大查询的吞吐量"></a>单个大查询的吞吐量</h2><p>吞吐量可以使用每秒处理的行数或每秒处理的字节数来衡量。如果数据被放置在page cache中，则一个不太复杂的查询在单个服务器上大约能够以2-10GB／s（未压缩）的速度进行处理（对于简单的查询，速度可以达到30GB／s）。如果数据没有在page cache中的话，那么速度将取决于你的磁盘系统和数据的压缩率。例如，如果一个磁盘允许以400MB／s的速度读取数据，并且数据压缩率是3，则数据的处理速度为1.2GB/s。这意味着，如果你是在提取一个10字节的列，那么它的处理速度大约是1-2亿行每秒。</p>
+<p>对于分布式处理，处理速度几乎是线性扩展的，但这受限于聚合或排序的结果不是那么大的情况下。</p>
+<h2 id="处理短查询的延迟时间"><a href="#处理短查询的延迟时间" class="headerlink" title="处理短查询的延迟时间"></a>处理短查询的延迟时间</h2><p>如果一个查询使用主键并且没有太多行(几十万)进行处理，并且没有查询太多的列，那么在数据被page cache缓存的情况下，它的延迟应该小于50毫秒(在最佳的情况下应该小于10毫秒)。 否则，延迟取决于数据的查找次数。如果你当前使用的是HDD，在数据没有加载的情况下，查询所需要的延迟可以通过以下公式计算得知： 查找时间（10 ms） <em> 查询的列的数量 </em> 查询的数据块的数量。</p>
+<h2 id="处理大量短查询的吞吐量"><a href="#处理大量短查询的吞吐量" class="headerlink" title="处理大量短查询的吞吐量"></a>处理大量短查询的吞吐量</h2><p>在相同的情况下，ClickHouse可以在单个服务器上每秒处理数百个查询（在最佳的情况下最多可以处理数千个）。但是由于这不适用于分析型场景。因此我们建议每秒最多查询100次。</p>
+<h2 id="数据的写入性能"><a href="#数据的写入性能" class="headerlink" title="数据的写入性能"></a>数据的写入性能</h2><p>我们建议每次写入不少于1000行的批量写入，或每秒不超过一个写入请求。当使用tab-separated格式将一份数据写入到MergeTree表中时，写入速度大约为50到200MB/s。如果您写入的数据每行为1Kb，那么写入的速度为50，000到200，000行每秒。如果您的行更小，那么写入速度将更高。为了提高写入性能，您可以使用多个INSERT进行并行写入，这将带来线性的性能提升。</p>
+<h1 id="Yandex-Metrica的使用案例"><a href="#Yandex-Metrica的使用案例" class="headerlink" title="Yandex.Metrica的使用案例"></a>Yandex.Metrica的使用案例</h1><p>ClickHouse最初是为 <a href="https://metrica.yandex.com/" target="_blank" rel="noopener">Yandex.Metrica</a> <a href="http://w3techs.com/technologies/overview/traffic_analysis/all" target="_blank" rel="noopener">世界第二大Web分析平台</a> 而开发的。多年来一直作为该系统的核心组件被该系统持续使用着。目前为止，该系统在ClickHouse中有超过13万亿条记录，并且每天超过200多亿个事件被处理。它允许直接从原始数据中动态查询并生成报告。本文简要介绍了ClickHouse在其早期发展阶段的目标。</p>
+<p>Yandex.Metrica基于用户定义的字段，对实时访问、连接会话，生成实时的统计报表。这种需求往往需要复杂聚合方式，比如对访问用户进行去重。构建报表的数据，是实时接收存储的新数据。</p>
+<p>截至2014年4月，Yandex.Metrica每天跟踪大约120亿个事件（用户的点击和浏览）。为了可以创建自定义的报表，我们必须存储全部这些事件。同时，这些查询可能需要在几百毫秒内扫描数百万行的数据，或在几秒内扫描数亿行的数据。</p>
+<h2 id="Yandex-Metrica以及其他Yandex服务的使用案例"><a href="#Yandex-Metrica以及其他Yandex服务的使用案例" class="headerlink" title="Yandex.Metrica以及其他Yandex服务的使用案例"></a>Yandex.Metrica以及其他Yandex服务的使用案例</h2><p>在Yandex.Metrica中，ClickHouse被用于多个场景中。 它的主要任务是使用原始数据在线的提供各种数据报告。它使用374台服务器的集群，存储了20.3万亿行的数据。在去除重复与副本数据的情况下，压缩后的数据达到了2PB。未压缩前（TSV格式）它大概有17PB。</p>
+<p>ClickHouse还被使用在：</p>
+<ul>
+<li>存储来自Yandex.Metrica回话重放数据。</li>
+<li>处理中间数据</li>
+<li>与Analytics一起构建全球报表。</li>
+<li>为调试Yandex.Metrica引擎运行查询</li>
+<li>分析来自API和用户界面的日志数据</li>
+</ul>
+<p>ClickHouse在其他Yandex服务中至少有12个安装：search verticals, Market, Direct, business analytics, mobile development, AdFox, personal services等。</p>
+<h2 id="聚合与非聚合数据"><a href="#聚合与非聚合数据" class="headerlink" title="聚合与非聚合数据"></a>聚合与非聚合数据</h2><p>有一种流行的观点认为，想要有效的计算统计数据，必须要聚合数据，因为聚合将降低数据量。</p>
+<p>但是数据聚合是一个有诸多限制的解决方案，例如：</p>
+<ul>
+<li>你必须提前知道用户定义的报表的字段列表</li>
+<li>用户无法自定义报表</li>
+<li>当聚合条件过多时，可能不会减少数据，聚合是无用的。</li>
+<li>存在大量报表时，有太多的聚合变化（组合爆炸）</li>
+<li>当聚合条件有非常大的基数时（如：url），数据量没有太大减少（少于两倍）</li>
+<li>聚合的数据量可能会增长而不是收缩</li>
+<li>用户不会查看我们为他生成的所有报告，大部分计算将是无用的</li>
+<li>各种聚合可能违背了数据的逻辑完整性</li>
+</ul>
+<p>如果我们直接使用非聚合数据而不尽兴任何聚合时，我们的计算量可能是减少的。</p>
+<p>然而，相对于聚合中很大一部分工作被离线完成，在线计算需要尽快的完成计算，因为用户在等待结果。</p>
+<p>Yandex.Metrica 有一个专门用于聚合数据的系统，称为Metrage，它可以用作大部分报表。 从2009年开始，Yandex.Metrica还为非聚合数据使用专门的OLAP数据库，称为OLAPServer，它以前用于报表构建系统。 OLAPServer可以很好的工作在非聚合数据上，但是它有诸多限制，导致无法根据需要将其用于所有报表中。如，缺少对数据类型的支持（只支持数据），无法实时增量的更新数据（只能通过每天重写数据完成）。OLAPServer不是一个数据库管理系统，它只是一个数据库。</p>
+<p>为了消除OLAPServer的这些局限性，解决所有报表使用非聚合数据的问题，我们开发了ClickHouse数据库管理系统。</p>
+<h1 id="ClickHouse表引擎"><a href="#ClickHouse表引擎" class="headerlink" title="ClickHouse表引擎"></a>ClickHouse表引擎</h1><p>表引擎（即表的类型）决定了：</p>
+<ul>
+<li>数据的存储方式和位置，写到哪里以及从哪里读取数据</li>
+<li>支持哪些查询以及如何支持。</li>
+<li>并发数据访问。</li>
+<li>索引的使用（如果存在）。</li>
+<li>是否可以执行多线程请求。</li>
+<li>数据复制参数。</li>
+</ul>
+<p>在读取时，引擎只需要输出所请求的列，但在某些情况下，引擎可以在响应请求时部分处理数据。</p>
+<p>对于大多数正式的任务，应该使用MergeTree族中的引擎。</p>
+<h2 id="MergeTree"><a href="#MergeTree" class="headerlink" title="MergeTree"></a>MergeTree</h2><p>Clickhouse 中最强大的表引擎当属 <code>MergeTree</code> （合并树）引擎及该系列（<code>*MergeTree</code>）中的其他引擎。</p>
+<p><code>MergeTree</code> 引擎系列的基本理念如下。当你有巨量数据要插入到表中，你要高效地一批批写入数据片段，并希望这些数据片段在后台按照一定规则合并。相比在插入时不断修改（重写）数据进存储，这种策略会高效很多。</p>
+<p>主要特点:</p>
+<ul>
+<li><p>存储的数据按主键排序。</p>
+<p>这让你可以创建一个用于快速检索数据的小稀疏索引。</p>
+</li>
+<li><p>允许使用分区，如果指定了 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/custom_partitioning_key/" target="_blank" rel="noopener">主键</a> 的话。</p>
+<p>在相同数据集和相同结果集的情况下 ClickHouse 中某些带分区的操作会比普通操作更快。查询中指定了分区键时 ClickHouse 会自动截取分区数据。这也有效增加了查询性能。</p>
+</li>
+<li><p>支持数据副本。</p>
+<p><code>ReplicatedMergeTree</code> 系列的表便是用于此。更多信息，请参阅 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/replication/" target="_blank" rel="noopener">数据副本</a> 一节。</p>
+</li>
+<li><p>支持数据采样。</p>
+<p>需要的话，你可以给表设置一个采样方法。</p>
+</li>
+</ul>
+<p>!!! 注意 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/merge/" target="_blank" rel="noopener">Merge</a> 引擎并不属于 <code>*MergeTree</code> 系列。</p>
+<h3 id="建表"><a href="#建表" class="headerlink" title="建表"></a>建表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [<span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span>] [db.]table_name [<span class="keyword">ON</span> CLUSTER cluster]</span><br><span class="line">(</span><br><span class="line">    name1 [type1] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr1],</span><br><span class="line">    name2 [type2] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr2],</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">INDEX</span> index_name1 expr1 <span class="keyword">TYPE</span> type1(...) GRANULARITY value1,</span><br><span class="line">    <span class="keyword">INDEX</span> index_name2 expr2 <span class="keyword">TYPE</span> type2(...) GRANULARITY value2</span><br><span class="line">) <span class="keyword">ENGINE</span> = MergeTree()</span><br><span class="line">[<span class="keyword">PARTITION</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">ORDER</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[PRIMARY <span class="keyword">KEY</span> expr]</span><br><span class="line">[<span class="keyword">SAMPLE</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">SETTINGS</span> <span class="keyword">name</span>=<span class="keyword">value</span>, ...]</span><br></pre></td></tr></table></figure>
+<p>请求参数的描述，参考 <a href="https://clickhouse.yandex/docs/zh/query_language/create/" target="_blank" rel="noopener">请求描述</a> 。</p>
+<p>示例：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> xcloud.cdn_nginx_log_minute_agg</span><br><span class="line">(</span><br><span class="line">	<span class="built_in">date</span> <span class="built_in">Date</span>, </span><br><span class="line"></span><br><span class="line">    <span class="keyword">timeStamp</span> DateTime,</span><br><span class="line"></span><br><span class="line">	channel <span class="keyword">String</span>, </span><br><span class="line"></span><br><span class="line">	customer <span class="keyword">String</span>, </span><br><span class="line"></span><br><span class="line">	country <span class="keyword">String</span>, </span><br><span class="line"></span><br><span class="line">	flow AggregateFunction(<span class="keyword">sum</span>, Int64), </span><br><span class="line"></span><br><span class="line">	visit AggregateFunction(<span class="keyword">sum</span>, Int64),  </span><br><span class="line"></span><br><span class="line">	download_time AggregateFunction(<span class="keyword">sum</span>, Int64), </span><br><span class="line"></span><br><span class="line">	response_time AggregateFunction(<span class="keyword">sum</span>, Int64), </span><br><span class="line"></span><br><span class="line">	upstream_response_time AggregateFunction(<span class="keyword">sum</span>, Int64), </span><br><span class="line"></span><br><span class="line">	first_byte_time AggregateFunction(<span class="keyword">sum</span>, Int64), </span><br><span class="line"></span><br><span class="line">	request_time AggregateFunction(<span class="keyword">sum</span>, Int64), </span><br><span class="line"></span><br><span class="line">	download_flow AggregateFunction(<span class="keyword">sum</span>, Int64), </span><br><span class="line"></span><br><span class="line">	response_normal AggregateFunction(<span class="keyword">sum</span>, Int64)</span><br><span class="line">)  </span><br><span class="line"></span><br><span class="line"><span class="keyword">ENGINE</span> = ReplicatedAggregatingMergeTree(<span class="string">'&#123;zkpath&#125;'</span>, <span class="string">'&#123;replica&#125;'</span>)  </span><br><span class="line"></span><br><span class="line"><span class="keyword">PARTITION</span> <span class="keyword">BY</span> <span class="built_in">date</span>  <span class="keyword">ORDER</span> <span class="keyword">BY</span> (<span class="keyword">timeStamp</span>, <span class="built_in">date</span>, channel, customer, country);</span><br></pre></td></tr></table></figure>
+<h3 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h3><p>表由按主键排序的数据 <em>片段</em> 组成。</p>
+<p>当数据被插入到表中时，会分成数据片段并按主键的字典序排序。例如，主键是 <code>(CounterID, Date)</code> 时，片段中数据按 <code>CounterID</code> 排序，具有相同 <code>CounterID</code> 的部分按 <code>Date</code> 排序。</p>
+<p>不同分区的数据会被分成不同的片段，ClickHouse 在后台合并数据片段以便更高效存储。不会合并来自不同分区的数据片段。这个合并机制并不保证相同主键的所有行都会合并到同一个数据片段中。</p>
+<p>ClickHouse 会为每个数据片段创建一个索引文件，索引文件包含每个索引行（『标记』）的主键值。索引行号定义为 <code>n * index_granularity</code> 。最大的 <code>n</code> 等于总行数除以 <code>index_granularity</code> 的值的整数部分。对于每列，跟主键相同的索引行处也会写入『标记』。这些『标记』让你可以直接找到数据所在的列。</p>
+<p>你可以只用一单一大表并不断地一块块往里面加入数据 – <code>MergeTree</code> 引擎的就是为了这样的场景。</p>
+<h3 id="主键和索引在查询中的表现"><a href="#主键和索引在查询中的表现" class="headerlink" title="主键和索引在查询中的表现"></a>主键和索引在查询中的表现</h3><p>我们以 <code>(CounterID, Date)</code> 以主键。排序好的索引的图示会是下面这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">全部数据  :     [-------------------------------------------------------------------------]</span><br><span class="line">CounterID:      [aaaaaaaaaaaaaaaaaabbbbcdeeeeeeeeeeeeefgggggggghhhhhhhhhiiiiiiiiikllllllll]</span><br><span class="line">Date:           [1111111222222233331233211111222222333211111112122222223111112223311122333]</span><br><span class="line">标记:            |      |      |      |      |      |      |      |      |      |      |</span><br><span class="line">                a,1    a,2    a,3    b,3    e,2    e,3    g,1    h,2    i,1    i,3    l,3</span><br><span class="line">标记号:          0      1      2      3      4      5      6      7      8      9      10</span><br></pre></td></tr></table></figure>
+<p>如果指定查询如下：</p>
+<ul>
+<li><code>CounterID in (&#39;a&#39;, &#39;h&#39;)</code>，服务器会读取标记号在 <code>[0, 3)</code> 和 <code>[6, 8)</code> 区间中的数据。</li>
+<li><code>CounterID IN (&#39;a&#39;, &#39;h&#39;) AND Date = 3</code>，服务器会读取标记号在 <code>[1, 3)</code> 和 <code>[7, 8)</code> 区间中的数据。</li>
+<li><code>Date = 3</code>，服务器会读取标记号在 <code>[1, 10]</code> 区间中的数据。</li>
+</ul>
+<p>上面例子可以看出使用索引通常会比全表描述要高效。</p>
+<p>稀疏索引会引起额外的数据读取。当读取主键单个区间范围的数据时，每个数据块中最多会多读 <code>index_granularity * 2</code> 行额外的数据。大部分情况下，当 <code>index_granularity = 8192</code> 时，ClickHouse的性能并不会降级。</p>
+<p>稀疏索引让你能操作有巨量行的表。因为这些索引是常驻内存（RAM）的。</p>
+<p>ClickHouse 不要求主键惟一。所以，你可以插入多条具有相同主键的行。</p>
+<h3 id="主键的选择"><a href="#主键的选择" class="headerlink" title="主键的选择"></a>主键的选择</h3><p>主键中列的数量并没有明确的限制。依据数据结构，你应该让主键包含多些或少些列。这样可以：</p>
+<ul>
+<li><p>改善索引的性能。</p>
+<p>如果当前主键是 <code>(a, b)</code> ，然后加入另一个 <code>c</code> 列，满足下面条件时，则可以改善性能： - 有带有 <code>c</code> 列条件的查询。 - 很长的数据范围（ <code>index_granularity</code> 的数倍）里 <code>(a, b)</code> 都是相同的值，并且这种的情况很普遍。换言之，就是加入另一列后，可以让你的查询略过很长的数据范围。</p>
+</li>
+<li><p>改善数据压缩。</p>
+<p>ClickHouse 以主键排序片段数据，所以，数据的一致性越高，压缩越好。</p>
+</li>
+<li><p><a href="https://clickhouse.yandex/docs/zh/operations/table_engines/collapsingmergetree/#table_engine-collapsingmergetree" target="_blank" rel="noopener">CollapsingMergeTree</a> 和 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/summingmergetree/" target="_blank" rel="noopener">SummingMergeTree</a> 引擎里，数据合并时，会有额外的处理逻辑。</p>
+<p>在这种情况下，指定一个跟主键不同的 <em>排序键</em> 也是有意义的。</p>
+</li>
+</ul>
+<p>长的主键会对插入性能和内存消耗有负面影响，但主键中额外的列并不影响 <code>SELECT</code> 查询的性能。</p>
+<h3 id="选择跟排序键不一样主键"><a href="#选择跟排序键不一样主键" class="headerlink" title="选择跟排序键不一样主键"></a>选择跟排序键不一样主键</h3><p>指定一个跟排序键（用于排序数据片段中行的表达式） 不一样的主键（用于计算写到索引文件的每个标记值的表达式）是可以的。 这种情况下，主键表达式元组必须是排序键表达式元组的一个前缀。</p>
+<p>当使用 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/summingmergetree/" target="_blank" rel="noopener">SummingMergeTree</a> 和 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/aggregatingmergetree/" target="_blank" rel="noopener">AggregatingMergeTree</a> 引擎时，这个特性非常有用。 通常，使用这类引擎时，表里列分两种：<em>维度</em> 和 <em>度量</em> 。 典型的查询是在 <code>GROUP BY</code> 并过虑维度的情况下统计度量列的值。 像 SummingMergeTree 和 AggregatingMergeTree ，用相同的排序键值统计行时， 通常会加上所有的维度。结果就是，这键的表达式会是一长串的列组成， 并且这组列还会因为新加维度必须频繁更新。</p>
+<p>这种情况下，主键中仅预留少量列保证高效范围扫描， 剩下的维度列放到排序键元组里。这样是合理的。</p>
+<p><a href="https://clickhouse.yandex/docs/zh/query_language/alter/" target="_blank" rel="noopener">排序键的修改</a> 是轻量级的操作，因为一个新列同时被加入到表里和排序键后时，已存在的数据片段并不需要修改。由于旧的排序键是新排序键的前缀，并且刚刚添加的列中没有数据，因此在表修改时的数据对于新旧的排序键来说都是有序的。</p>
+<h3 id="索引和分区在查询中的应用"><a href="#索引和分区在查询中的应用" class="headerlink" title="索引和分区在查询中的应用"></a>索引和分区在查询中的应用</h3><p>对于 <code>SELECT</code> 查询，ClickHouse 分析是否可以使用索引。如果 <code>WHERE/PREWHERE</code> 子句具有下面这些表达式（作为谓词链接一子项或整个）则可以使用索引：基于主键或分区键的列或表达式的部分的等式或比较运算表达式；基于主键或分区键的列或表达式的固定前缀的 <code>IN</code> 或 <code>LIKE</code> 表达式；基于主键或分区键的列的某些函数；基于主键或分区键的表达式的逻辑表达式。</p>
+<p>因此，在索引键的一个或多个区间上快速地跑查询都是可能的。下面例子中，指定标签；指定标签和日期范围；指定标签和日期；指定多个标签和日期范围等运行查询，都会非常快。</p>
+<p>要检查 ClickHouse 执行一个查询时能否使用索引，可设置 <a href="https://clickhouse.yandex/docs/zh/operations/settings/settings/#settings-force_index_by_date" target="_blank" rel="noopener">force_index_by_date</a> 和 <a href="https://clickhouse.yandex/docs/zh/operations/settings/settings/" target="_blank" rel="noopener">force_primary_key</a> 。</p>
+<p>按月分区的分区键是只能读取包含适当范围日期的数据块。这种情况下，数据块会包含很多天（最多整月）的数据。在块中，数据按主键排序，主键第一列可能不包含日期。因此，仅使用日期而没有带主键前缀条件的查询将会导致读取超过这个日期范围。</p>
+<h3 id="并发数据访问"><a href="#并发数据访问" class="headerlink" title="并发数据访问"></a>并发数据访问</h3><p>应对表的并发访问，我们使用多版本机制。换言之，当同时读和更新表时，数据从当前查询到的一组片段中读取。没有冗长的的锁。插入不会阻碍读取。</p>
+<p>对表的读操作是自动并行的。</p>
+<h2 id="数据副本"><a href="#数据副本" class="headerlink" title="数据副本"></a>数据副本</h2><p>只有 MergeTree 系列里的表可支持副本：</p>
+<ul>
+<li>ReplicatedMergeTree</li>
+<li>ReplicatedSummingMergeTree</li>
+<li>ReplicatedReplacingMergeTree</li>
+<li>ReplicatedAggregatingMergeTree</li>
+<li>ReplicatedCollapsingMergeTree</li>
+<li>ReplicatedVersionedCollapsingMergeTree</li>
+<li>ReplicatedGraphiteMergeTree</li>
+</ul>
+<p>副本是表级别的，不是整个服务器级的。所以，服务器里可以同时有复制表和非复制表。</p>
+<p>副本不依赖分片。每个分片有它自己的独立副本。</p>
+<p>对于 <code>INSERT</code> 和 <code>ALTER</code> 语句操作数据的会在压缩的情况下被复制（更多信息，看 <a href="https://clickhouse.yandex/docs/zh/query_language/alter/#query_language_queries_alter" target="_blank" rel="noopener">ALTER</a> ）。</p>
+<p>而 <code>CREATE</code>，<code>DROP</code>，<code>ATTACH</code>，<code>DETACH</code> 和 <code>RENAME</code> 语句只会在单个服务器上执行，不会被复制。</p>
+<ul>
+<li><code>The CREATE TABLE</code> 在运行此语句的服务器上创建一个新的可复制表。如果此表已存在其他服务器上，则给该表添加新副本。</li>
+<li><code>The DROP TABLE</code> 删除运行此查询的服务器上的副本。</li>
+<li><code>The RENAME</code> 重命名一个副本。换句话说，可复制表不同的副本可以有不同的名称。</li>
+</ul>
+<p>要使用副本，需在配置文件中设置 ZooKeeper 集群的地址。</p>
+<p><code>SELECT</code> 查询并不需要借助 ZooKeeper ，复本并不影响 <code>SELECT</code> 的性能，查询复制表与非复制表速度是一样的。查询分布式表时，ClickHouse的处理方式可通过设置 <a href="https://clickhouse.yandex/docs/zh/operations/settings/settings/#settings-max_replica_delay_for_distributed_queries" target="_blank" rel="noopener">max_replica_delay_for_distributed_queries</a> 和 <a href="https://clickhouse.yandex/docs/zh/operations/settings/settings/" target="_blank" rel="noopener">fallback_to_stale_replicas_for_distributed_queries</a> 修改。</p>
+<p>对于每个 <code>INSERT</code> 语句，会通过几个事务将十来个记录添加到 ZooKeeper。（确切地说，这是针对每个插入的数据块; 每个 INSERT 语句的每 <code>max_insert_block_size = 1048576</code> 行和最后剩余的都各算作一个块。）相比非复制表，写 zk 会导致 <code>INSERT</code> 的延迟略长一些。但只要你按照建议每秒不超过一个 <code>INSERT</code> 地批量插入数据，不会有任何问题。一个 ZooKeeper 集群能给整个 ClickHouse 集群支撑协调每秒几百个 <code>INSERT</code>。数据插入的吞吐量（每秒的行数）可以跟不用复制的数据一样高。</p>
+<p>对于非常大的集群，你可以把不同的 ZooKeeper 集群用于不同的分片。然而，即使 Yandex.Metrica 集群（大约300台服务器）也证明还不需要这么做。</p>
+<p>复制是多主异步。 <code>INSERT</code> 语句（以及 <code>ALTER</code> ）可以发给任意可用的服务器。数据会先插入到执行该语句的服务器上，然后被复制到其他服务器。由于它是异步的，在其他副本上最近插入的数据会有一些延迟。如果部分副本不可用，则数据在其可用时再写入。副本可用的情况下，则延迟时长是通过网络传输压缩数据块所需的时间。</p>
+<p>默认情况下，INSERT 语句仅等待一个副本写入成功后返回。如果数据只成功写入一个副本后该副本所在的服务器不再存在，则存储的数据会丢失。要启用数据写入多个副本才确认返回，使用 <code>insert_quorum</code> 选项。</p>
+<p>单个数据块写入是原子的。 INSERT 的数据按每块最多 <code>max_insert_block_size = 1048576</code> 行进行分块，换句话说，如果 <code>INSERT</code> 插入的行少于 1048576，则该 INSERT 是原子的。</p>
+<p>数据块会去重。对于被多次写的相同数据块（大小相同且具有相同顺序的相同行的数据块），该块仅会写入一次。这样设计的原因是万一在网络故障时客户端应用程序不知道数据是否成功写入DB，此时可以简单地重复 <code>INSERT</code> 。把相同的数据发送给多个副本 INSERT 并不会有问题。因为这些 <code>INSERT</code> 是完全相同的（会被去重）。去重参数参看服务器设置 <a href="https://clickhouse.yandex/docs/zh/operations/server_settings/settings/" target="_blank" rel="noopener">merge_tree</a> 。（注意：Replicated*MergeTree 才会去重，不需要 zookeeper 的不带 MergeTree 不会去重）</p>
+<p>在复制期间，只有要插入的源数据通过网络传输。进一步的数据转换（合并）会在所有副本上以相同的方式进行处理执行。这样可以最大限度地减少网络使用，这意味着即使副本在不同的数据中心，数据同步也能工作良好。（能在不同数据中心中的同步数据是副本机制的主要目标。）</p>
+<p>你可以给数据做任意多的副本。Yandex.Metrica 在生产中使用双副本。某一些情况下，给每台服务器都使用 RAID-5 或 RAID-6 和 RAID-10。是一种相对可靠和方便的解决方案。</p>
+<p>系统会监视副本数据同步情况，并能在发生故障后恢复。故障转移是自动的（对于小的数据差异）或半自动的（当数据差异很大时，这可能意味是有配置错误）。</p>
+<h3 id="创建复制表"><a href="#创建复制表" class="headerlink" title="创建复制表"></a>创建复制表</h3><p>在表引擎名称上加上 <code>Replicated</code> 前缀。例如：<code>ReplicatedMergeTree</code>。</p>
+<p><strong>Replicated*MergeTree 参数</strong></p>
+<ul>
+<li><code>zoo_path</code> — ZooKeeper 中该表的路径。</li>
+<li><code>replica_name</code> — ZooKeeper 中的该表的副本名称。</li>
+</ul>
+<p>示例:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> table_name</span><br><span class="line">(</span><br><span class="line">    EventDate DateTime,</span><br><span class="line">    CounterID UInt32,</span><br><span class="line">    UserID UInt32</span><br><span class="line">) <span class="keyword">ENGINE</span> = ReplicatedMergeTree(<span class="string">'/clickhouse/tables/&#123;layer&#125;-&#123;shard&#125;/table_name'</span>, <span class="string">'&#123;replica&#125;'</span>)</span><br><span class="line"><span class="keyword">PARTITION</span> <span class="keyword">BY</span> toYYYYMM(EventDate)</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> (CounterID, EventDate, intHash32(UserID))</span><br><span class="line"><span class="keyword">SAMPLE</span> <span class="keyword">BY</span> intHash32(UserID)</span><br></pre></td></tr></table></figure>
+<p>如上例所示，这些参数可以包含宏替换的占位符，即大括号的部分。它们会被替换为配置文件里 ‘macros’ 那部分配置的值。示例：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">macros</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">layer</span>&gt;</span>05<span class="tag">&lt;/<span class="name">layer</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">shard</span>&gt;</span>02<span class="tag">&lt;/<span class="name">shard</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">replica</span>&gt;</span>example05-02-1.yandex.ru<span class="tag">&lt;/<span class="name">replica</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">macros</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>“ZooKeeper 中该表的路径”对每个可复制表都要是唯一的。不同分片上的表要有不同的路径。 这种情况下，路径包含下面这些部分：</p>
+<p><code>/clickhouse/tables/</code> 是公共前缀，我们推荐使用这个。</p>
+<p><code>{layer}-{shard}</code> 是分片标识部分。在此示例中，由于 Yandex.Metrica 集群使用了两级分片，所以它是由两部分组成的。但对于大多数情况来说，你只需保留 {shard} 占位符即可，它会替换展开为分片标识。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">table_name` 是该表在 ZooKeeper 中的名称。使其与 ClickHouse 中的表名相同比较好。 这里它被明确定义，跟 ClickHouse 表名不一样，它并不会被 RENAME 语句修改。</span><br><span class="line">*HINT*: you could add a database name in front of `table_name` as well. E.g. `db_name.table_name</span><br></pre></td></tr></table></figure>
+<p>副本名称用于标识同一个表分片的不同副本。你可以使用服务器名称，如上例所示。同个分片中不同副本的副本名称要唯一。</p>
+<p>你也可以显式指定这些参数，而不是使用宏替换。对于测试和配置小型集群这可能会很方便。但是，这种情况下，则不能使用分布式 DDL 语句（<code>ON CLUSTER</code>）。</p>
+<p>使用大型集群时，我们建议使用宏替换，因为它可以降低出错的可能性。</p>
+<p>在每个副本服务器上运行 <code>CREATE TABLE</code> 查询。将创建新的复制表，或给现有表添加新副本。</p>
+<p>如果其他副本上已包含了某些数据，在表上添加新副本，则在运行语句后，数据会从其他副本复制到新副本。换句话说，新副本会与其他副本同步。</p>
+<p>要删除副本，使用 <code>DROP TABLE</code>。但它只删除那个 – 位于运行该语句的服务器上的副本。</p>
+<h3 id="故障恢复"><a href="#故障恢复" class="headerlink" title="故障恢复"></a>故障恢复</h3><p>如果服务器启动时 ZooKeeper 不可用，则复制表会切换为只读模式。系统会定期尝试去连接 ZooKeeper。</p>
+<p>如果在 <code>INSERT</code> 期间 ZooKeeper 不可用，或者在与 ZooKeeper 交互时发生错误，则抛出异常。</p>
+<p>连接到 ZooKeeper 后，系统会检查本地文件系统中的数据集是否与预期的数据集（ ZooKeeper 存储此信息）一致。如果存在轻微的不一致，系统会通过与副本同步数据来解决。</p>
+<p>如果系统检测到损坏的数据片段（文件大小错误）或无法识别的片段（写入文件系统但未记录在 ZooKeeper 中的部分），则会把它们移动到 ‘detached’ 子目录（不会删除）。而副本中其他任何缺少的但正常数据片段都会被复制同步。</p>
+<p>注意，ClickHouse 不会执行任何破坏性操作，例如自动删除大量数据。</p>
+<p>当服务器启动（或与 ZooKeeper 建立新会话）时，它只检查所有文件的数量和大小。 如果文件大小一致但中间某处已有字节被修改过，不会立即被检测到，只有在尝试读取 <code>SELECT</code> 查询的数据时才会检测到。该查询会引发校验和不匹配或压缩块大小不一致的异常。这种情况下，数据片段会添加到验证队列中，并在必要时从其他副本中复制。</p>
+<p>如果本地数据集与预期数据的差异太大，则会触发安全机制。服务器在日志中记录此内容并拒绝启动。这种情况很可能是配置错误，例如，一个分片上的副本意外配置为别的分片上的副本。然而，此机制的阈值设置得相当低，在正常故障恢复期间可能会出现这种情况。在这种情况下，数据恢复则是半自动模式，通过用户主动操作触发。</p>
+<p>要触发启动恢复，可在 ZooKeeper 中创建节点 <code>/path_to_table/replica_name/flags/force_restore_data</code>，节点值可以是任何内容，或运行命令来恢复所有的可复制表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -u clickhouse touch /var/lib/clickhouse/flags/force_restore_data</span><br></pre></td></tr></table></figure>
+<p>然后重启服务器。启动时，服务器会删除这些标志并开始恢复。</p>
+<h3 id="在数据完全丢失后的恢复"><a href="#在数据完全丢失后的恢复" class="headerlink" title="在数据完全丢失后的恢复"></a>在数据完全丢失后的恢复</h3><p>如果其中一个服务器的所有数据和元数据都消失了，请按照以下步骤进行恢复：</p>
+<ol>
+<li>在服务器上安装 ClickHouse。在包含分片标识符和副本的配置文件中正确定义宏配置，如果有用到的话，</li>
+<li>如果服务器上有非复制表则必须手动复制，可以从副本服务器上（在 <code>/var/lib/clickhouse/data/db_name/table_name/</code> 目录中）复制它们的数据。</li>
+<li>从副本服务器上中复制位于 <code>/var/lib/clickhouse/metadata/</code> 中的表定义信息。如果在表定义信息中显式指定了分片或副本标识符，请更正它以使其对应于该副本。（另外，启动服务器，然后会在 <code>/var/lib/clickhouse/metadata/</code> 中的.sql文件中生成所有的 <code>ATTACH TABLE</code> 语句。） 4.要开始恢复，ZooKeeper 中创建节点 <code>/path_to_table/replica_name/flags/force_restore_data</code>，节点内容不限，或运行命令来恢复所有复制的表：<code>sudo -u clickhouse touch /var/lib/clickhouse/flags/force_restore_data</code></li>
+</ol>
+<p>然后启动服务器（如果它已运行则重启）。数据会从副本中下载。</p>
+<p>另一种恢复方式是从 ZooKeeper（<code>/path_to_table/replica_name</code>）中删除有数据丢的副本的所有元信息，然后再按照“<a href="https://clickhouse.yandex/docs/zh/operations/table_engines/replication/#creating-replicated-tables" target="_blank" rel="noopener">创建可复制表</a>”中的描述重新创建副本。</p>
+<p>恢复期间的网络带宽没有限制。特别注意这一点，尤其是要一次恢复很多副本。</p>
+<h2 id="自定义分区键"><a href="#自定义分区键" class="headerlink" title="自定义分区键"></a>自定义分区键</h2><p><a href="https://clickhouse.yandex/docs/zh/operations/table_engines/mergetree/" target="_blank" rel="noopener">MergeTree</a> 系列的表（包括 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/replication/" target="_blank" rel="noopener">可复制表</a> ）可以使用分区。基于 MergeTree 表的 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/materializedview/" target="_blank" rel="noopener">物化视图</a> 也支持分区。</p>
+<p>一个分区是指按指定规则逻辑组合一起的表的记录集。可以按任意标准进行分区，如按月，按日或按事件类型。为了减少需要操作的数据，每个分区都是分开存储的。访问数据时，ClickHouse 尽量使用这些分区的最小子集。</p>
+<p>分区是在 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/mergetree/#table_engine-mergetree-creating-a-table" target="_blank" rel="noopener">建表</a> 的 <code>PARTITION BY expr</code> 子句中指定。分区键可以是关于列的任何表达式。例如，指定按月分区，表达式为 <code>toYYYYMM(date_column)</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> visits</span><br><span class="line">(</span><br><span class="line">    VisitDate <span class="built_in">Date</span>, </span><br><span class="line">    <span class="keyword">Hour</span> UInt8, </span><br><span class="line">    ClientID <span class="keyword">UUID</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">ENGINE</span> = MergeTree()</span><br><span class="line"><span class="keyword">PARTITION</span> <span class="keyword">BY</span> toYYYYMM(VisitDate)</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">Hour</span>;</span><br></pre></td></tr></table></figure>
+<p>分区键也可以是表达式元组（类似 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/mergetree/#primary-keys-and-indexes-in-queries" target="_blank" rel="noopener">主键</a> ）。例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ENGINE = ReplicatedCollapsingMergeTree('/clickhouse/tables/name', 'replica1', Sign)</span><br><span class="line">PARTITION BY (toMonday(StartDate), EventType)</span><br><span class="line">ORDER BY (CounterID, StartDate, intHash32(UserID));</span><br></pre></td></tr></table></figure>
+<p>上例中，我们设置按一周内的事件类型分区。</p>
+<p>新数据插入到表中时，这些数据会存储为按主键排序的新片段（块）。插入后 10-15 分钟，同一分区的各个片段会合并为一整个片段。</p>
+<p><strong>那些有相同分区表达式值的数据片段才会合并。这意味着 你不应该用太精细的分区方案（超过一千个分区）。否则，会因为文件系统中的文件数量和需要找开的文件描述符过多，导致 <code>SELECT</code> 查询效率不佳。</strong></p>
+<h2 id="ReplacingMergeTree-引擎"><a href="#ReplacingMergeTree-引擎" class="headerlink" title="ReplacingMergeTree 引擎"></a>ReplacingMergeTree 引擎</h2><p>该引擎和<a href="https://clickhouse.yandex/docs/zh/operations/table_engines/mergetree/" target="_blank" rel="noopener">MergeTree</a>的不同之处在于它会删除具有相同主键的重复项。</p>
+<p>数据的去重只会在合并的过程中出现。合并会在未知的时间在后台进行，因此你无法预先作出计划。有一些数据可能仍未被处理。尽管你可以调用 <code>OPTIMIZE</code> 语句发起计划外的合并，但请不要指望使用它，因为 <code>OPTIMIZE</code> 语句会引发对大量数据的读和写。</p>
+<p>因此，<code>ReplacingMergeTree</code> 适用于在后台清除重复的数据以节省空间，但是它不保证没有重复的数据出现。</p>
+<p>建表:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [<span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span>] [db.]table_name [<span class="keyword">ON</span> CLUSTER cluster]</span><br><span class="line">(</span><br><span class="line">    name1 [type1] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr1],</span><br><span class="line">    name2 [type2] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr2],</span><br><span class="line">    ...</span><br><span class="line">) <span class="keyword">ENGINE</span> = ReplacingMergeTree([ver])</span><br><span class="line">[<span class="keyword">PARTITION</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">ORDER</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">SAMPLE</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">SETTINGS</span> <span class="keyword">name</span>=<span class="keyword">value</span>, ...]</span><br></pre></td></tr></table></figure>
+<h2 id="SummingMergeTree-引擎"><a href="#SummingMergeTree-引擎" class="headerlink" title="SummingMergeTree 引擎"></a>SummingMergeTree 引擎</h2><p>该引擎继承自 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/mergetree/" target="_blank" rel="noopener">MergeTree</a>。区别在于，当合并 <code>SummingMergeTree</code> 表的数据片段时，ClickHouse 会把所有具有相同主键的行合并为一行，该行包含了被合并的行中具有数值数据类型的列的汇总值。如果主键的组合方式使得单个键值对应于大量的行，则可以显著的减少存储空间并加快数据查询的速度。</p>
+<p>我们推荐将该引擎和 <code>MergeTree</code> 一起使用。例如，在准备做报告的时候，将完整的数据存储在 <code>MergeTree</code> 表中，并且使用 <code>SummingMergeTree</code> 来存储聚合数据。这种方法可以使你避免因为使用不正确的主键组合方式而丢失有价值的数据。</p>
+<p>建表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [<span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span>] [db.]table_name [<span class="keyword">ON</span> CLUSTER cluster]</span><br><span class="line">(</span><br><span class="line">    name1 [type1] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr1],</span><br><span class="line">    name2 [type2] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr2],</span><br><span class="line">    ...</span><br><span class="line">) <span class="keyword">ENGINE</span> = SummingMergeTree([<span class="keyword">columns</span>])</span><br><span class="line">[<span class="keyword">PARTITION</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">ORDER</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">SAMPLE</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">SETTINGS</span> <span class="keyword">name</span>=<span class="keyword">value</span>, ...]</span><br></pre></td></tr></table></figure>
+<p>当数据被插入到表中时，他们将被原样保存。ClickHouse 定期合并插入的数据片段，并在这个时候对所有具有相同主键的行中的列进行汇总，将这些行替换为包含汇总数据的一行记录。</p>
+<p>ClickHouse 会按片段合并数据，以至于不同的数据片段中会包含具有相同主键的行，即单个汇总片段将会是不完整的。因此，聚合函数 <a href="https://clickhouse.yandex/docs/zh/query_language/agg_functions/reference/#agg_function-sum" target="_blank" rel="noopener">sum()</a> 和 <code>GROUP BY</code> 子句应该在（<code>SELECT</code>）查询语句中被使用，如上文中的例子所述。</p>
+<p>列中数值类型的值会被汇总。这些列的集合在参数 <code>columns</code> 中被定义。</p>
+<p>如果用于汇总的所有列中的值均为0，则该行会被删除。</p>
+<p>如果列不在主键中且无法被汇总，则会在现有的值中任选一个。</p>
+<p>主键所在的列中的值不会被汇总。</p>
+<h2 id="AggregatingMergeTree-引擎"><a href="#AggregatingMergeTree-引擎" class="headerlink" title="AggregatingMergeTree 引擎"></a>AggregatingMergeTree 引擎</h2><p>该引擎继承自 <a href="https://clickhouse.yandex/docs/zh/operations/table_engines/mergetree/" target="_blank" rel="noopener">MergeTree</a>，并改变了数据片段的合并逻辑。 ClickHouse 会将相同主键的所有行（在一个数据片段内）替换为单个存储一系列聚合函数状态的行。</p>
+<p>可以使用 <code>AggregatingMergeTree</code> 表来做增量数据统计聚合，包括物化视图的数据聚合。</p>
+<p>引擎需使用 <a href="https://clickhouse.yandex/docs/zh/data_types/nested_data_structures/aggregatefunction/" target="_blank" rel="noopener">AggregateFunction</a> 类型来处理所有列。</p>
+<p>如果要按一组规则来合并减少行数，则使用 <code>AggregatingMergeTree</code> 是合适的。</p>
+<p>建表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [<span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span>] [db.]table_name [<span class="keyword">ON</span> CLUSTER cluster]</span><br><span class="line">(</span><br><span class="line">    name1 [type1] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr1],</span><br><span class="line">    name2 [type2] [<span class="keyword">DEFAULT</span>|<span class="keyword">MATERIALIZED</span>|<span class="keyword">ALIAS</span> expr2],</span><br><span class="line">    ...</span><br><span class="line">) <span class="keyword">ENGINE</span> = AggregatingMergeTree()</span><br><span class="line">[<span class="keyword">PARTITION</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">ORDER</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">SAMPLE</span> <span class="keyword">BY</span> expr]</span><br><span class="line">[<span class="keyword">SETTINGS</span> <span class="keyword">name</span>=<span class="keyword">value</span>, ...]</span><br></pre></td></tr></table></figure>
+<p>插入数据，需使用带有聚合 -State- 函数的 <a href="https://clickhouse.yandex/docs/zh/query_language/insert_into/" target="_blank" rel="noopener">INSERT SELECT</a> 语句。 从 <code>AggregatingMergeTree</code> 表中查询数据时，需使用 <code>GROUP BY</code> 子句并且要使用与插入时相同的聚合函数，但后缀要改为 <code>-Merge</code> 。</p>
+<p>在 <code>SELECT</code> 查询的结果中，对于 ClickHouse 的所有输出格式 <code>AggregateFunction</code> 类型的值都实现了特定的二进制表示法。如果直接用 <code>SELECT</code> 导出这些数据，例如如用 <code>TabSeparated</code> 格式，那么这些导出数据也能直接用 <code>INSERT</code> 语句加载导入</p>
+<p>聚合物化视图的示例, 创建一个跟踪 <code>test.visits</code> 表的 <code>AggregatingMergeTree</code> 物化视图：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">MATERIALIZED</span> <span class="keyword">VIEW</span> test.basic</span><br><span class="line"><span class="keyword">ENGINE</span> = AggregatingMergeTree() <span class="keyword">PARTITION</span> <span class="keyword">BY</span> toYYYYMM(StartDate) <span class="keyword">ORDER</span> <span class="keyword">BY</span> (CounterID, StartDate)</span><br><span class="line"><span class="keyword">AS</span> <span class="keyword">SELECT</span></span><br><span class="line">    CounterID,</span><br><span class="line">    StartDate,</span><br><span class="line">    sumState(<span class="keyword">Sign</span>)    <span class="keyword">AS</span> Visits,</span><br><span class="line">    uniqState(UserID) <span class="keyword">AS</span> <span class="keyword">Users</span></span><br><span class="line"><span class="keyword">FROM</span> test.visits</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> CounterID, StartDate;</span><br></pre></td></tr></table></figure>
+<p>向 <code>test.visits</code> 表中插入数据。数据会同时插入到表和视图中，并且视图 <code>test.basic</code> 会将里面的数据聚合。</p>
+<p>要获取聚合数据，我们需要在 <code>test.basic</code> 视图上执行类似 <code>SELECT ... GROUP BY ...</code> 这样的查询 ：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">    StartDate,</span><br><span class="line">    sumMerge(Visits) <span class="keyword">AS</span> Visits,</span><br><span class="line">    uniqMerge(<span class="keyword">Users</span>) <span class="keyword">AS</span> <span class="keyword">Users</span></span><br><span class="line"><span class="keyword">FROM</span> test.basic</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> StartDate</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> StartDate;</span><br></pre></td></tr></table></figure>
+<h1 id="分布式引擎"><a href="#分布式引擎" class="headerlink" title="分布式引擎"></a>分布式引擎</h1><p><strong>分布式引擎本身不存储数据</strong>, 但可以在多个服务器上进行分布式查询。 读是自动并行的。读取时，远程服务器表的索引（如果有的话）会被使用。 分布式引擎参数：服务器配置文件中的集群名，远程数据库名，远程表名，数据分片键（可选）。 示例：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Distributed(logs, default, hits[, sharding_key])</span><br></pre></td></tr></table></figure>
+<p>将会从位于“logs”集群中 default.hits 表所有服务器上读取数据。 远程服务器不仅用于读取数据，还会对尽可能数据做部分处理。 例如，对于使用 GROUP BY 的查询，数据首先在远程服务器聚合，之后返回聚合函数的中间状态给查询请求的服务器。再在请求的服务器上进一步汇总数据。</p>
+<p>数据库名参数除了用数据库名之外，也可用返回字符串的常量表达式。例如：currentDatabase()。</p>
+<p>集群示例配置如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">remote_servers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">logs</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">shard</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- Optional. Shard weight when writing data. Default: 1. --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">weight</span>&gt;</span>1<span class="tag">&lt;/<span class="name">weight</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- Optional. Whether to write data to just one of the replicas. Default: false (write data to all replicas). --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">internal_replication</span>&gt;</span>false<span class="tag">&lt;/<span class="name">internal_replication</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">replica</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">host</span>&gt;</span>example01-01-1<span class="tag">&lt;/<span class="name">host</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">port</span>&gt;</span>9000<span class="tag">&lt;/<span class="name">port</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">replica</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">replica</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">host</span>&gt;</span>example01-01-2<span class="tag">&lt;/<span class="name">host</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">port</span>&gt;</span>9000<span class="tag">&lt;/<span class="name">port</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">replica</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">shard</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">shard</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">weight</span>&gt;</span>2<span class="tag">&lt;/<span class="name">weight</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">internal_replication</span>&gt;</span>false<span class="tag">&lt;/<span class="name">internal_replication</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">replica</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">host</span>&gt;</span>example01-02-1<span class="tag">&lt;/<span class="name">host</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">port</span>&gt;</span>9000<span class="tag">&lt;/<span class="name">port</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">replica</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">replica</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">host</span>&gt;</span>example01-02-2<span class="tag">&lt;/<span class="name">host</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">secure</span>&gt;</span>1<span class="tag">&lt;/<span class="name">secure</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">port</span>&gt;</span>9440<span class="tag">&lt;/<span class="name">port</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">replica</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">shard</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">logs</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">remote_servers</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这里定义了一个名为‘logs’的集群，它由两个分片组成，每个分片包含两个副本。 分片是指包含数据不同部分的服务器（要读取所有数据，必须访问所有分片）。 副本是存储复制数据的服务器（要读取所有数据，访问任一副本上的数据即可）。</p>
+<p>每个服务器需要指定 <code>host</code>，<code>port</code>，和可选的 <code>user</code>，<code>password</code>，<code>secure</code>，<code>compression</code> 的参数：</p>
+<ul>
+<li><code>host</code> – 远程服务器地址。可以域名、IPv4或IPv6。如果指定域名，则服务在启动时发起一个 DNS 请求，并且请求结果会在服务器运行期间一直被记录。如果 DNS 请求失败，则服务不会启动。如果你修改了 DNS 记录，则需要重启服务。</li>
+<li><code>port</code> – 消息传递的 TCP 端口（「tcp_port」配置通常设为 9000）。不要跟 http_port 混淆。</li>
+<li><code>user</code> – 用于连接远程服务器的用户名。默认值：default。该用户必须有权限访问该远程服务器。访问权限配置在 users.xml 文件中。更多信息，请查看“访问权限”部分。</li>
+<li><code>password</code> – 用于连接远程服务器的密码。默认值：空字符串。</li>
+<li><code>secure</code> – 是否使用ssl进行连接，设为true时，通常也应该设置 <code>port</code> = 9440。服务器也要监听 9440 并有正确的证书。</li>
+<li><code>compression</code> - 是否使用数据压缩。默认值：true。</li>
+</ul>
+<p>配置了副本，读取操作会从每个分片里选择一个可用的副本。可配置负载平衡算法（挑选副本的方式） - 请参阅“load_balancing”设置。 如果跟服务器的连接不可用，则在尝试短超时的重连。如果重连失败，则选择下一个副本，依此类推。如果跟所有副本的连接尝试都失败，则尝试用相同的方式再重复几次。 该机制有利于系统可用性，但不保证完全容错：如有远程服务器能够接受连接，但无法正常工作或状况不佳。</p>
+<p>你可以配置一个（这种情况下，查询操作更应该称为远程查询，而不是分布式查询）或任意多个分片。在每个分片中，可以配置一个或任意多个副本。不同分片可配置不同数量的副本。</p>
+<p>可以在配置中配置任意数量的集群。</p>
+<p>要查看集群，可使用“system.clusters”表。</p>
+<p>通过分布式引擎可以像使用本地服务器一样使用集群。但是，集群不是自动扩展的：你必须编写集群配置到服务器配置文件中（最好，给所有集群的服务器写上完整配置）。</p>
+<p>不支持用分布式表查询别的分布式表（除非该表只有一个分片）。或者说，要用分布表查查询“最终”的数据表。</p>
+<p>分布式引擎需要将集群信息写入配置文件。配置文件中的集群信息会即时更新，无需重启服务器。如果你每次是要向不确定的一组分片和副本发送查询，则不适合创建分布式表 - 而应该使用“远程”表函数。 请参阅“表函数”部分。</p>
+<p>向集群写数据的方法有两种：</p>
+<p>一，自已指定要将哪些数据写入哪些服务器，并直接在每个分片上执行写入。换句话说，在分布式表上“查询”，在数据表上 INSERT。 这是最灵活的解决方案 – 你可以使用任何分片方案，对于复杂业务特性的需求，这可能是非常重要的。 这也是最佳解决方案，因为数据可以完全独立地写入不同的分片。</p>
+<p>二，在分布式表上执行 INSERT。在这种情况下，分布式表会跨服务器分发插入数据。 为了写入分布式表，必须要配置分片键（最后一个参数）。当然，如果只有一个分片，则写操作在没有分片键的情况下也能工作，因为这种情况下分片键没有意义。</p>
+<p>每个分片都可以在配置文件中定义权重。默认情况下，权重等于1。数据依据分片权重按比例分发到分片上。例如，如果有两个分片，第一个分片的权重是9，而第二个分片的权重是10，则发送 9 / 19 的行到第一个分片， 10 / 19 的行到第二个分片。</p>
+<p>分片可在配置文件中定义 ‘internal_replication’ 参数。</p>
+<p>此参数设置为“true”时，写操作只选一个正常的副本写入数据。如果分布式表的子表是复制表(*ReplicaMergeTree)，请使用此方案。换句话说，这其实是把数据的复制工作交给实际需要写入数据的表本身而不是分布式表。</p>
+<p>若此参数设置为“false”（默认值），写操作会将数据写入所有副本。实质上，这意味着要分布式表本身来复制数据。这种方式不如使用复制表的好，因为不会检查副本的一致性，并且随着时间的推移，副本数据可能会有些不一样。</p>
+<p>选择将一行数据发送到哪个分片的方法是，首先计算分片表达式，然后将这个计算结果除以所有分片的权重总和得到余数。该行会发送到那个包含该余数的从’prev_weight’到’prev_weights + weight’的半闭半开区间对应的分片上，其中 ‘prev_weights’ 是该分片前面的所有分片的权重和，’weight’ 是该分片的权重。例如，如果有两个分片，第一个分片权重为9，而第二个分片权重为10，则余数在 [0,9) 中的行发给第一个分片，余数在 [9,19) 中的行发给第二个分片。</p>
+<p>分片表达式可以是由常量和表列组成的任何返回整数表达式。例如，您可以使用表达式 ‘rand()’ 来随机分配数据，或者使用 ‘UserID’ 来按用户 ID 的余数分布（相同用户的数据将分配到单个分片上，这可降低带有用户信息的 IN 和 JOIN 的语句运行的复杂度）。如果该列数据分布不够均匀，可以将其包装在散列函数中：intHash64(UserID)。</p>
+<p>这种简单的用余数来选择分片的方案是有局限的，并不总适用。它适用于中型和大型数据（数十台服务器）的场景，但不适用于巨量数据（数百台或更多服务器）的场景。后一种情况下，应根据业务特性需求考虑的分片方案，而不是直接用分布式表的多分片。</p>
+<p>SELECT 查询会被发送到所有分片，并且无论数据在分片中如何分布（即使数据完全随机分布）都可正常工作。添加新分片时，不必将旧数据传输到该分片。你可以给新分片分配大权重然后写新数据 - 数据可能会稍分布不均，但查询会正确高效地运行。</p>
+<p>下面的情况，你需要关注分片方案：</p>
+<ul>
+<li>使用需要特定键连接数据（ IN 或 JOIN ）的查询。如果数据是用该键进行分片，则应使用本地 IN 或 JOIN 而不是 GLOBAL IN 或 GLOBAL JOIN，这样效率更高。</li>
+<li>使用大量服务器（上百或更多），但有大量小查询（个别客户的查询 - 网站，广告商或合作伙伴）。为了使小查询不影响整个集群，让单个客户的数据处于单个分片上是有意义的。或者，正如我们在 Yandex.Metrica 中所做的那样，你可以配置两级分片：将整个集群划分为“层”，一个层可以包含多个分片。单个客户的数据位于单个层上，根据需要将分片添加到层中，层中的数据随机分布。然后给每层创建分布式表，再创建一个全局的分布式表用于全局的查询。</li>
+</ul>
+<p>数据是异步写入的。对于分布式表的 INSERT，数据块只写本地文件系统。之后会尽快地在后台发送到远程服务器。你可以通过查看表目录中的文件列表（等待发送的数据）来检查数据是否成功发送：/var/lib/clickhouse/data/database/table/ 。</p>
+<p>如果在 INSERT 到分布式表时服务器节点丢失或重启（如，设备故障），则插入的数据可能会丢失。如果在表目录中检测到损坏的数据分片，则会将其转移到“broken”子目录，并不再使用。</p>
+<p>启用 max_parallel_replicas 选项后，会在分表的所有副本上并行查询处理。更多信息，请参阅“设置，max_parallel_replicas”部分。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/NoSQL/" rel="tag"># NoSQL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/Raft 一致性算法论文译文/" rel="next" title="Raft 一致性算法论文译文">
+                <i class="fa fa-chevron-left"></i> Raft 一致性算法论文译文
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ClickHouse系统架构概述"><span class="nav-number">1.</span> <span class="nav-text">ClickHouse系统架构概述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ClickHouse独特功能"><span class="nav-number">1.1.</span> <span class="nav-text">ClickHouse独特功能</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#真正的列式数据库管理系统"><span class="nav-number">1.1.1.</span> <span class="nav-text">真正的列式数据库管理系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据压缩"><span class="nav-number">1.1.2.</span> <span class="nav-text">数据压缩</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据的磁盘存储"><span class="nav-number">1.1.3.</span> <span class="nav-text">数据的磁盘存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多核心并行处理"><span class="nav-number">1.1.4.</span> <span class="nav-text">多核心并行处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多服务器分布式处理"><span class="nav-number">1.1.5.</span> <span class="nav-text">多服务器分布式处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#支持SQL"><span class="nav-number">1.1.6.</span> <span class="nav-text">支持SQL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#向量引擎"><span class="nav-number">1.1.7.</span> <span class="nav-text">向量引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实时的数据更新"><span class="nav-number">1.1.8.</span> <span class="nav-text">实时的数据更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引"><span class="nav-number">1.1.9.</span> <span class="nav-text">索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#适合在线查询"><span class="nav-number">1.1.10.</span> <span class="nav-text">适合在线查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#支持近似计算"><span class="nav-number">1.1.11.</span> <span class="nav-text">支持近似计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#支持数据复制和数据完整性"><span class="nav-number">1.1.12.</span> <span class="nav-text">支持数据复制和数据完整性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ClickHouse可以考虑缺点的功能"><span class="nav-number">1.1.13.</span> <span class="nav-text">ClickHouse可以考虑缺点的功能</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ClickHouse性能"><span class="nav-number">2.</span> <span class="nav-text">ClickHouse性能</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#单个大查询的吞吐量"><span class="nav-number">2.1.</span> <span class="nav-text">单个大查询的吞吐量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理短查询的延迟时间"><span class="nav-number">2.2.</span> <span class="nav-text">处理短查询的延迟时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理大量短查询的吞吐量"><span class="nav-number">2.3.</span> <span class="nav-text">处理大量短查询的吞吐量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据的写入性能"><span class="nav-number">2.4.</span> <span class="nav-text">数据的写入性能</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Yandex-Metrica的使用案例"><span class="nav-number">3.</span> <span class="nav-text">Yandex.Metrica的使用案例</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Yandex-Metrica以及其他Yandex服务的使用案例"><span class="nav-number">3.1.</span> <span class="nav-text">Yandex.Metrica以及其他Yandex服务的使用案例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#聚合与非聚合数据"><span class="nav-number">3.2.</span> <span class="nav-text">聚合与非聚合数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ClickHouse表引擎"><span class="nav-number">4.</span> <span class="nav-text">ClickHouse表引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MergeTree"><span class="nav-number">4.1.</span> <span class="nav-text">MergeTree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#建表"><span class="nav-number">4.1.1.</span> <span class="nav-text">建表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据存储"><span class="nav-number">4.1.2.</span> <span class="nav-text">数据存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#主键和索引在查询中的表现"><span class="nav-number">4.1.3.</span> <span class="nav-text">主键和索引在查询中的表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#主键的选择"><span class="nav-number">4.1.4.</span> <span class="nav-text">主键的选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#选择跟排序键不一样主键"><span class="nav-number">4.1.5.</span> <span class="nav-text">选择跟排序键不一样主键</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引和分区在查询中的应用"><span class="nav-number">4.1.6.</span> <span class="nav-text">索引和分区在查询中的应用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并发数据访问"><span class="nav-number">4.1.7.</span> <span class="nav-text">并发数据访问</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据副本"><span class="nav-number">4.2.</span> <span class="nav-text">数据副本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建复制表"><span class="nav-number">4.2.1.</span> <span class="nav-text">创建复制表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#故障恢复"><span class="nav-number">4.2.2.</span> <span class="nav-text">故障恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在数据完全丢失后的恢复"><span class="nav-number">4.2.3.</span> <span class="nav-text">在数据完全丢失后的恢复</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义分区键"><span class="nav-number">4.3.</span> <span class="nav-text">自定义分区键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReplacingMergeTree-引擎"><span class="nav-number">4.4.</span> <span class="nav-text">ReplacingMergeTree 引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SummingMergeTree-引擎"><span class="nav-number">4.5.</span> <span class="nav-text">SummingMergeTree 引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AggregatingMergeTree-引擎"><span class="nav-number">4.6.</span> <span class="nav-text">AggregatingMergeTree 引擎</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分布式引擎"><span class="nav-number">5.</span> <span class="nav-text">分布式引擎</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

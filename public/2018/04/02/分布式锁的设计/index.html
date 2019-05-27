@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next mist use-motion" lang="zh-Hans">
+<html class="theme-next muse use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -105,7 +105,7 @@
 <meta property="og:image" content="http://www.weizijun.cn/images/lock_unsafe-lock.png">
 <meta property="og:image" content="http://www.weizijun.cn/images/lock_fencing-tokens.png">
 <meta property="og:image" content="http://www.weizijun.cn/images/lock_zookeeper.png">
-<meta property="og:updated_time" content="2018-04-22T14:13:40.469Z">
+<meta property="og:updated_time" content="2018-08-29T15:39:24.652Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式锁的实现">
 <meta name="twitter:description" content="原文地址 起因前段时间，看到redis作者发布的一篇文章《Is Redlock safe?》，Redlock是redis作者基于redis设计的分布式锁的算法。文章起因是有一位分布式的专家写了一篇文章《How to do distributed locking》，质疑Redlock的正确性。redis作者则在《Is Redlock safe?》文章中给予回应，一来一回甚是精彩。文本就为读者一一解析">
@@ -117,8 +117,8 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Mist',
-    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
     tabs: true,
     motion: true,
@@ -215,28 +215,8 @@
         </li>
       
         
-        <li class="menu-item menu-item-categories">
-          <a href="/categories" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
-            
-            分类
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-about">
-          <a href="/about" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
-            
-            关于
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-archives">
-          <a href="/archives" rel="section">
+          <a href="/archives/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -246,7 +226,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/tags" rel="section">
+          <a href="/tags/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -292,7 +272,7 @@
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Yujie">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/lufei.jpg">
+      <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -338,37 +318,6 @@
           
 
           
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计</span>
-                
-                <span title="字数统计">
-                  
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长</span>
-                
-                <span title="阅读时长">
-                  
-                </span>
-              
-            </div>
-          
 
           
 
@@ -385,24 +334,24 @@
       
 
       
-        <p><a href="http://www.weizijun.cn/2016/03/17/%E8%81%8A%E4%B8%80%E8%81%8A%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E8%AE%BE%E8%AE%A1/" target="_blank" rel="external">原文地址</a></p>
-<h2 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h2><p>前段时间，看到redis作者发布的一篇文章<a href="http://antirez.com/news/101" target="_blank" rel="external">《Is Redlock safe?》</a>，Redlock是redis作者基于redis设计的分布式锁的算法。文章起因是有一位分布式的专家写了一篇文章<a href="http://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" target="_blank" rel="external">《How to do distributed locking》</a>，质疑Redlock的正确性。redis作者则在《Is Redlock safe?》文章中给予回应，一来一回甚是精彩。文本就为读者一一解析两位专家的争论。</p>
+        <p><a href="http://www.weizijun.cn/2016/03/17/%E8%81%8A%E4%B8%80%E8%81%8A%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E8%AE%BE%E8%AE%A1/" target="_blank" rel="noopener">原文地址</a></p>
+<h2 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h2><p>前段时间，看到redis作者发布的一篇文章<a href="http://antirez.com/news/101" target="_blank" rel="noopener">《Is Redlock safe?》</a>，Redlock是redis作者基于redis设计的分布式锁的算法。文章起因是有一位分布式的专家写了一篇文章<a href="http://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" target="_blank" rel="noopener">《How to do distributed locking》</a>，质疑Redlock的正确性。redis作者则在《Is Redlock safe?》文章中给予回应，一来一回甚是精彩。文本就为读者一一解析两位专家的争论。</p>
 <p>在了解两位专家的争论前，让我先从我了解的分布式锁一一道来。文章中提到的分布式锁均为排他锁。</p>
 <a id="more"></a>
 <h2 id="数据库锁表"><a href="#数据库锁表" class="headerlink" title="数据库锁表"></a>数据库锁表</h2><p>我第一次接触分布式锁用的是mysql的锁表。当时我并没有分布式锁的概念。只知道当时有两台交易中心服务器处理相同的业务，每个交易中心处理订单的时候需要保证另一个无法处理。于是用mysql的一张表来控制共享资源。表结构如下：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`lockedOrder`</span> (</div><div class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT <span class="keyword">COMMENT</span> <span class="string">'主码'</span>,</div><div class="line">  <span class="string">`type`</span> tinyint(<span class="number">8</span>) <span class="keyword">unsigned</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'操作类别'</span>,</div><div class="line">  <span class="string">`order_id`</span> <span class="built_in">varchar</span>(<span class="number">64</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">''</span> <span class="keyword">COMMENT</span> <span class="string">'锁定的order_id'</span>,</div><div class="line">  <span class="string">`memo`</span> <span class="built_in">varchar</span>(<span class="number">1024</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">''</span>,</div><div class="line">  <span class="string">`update_time`</span> <span class="keyword">timestamp</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="keyword">CURRENT_TIMESTAMP</span> <span class="keyword">ON</span> <span class="keyword">UPDATE</span> <span class="keyword">CURRENT_TIMESTAMP</span> <span class="keyword">COMMENT</span> <span class="string">'保存数据时间，自动生成'</span>,</div><div class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>),</div><div class="line">  <span class="keyword">UNIQUE</span> <span class="keyword">KEY</span> <span class="string">`uidx_order_id`</span> (<span class="string">`order_id`</span>) <span class="keyword">USING</span> BTREE</div><div class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8 <span class="keyword">COMMENT</span>=<span class="string">'锁定中的订单'</span>;</div></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`lockedOrder`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT <span class="keyword">COMMENT</span> <span class="string">'主码'</span>,</span><br><span class="line">  <span class="string">`type`</span> tinyint(<span class="number">8</span>) <span class="keyword">unsigned</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'操作类别'</span>,</span><br><span class="line">  <span class="string">`order_id`</span> <span class="built_in">varchar</span>(<span class="number">64</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">''</span> <span class="keyword">COMMENT</span> <span class="string">'锁定的order_id'</span>,</span><br><span class="line">  <span class="string">`memo`</span> <span class="built_in">varchar</span>(<span class="number">1024</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">''</span>,</span><br><span class="line">  <span class="string">`update_time`</span> <span class="keyword">timestamp</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="keyword">CURRENT_TIMESTAMP</span> <span class="keyword">ON</span> <span class="keyword">UPDATE</span> <span class="keyword">CURRENT_TIMESTAMP</span> <span class="keyword">COMMENT</span> <span class="string">'保存数据时间，自动生成'</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>),</span><br><span class="line">  <span class="keyword">UNIQUE</span> <span class="keyword">KEY</span> <span class="string">`uidx_order_id`</span> (<span class="string">`order_id`</span>) <span class="keyword">USING</span> BTREE</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8 <span class="keyword">COMMENT</span>=<span class="string">'锁定中的订单'</span>;</span><br></pre></td></tr></table></figure>
 <p>order_id记录了订单号，type和memo用来记录下是那种类型的操作锁定的订单，memo用来记录一下操作内容。这张表能完成分布式锁的主要原因正是由于把order_id设置为了<code>UNIQUE KEY</code>，所以同一个订单号只能插入一次。于是对锁的竞争就交给了数据库，处理同一个订单号的交易中心把订单号插入表中，数据库保证了只有一个交易中心能插入成功，其他交易中心都会插入失败。lock和unlock的伪代码也非常简单：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">lock</span> ：</span></div><div class="line"><span class="function">    <span class="title">exec</span> <span class="title">sql</span>:</span> insert into lockedOrder(type,order_id,memo) values (type,order_id,memo)</div><div class="line">    <span class="keyword">if</span> result == true :</div><div class="line">        <span class="keyword">return</span> true</div><div class="line">    <span class="keyword">else</span> :</div><div class="line">        <span class="keyword">return</span> false</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">unlock</span> ：</span></div><div class="line"><span class="function">    <span class="title">exec</span> <span class="title">sql</span>:</span> delete <span class="keyword">from</span> lockedOrder where order_id=<span class="string">'order_id'</span></div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lock</span> ：</span></span><br><span class="line"><span class="function">    <span class="title">exec</span> <span class="title">sql</span>:</span> insert into lockedOrder(type,order_id,memo) values (type,order_id,memo)</span><br><span class="line">    <span class="keyword">if</span> result == true :</span><br><span class="line">        <span class="keyword">return</span> true</span><br><span class="line">    <span class="keyword">else</span> :</span><br><span class="line">        <span class="keyword">return</span> false</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">unlock</span> ：</span></span><br><span class="line"><span class="function">    <span class="title">exec</span> <span class="title">sql</span>:</span> delete <span class="keyword">from</span> lockedOrder where order_id=<span class="string">'order_id'</span></span><br></pre></td></tr></table></figure>
 <p>读者可以发现，这个锁从功能上有几个问题：</p>
 <ul>
 <li><p>数据库锁实现只能是非阻塞锁，即应该为tryLock，是尝试获得锁，如果无法获得则会返回失败。要改成阻塞锁，需要反复执行insert语句直到插入成功。由于交易中心的使用场景，只要一个交易中心处理订单就行了，所以这里不需要使用阻塞锁。</p>
 </li>
 <li><p>这把锁没有过期时间，如果交易中心锁定了订单，但异常宕机后，这个订单就无法锁定了。这里为了让锁能够失效，需要在应用层加上定时任务，去删除过期还未解锁的订单。clear_timeout_lock的伪代码很简单，只要执行一条sql即可。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">clear_timeout_lock</span> :</span></div><div class="line">    <span class="keyword">exec</span> sql : delete <span class="keyword">from</span> lockedOrder where update_time &lt;  ADDTIME(NOW(),<span class="string">'-00:02:00'</span>)</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clear_timeout_lock</span> :</span></span><br><span class="line">    <span class="keyword">exec</span> sql : delete <span class="keyword">from</span> lockedOrder where update_time &lt;  ADDTIME(NOW(),<span class="string">'-00:02:00'</span>)</span><br></pre></td></tr></table></figure>
 <p>这里设置过期时间为2分钟，也是从业务场景考虑的，如果订单处理时间可能超过2分钟的话，这个时候还需要加大。</p>
 </li>
 <li><p>这把锁是不能重入的，意思就是即使一个交易中心获得了锁，在它为解锁前，之后的流程如果有再去获取锁的话还会失败，这样就可能出现死锁。这个问题我们当时没有处理，如果要处理这个问题的话，需要增加字段，在insert的时候，把该交易中心的标识加进来，这样再获取锁的时候， 通过select，看下锁定的人是不是自己。lock的伪代码版本如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">lock</span> ：</span></div><div class="line"><span class="function">    <span class="title">exec</span> <span class="title">sql</span>:</span> insert into lockedOrder(type,order_id,memo) values (type,order_id,memo)</div><div class="line">    <span class="keyword">if</span> result == true :</div><div class="line">        <span class="keyword">return</span> true</div><div class="line">    <span class="keyword">else</span> :</div><div class="line">        <span class="keyword">exec</span> sql : select id <span class="keyword">from</span> lockedOrder where order_id=<span class="string">'order_id'</span> <span class="keyword">and</span> memo = <span class="string">'TradeCenterId'</span></div><div class="line">        <span class="keyword">if</span> count &gt; <span class="number">0</span> :</div><div class="line">            <span class="keyword">return</span> true</div><div class="line">        <span class="keyword">else</span> </div><div class="line">            <span class="keyword">return</span> false</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lock</span> ：</span></span><br><span class="line"><span class="function">    <span class="title">exec</span> <span class="title">sql</span>:</span> insert into lockedOrder(type,order_id,memo) values (type,order_id,memo)</span><br><span class="line">    <span class="keyword">if</span> result == true :</span><br><span class="line">        <span class="keyword">return</span> true</span><br><span class="line">    <span class="keyword">else</span> :</span><br><span class="line">        <span class="keyword">exec</span> sql : select id <span class="keyword">from</span> lockedOrder where order_id=<span class="string">'order_id'</span> <span class="keyword">and</span> memo = <span class="string">'TradeCenterId'</span></span><br><span class="line">        <span class="keyword">if</span> count &gt; <span class="number">0</span> :</span><br><span class="line">            <span class="keyword">return</span> true</span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">            <span class="keyword">return</span> false</span><br></pre></td></tr></table></figure>
 <p>在锁定失败后，看下锁是不是自己，如果是自己，那依然锁定成功。不过这个方法解锁又遇到了困难，第一次unlock就把锁给释放了，后面的流程都是在没锁的情况下完成，就可能出现其他交易中心也获取到这个订单锁，产生冲突。解决这个办法的方法就是给锁加计数器，记录下lock多少次。unlock的时候，只有在lock次数为0后才能删除数据库的记录。</p>
 </li>
 </ul>
@@ -445,7 +394,7 @@
 <p>所以专家给出的结论是，只有在有界的网络延迟、有界的程序中断、有界的时钟错误范围，Redlock才能正常工作，但是这三种场景的边界又是无法确认的，所以专家不建议使用Redlock。对于正确性要求高的场景，专家推荐了Zookeeper，关于使用Zookeeper作为分布式锁后面再讨论。</p>
 <h3 id="redis作者解疑Redlock"><a href="#redis作者解疑Redlock" class="headerlink" title="redis作者解疑Redlock"></a>redis作者解疑Redlock</h3><p>redis作者看到这个专家的文章后，写了一篇博客予以回应。作者很客气的感谢了专家，然后表达出了对专家观点的不认同。</p>
 <blockquote>
-<p>I asked for an analysis in the original Redlock specification here: <a href="http://redis.io/topics/distlock" target="_blank" rel="external">http://redis.io/topics/distlock</a>. So thank you Martin. However I don’t agree with the analysis.</p>
+<p>I asked for an analysis in the original Redlock specification here: <a href="http://redis.io/topics/distlock" target="_blank" rel="noopener">http://redis.io/topics/distlock</a>. So thank you Martin. However I don’t agree with the analysis.</p>
 </blockquote>
 <p>redis作者关于使用token解决锁超时问题可以概括成下面五点：</p>
 <ul>
@@ -478,14 +427,14 @@
 <p>如果要实现tryLock，那么竞争失败就直接返回false即可。</p>
 <p>zookeeper实现的分布式锁简单、明了，分布式锁的关键技术都由zookeeper负责实现了。可以看下《从Paxos到Zookeeper:分布式一致性原理与实践》书里贴出来的分布式锁实现步骤</p>
 <p><img src="http://www.weizijun.cn/images/lock_zookeeper.png" alt="Alt text"></p>
-<p>需要使用zookeeper的分布式锁功能，可以使用curator-recipes库。Curator是Netflix开源的一套ZooKeeper客户端框架，curator-recipes库里面集成了很多zookeeper的应用场景，分布式锁的功能在org.apache.curator.framework.recipes.locks包里面，<a href="http://colobu.com/2014/12/12/zookeeper-recipes-by-example-2" target="_blank" rel="external">《跟着实例学习ZooKeeper的用法： 分布式锁》</a>文章里面详细的介绍了curator-recipes分布式锁的使用，想要使用分布式锁功能的朋友们不妨一试。</p>
+<p>需要使用zookeeper的分布式锁功能，可以使用curator-recipes库。Curator是Netflix开源的一套ZooKeeper客户端框架，curator-recipes库里面集成了很多zookeeper的应用场景，分布式锁的功能在org.apache.curator.framework.recipes.locks包里面，<a href="http://colobu.com/2014/12/12/zookeeper-recipes-by-example-2" target="_blank" rel="noopener">《跟着实例学习ZooKeeper的用法： 分布式锁》</a>文章里面详细的介绍了curator-recipes分布式锁的使用，想要使用分布式锁功能的朋友们不妨一试。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>文章写到这里，基本把我关于分布式锁的了解介绍了一遍。可以实现分布式锁功能的，包括数据库、缓存、分布式协调服务等等。根据业务的场景、现状以及已经依赖的服务，应用可以使用不同分布式锁实现。文章介绍了redis作者和分布式专家关于Redlock，虽然最终觉得Redlock并不像分布式专家说的那样缺乏正确性，不过我个人觉得，如果需要最可靠的分布式锁，还是使用zookeeper会更可靠些。curator-recipes库封装的分布式锁，java应用也可以直接使用。而且如果开始依赖zookeeper，那么zookeeper不仅仅提供了分布式锁功能，选主、服务注册与发现、保存元数据信息等功能都能依赖zookeeper，这让zookeeper不会那么闲置。</p>
 <p>参考资料：</p>
 <ul>
-<li>[1]<a href="http://redis.io/topics/distlock" target="_blank" rel="external">《Distributed locks with Redis》</a></li>
-<li>[2]<a href="http://antirez.com/news/101" target="_blank" rel="external">《Is Redlock safe?》</a></li>
-<li>[3]<a href="http://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" target="_blank" rel="external">《How to do distributed locking》</a></li>
-<li>[4]<a href="http://colobu.com/2014/12/12/zookeeper-recipes-by-example-2" target="_blank" rel="external">《跟着实例学习ZooKeeper的用法： 分布式锁》</a></li>
+<li>[1]<a href="http://redis.io/topics/distlock" target="_blank" rel="noopener">《Distributed locks with Redis》</a></li>
+<li>[2]<a href="http://antirez.com/news/101" target="_blank" rel="noopener">《Is Redlock safe?》</a></li>
+<li>[3]<a href="http://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" target="_blank" rel="noopener">《How to do distributed locking》</a></li>
+<li>[4]<a href="http://colobu.com/2014/12/12/zookeeper-recipes-by-example-2" target="_blank" rel="noopener">《跟着实例学习ZooKeeper的用法： 分布式锁》</a></li>
 <li>[5]《从Paxos到Zookeeper:分布式一致性原理与实践》</li>
 </ul>
 
@@ -527,6 +476,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/15/CDH集群部署/" rel="prev" title="CDH集群部署">
+                CDH集群部署 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -591,7 +544,7 @@
       <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
-               src="/uploads/lufei.jpg"
+               src="/images/avatar.gif"
                alt="Yujie" />
           <p class="site-author-name" itemprop="name">Yujie</p>
            
@@ -602,8 +555,8 @@
 
           
             <div class="site-state-item site-state-posts">
-              <a href="/archives">
-                <span class="site-state-item-count">10</span>
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -616,7 +569,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -673,8 +626,8 @@
       <div class="footer-inner">
         <div class="copyright" >
   
-  &copy;  2015 - 
-  <span itemprop="copyrightYear">2018</span>
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -689,7 +642,7 @@
 <div class="theme-info">
   主题 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT.Muse
   </a>
 </div>
 

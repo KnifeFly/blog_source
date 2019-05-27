@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next mist use-motion" lang="zh-Hans">
+<html class="theme-next muse use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -102,7 +102,7 @@
 <meta property="og:site_name" content="KnifeFly">
 <meta property="og:description" content="由于历史的原因，公司部门在多个组件中使用了lighttpd，具体为何当时技术选型的时候没选nginx而选择lighttpd就不得而知了。lighttpd的社区相对nginx差距还是很大的，明显nginx的社区更活跃。lighttpd网上的资料以及第三方模块相对比较少，学习的成本会相对高一点。不过lighttpd的源码相对nginx会少一点，毕竟lighttpd比较轻量级，功能上没nginx那么多。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-03-31T10:37:05.870Z">
+<meta property="og:updated_time" content="2018-08-29T15:39:24.651Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="lighttpd 程序框架">
 <meta name="twitter:description" content="由于历史的原因，公司部门在多个组件中使用了lighttpd，具体为何当时技术选型的时候没选nginx而选择lighttpd就不得而知了。lighttpd的社区相对nginx差距还是很大的，明显nginx的社区更活跃。lighttpd网上的资料以及第三方模块相对比较少，学习的成本会相对高一点。不过lighttpd的源码相对nginx会少一点，毕竟lighttpd比较轻量级，功能上没nginx那么多。">
@@ -113,8 +113,8 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Mist',
-    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
     tabs: true,
     motion: true,
@@ -211,28 +211,8 @@
         </li>
       
         
-        <li class="menu-item menu-item-categories">
-          <a href="/categories" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
-            
-            分类
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-about">
-          <a href="/about" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
-            
-            关于
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-archives">
-          <a href="/archives" rel="section">
+          <a href="/archives/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -242,7 +222,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/tags" rel="section">
+          <a href="/tags/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -288,7 +268,7 @@
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Yujie">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/lufei.jpg">
+      <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -334,37 +314,6 @@
           
 
           
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计</span>
-                
-                <span title="字数统计">
-                  
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长</span>
-                
-                <span title="阅读时长">
-                  
-                </span>
-              
-            </div>
-          
 
           
 
@@ -392,7 +341,7 @@
 <li>wait子进程(当子进程退出时，再fork出一个子进程)</li>
 </ul>
 <p>主要逻辑代码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div></pre></td><td class="code"><pre><div class="line">num_childs = srv-&gt;srvconf.max_worker;</div><div class="line">if (num_childs &gt; 0) &#123;</div><div class="line">    int child = 0;</div><div class="line">    //master进程上下文</div><div class="line">    while (!child &amp;&amp; !srv_shutdown &amp;&amp; !graceful_shutdown) &#123;</div><div class="line">        if (num_childs &gt; 0) &#123;</div><div class="line">            switch (fork()) &#123;</div><div class="line">            case -1:</div><div class="line">                return -1;</div><div class="line">            case 0:</div><div class="line">                //worker进程在这里退出，执行后面的程序逻辑</div><div class="line">                child = 1;</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                num_childs--;</div><div class="line">                break;</div><div class="line">            &#125;</div><div class="line">        &#125; else &#123;</div><div class="line">            int status;</div><div class="line"></div><div class="line">            // master进程在这里阻塞等待，回收worker进程</div><div class="line">            if (-1 != wait(&amp;status)) &#123;</div><div class="line">                //如果一个worker进程挂了，master进程会重新fork一个worker进程</div><div class="line">                num_childs++;</div><div class="line">            &#125; else &#123;</div><div class="line">                switch (errno) &#123;</div><div class="line">                case EINTR:</div><div class="line">                    if (handle_sig_hup) &#123;</div><div class="line">                        handle_sig_hup = 0;</div><div class="line"></div><div class="line">                        log_error_cycle(srv);</div><div class="line">                        if (!forwarded_sig_hup &amp;&amp; 0 != srv-&gt;srvconf.max_worker) &#123;</div><div class="line">                            forwarded_sig_hup = 1;</div><div class="line">                            kill(0, SIGHUP);</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                    break;</div><div class="line">                default:</div><div class="line">                    break;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    //master 进程在这里退出</div><div class="line">    if (!child) &#123;</div><div class="line">        /** </div><div class="line">            * kill all children too </div><div class="line">            */</div><div class="line">        if (graceful_shutdown) &#123;</div><div class="line">            kill(0, SIGINT);</div><div class="line">        &#125; else if (srv_shutdown) &#123;</div><div class="line">            kill(0, SIGTERM);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        remove_pid_file(srv, &amp;pid_fd);</div><div class="line">        log_error_close(srv);</div><div class="line">        network_close(srv);</div><div class="line">        connections_free(srv);</div><div class="line">        plugins_free(srv);</div><div class="line">        server_free(srv);</div><div class="line">        return 0;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">num_childs = srv-&gt;srvconf.max_worker;</span><br><span class="line">if (num_childs &gt; 0) &#123;</span><br><span class="line">    int child = 0;</span><br><span class="line">    //master进程上下文</span><br><span class="line">    while (!child &amp;&amp; !srv_shutdown &amp;&amp; !graceful_shutdown) &#123;</span><br><span class="line">        if (num_childs &gt; 0) &#123;</span><br><span class="line">            switch (fork()) &#123;</span><br><span class="line">            case -1:</span><br><span class="line">                return -1;</span><br><span class="line">            case 0:</span><br><span class="line">                //worker进程在这里退出，执行后面的程序逻辑</span><br><span class="line">                child = 1;</span><br><span class="line">                break;</span><br><span class="line">            default:</span><br><span class="line">                num_childs--;</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            int status;</span><br><span class="line"></span><br><span class="line">            // master进程在这里阻塞等待，回收worker进程</span><br><span class="line">            if (-1 != wait(&amp;status)) &#123;</span><br><span class="line">                //如果一个worker进程挂了，master进程会重新fork一个worker进程</span><br><span class="line">                num_childs++;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                switch (errno) &#123;</span><br><span class="line">                case EINTR:</span><br><span class="line">                    if (handle_sig_hup) &#123;</span><br><span class="line">                        handle_sig_hup = 0;</span><br><span class="line"></span><br><span class="line">                        log_error_cycle(srv);</span><br><span class="line">                        if (!forwarded_sig_hup &amp;&amp; 0 != srv-&gt;srvconf.max_worker) &#123;</span><br><span class="line">                            forwarded_sig_hup = 1;</span><br><span class="line">                            kill(0, SIGHUP);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    break;</span><br><span class="line">                default:</span><br><span class="line">                    break;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //master 进程在这里退出</span><br><span class="line">    if (!child) &#123;</span><br><span class="line">        /** </span><br><span class="line">            * kill all children too </span><br><span class="line">            */</span><br><span class="line">        if (graceful_shutdown) &#123;</span><br><span class="line">            kill(0, SIGINT);</span><br><span class="line">        &#125; else if (srv_shutdown) &#123;</span><br><span class="line">            kill(0, SIGTERM);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        remove_pid_file(srv, &amp;pid_fd);</span><br><span class="line">        log_error_close(srv);</span><br><span class="line">        network_close(srv);</span><br><span class="line">        connections_free(srv);</span><br><span class="line">        plugins_free(srv);</span><br><span class="line">        server_free(srv);</span><br><span class="line">        return 0;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p>mater 进程的主要工作逻辑还是非常清晰的，简单的说就是早fork完子进程后，阻塞，监控子进程</p>
 <p>worker进程的主要逻辑：</p>
 <ul>
@@ -408,7 +357,7 @@
 </li>
 </ul>
 <p>主要逻辑代码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">//启动事件轮询,等待各种IO时间的发生,包括文件读写，socket请求等</div><div class="line">if ((n = fdevent_poll(srv-&gt;ev, 1000)) &gt; 0) &#123;</div><div class="line">    /* n is the number of events */</div><div class="line">    int revents;</div><div class="line">    int fd_ndx;</div><div class="line">    last_active_ts = srv-&gt;cur_ts;</div><div class="line">    fd_ndx = -1;</div><div class="line">    do &#123;</div><div class="line">        fdevent_handler handler;</div><div class="line">        void *context;</div><div class="line"></div><div class="line">        fd_ndx  = fdevent_event_next_fdndx (srv-&gt;ev, fd_ndx);</div><div class="line">        if (-1 == fd_ndx) break; /* not all fdevent handlers know how many fds got an event */</div><div class="line"></div><div class="line">        revents = fdevent_event_get_revent (srv-&gt;ev, fd_ndx);</div><div class="line">        fd      = fdevent_event_get_fd     (srv-&gt;ev, fd_ndx);</div><div class="line">        handler = fdevent_get_handler(srv-&gt;ev, fd);</div><div class="line">        context = fdevent_get_context(srv-&gt;ev, fd);</div><div class="line"></div><div class="line">        //一旦有事件发生，调用相应的处理函数进行处理。</div><div class="line">        if (NULL != handler) &#123;</div><div class="line">            (*handler)(srv, context, revents);</div><div class="line">        &#125;</div><div class="line">    &#125; while (--n &gt; 0);</div><div class="line">    fdevent_sched_run(srv, srv-&gt;ev);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">//启动事件轮询,等待各种IO时间的发生,包括文件读写，socket请求等</span><br><span class="line">if ((n = fdevent_poll(srv-&gt;ev, 1000)) &gt; 0) &#123;</span><br><span class="line">    /* n is the number of events */</span><br><span class="line">    int revents;</span><br><span class="line">    int fd_ndx;</span><br><span class="line">    last_active_ts = srv-&gt;cur_ts;</span><br><span class="line">    fd_ndx = -1;</span><br><span class="line">    do &#123;</span><br><span class="line">        fdevent_handler handler;</span><br><span class="line">        void *context;</span><br><span class="line"></span><br><span class="line">        fd_ndx  = fdevent_event_next_fdndx (srv-&gt;ev, fd_ndx);</span><br><span class="line">        if (-1 == fd_ndx) break; /* not all fdevent handlers know how many fds got an event */</span><br><span class="line"></span><br><span class="line">        revents = fdevent_event_get_revent (srv-&gt;ev, fd_ndx);</span><br><span class="line">        fd      = fdevent_event_get_fd     (srv-&gt;ev, fd_ndx);</span><br><span class="line">        handler = fdevent_get_handler(srv-&gt;ev, fd);</span><br><span class="line">        context = fdevent_get_context(srv-&gt;ev, fd);</span><br><span class="line"></span><br><span class="line">        //一旦有事件发生，调用相应的处理函数进行处理。</span><br><span class="line">        if (NULL != handler) &#123;</span><br><span class="line">            (*handler)(srv, context, revents);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; while (--n &gt; 0);</span><br><span class="line">    fdevent_sched_run(srv, srv-&gt;ev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -516,7 +465,7 @@
       <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
-               src="/uploads/lufei.jpg"
+               src="/images/avatar.gif"
                alt="Yujie" />
           <p class="site-author-name" itemprop="name">Yujie</p>
            
@@ -527,8 +476,8 @@
 
           
             <div class="site-state-item site-state-posts">
-              <a href="/archives">
-                <span class="site-state-item-count">10</span>
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -541,7 +490,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -598,8 +547,8 @@
       <div class="footer-inner">
         <div class="copyright" >
   
-  &copy;  2015 - 
-  <span itemprop="copyrightYear">2018</span>
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -614,7 +563,7 @@
 <div class="theme-info">
   主题 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT.Muse
   </a>
 </div>
 

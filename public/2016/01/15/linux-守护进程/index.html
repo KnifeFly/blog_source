@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next mist use-motion" lang="zh-Hans">
+<html class="theme-next muse use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -102,7 +102,7 @@
 <meta property="og:site_name" content="KnifeFly">
 <meta property="og:description" content="守护进程linux 服务端程序很多都是以守护进程的方式对外提供服务, linux 系统本身也有很多守护进程,例如kthreadd用来创建内核进程, kswapd是内存换页守护进程,flush是dump内存中的脏页面到磁盘,jbd提供ext4文件系统的日志日志功能…守护进程命名大部分都是以d结尾. 大部分守护进程都是以root方式运行,没有控制终端,运行在后台. 大部分守护进程都是进程组的组长进程以">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-03-31T10:37:16.997Z">
+<meta property="og:updated_time" content="2018-08-29T15:39:24.651Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="linux 守护进程">
 <meta name="twitter:description" content="守护进程linux 服务端程序很多都是以守护进程的方式对外提供服务, linux 系统本身也有很多守护进程,例如kthreadd用来创建内核进程, kswapd是内存换页守护进程,flush是dump内存中的脏页面到磁盘,jbd提供ext4文件系统的日志日志功能…守护进程命名大部分都是以d结尾. 大部分守护进程都是以root方式运行,没有控制终端,运行在后台. 大部分守护进程都是进程组的组长进程以">
@@ -113,8 +113,8 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Mist',
-    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
     tabs: true,
     motion: true,
@@ -211,28 +211,8 @@
         </li>
       
         
-        <li class="menu-item menu-item-categories">
-          <a href="/categories" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
-            
-            分类
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-about">
-          <a href="/about" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
-            
-            关于
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-archives">
-          <a href="/archives" rel="section">
+          <a href="/archives/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -242,7 +222,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/tags" rel="section">
+          <a href="/tags/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -288,7 +268,7 @@
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Yujie">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/lufei.jpg">
+      <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -334,37 +314,6 @@
           
 
           
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计</span>
-                
-                <span title="字数统计">
-                  
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长</span>
-                
-                <span title="阅读时长">
-                  
-                </span>
-              
-            </div>
-          
 
           
 
@@ -405,8 +354,8 @@
 </ul>
 <a id="more"></a>
 <p>APUE这本书中一个守护进程编程范例,不过一些程序实现守护进程的方式会省略一些步骤,相比这个范例会简单一些</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">void daemonize(const char *cmd)</div><div class="line">&#123;</div><div class="line">    int                 i,fd0,fd1,fd2;</div><div class="line">    pid_t               pid;</div><div class="line">    struct              rlimit rl;</div><div class="line">    struct sigaction    sa;</div><div class="line"></div><div class="line">    //设置文件模式屏蔽字</div><div class="line">    umask(0);</div><div class="line"></div><div class="line">    if(getrlimit(RLIMIT_NOFILE,&amp;rl)&lt;0)</div><div class="line">        err_quit(&quot;%s: can&apos;t get file limit &quot;,cmd);</div><div class="line"></div><div class="line">    //first blood :fork 一次，使父进程退出，让子进程成为孤儿进程，让子进程成为新会话的手进程，</div><div class="line"> </div><div class="line">    if ((pid=fork())&lt;0)</div><div class="line">        err_quit(&quot;%s:can&apos;t fork &quot;,cmd);</div><div class="line">    else if (pid!=0)</div><div class="line">        exit(0);</div><div class="line">    setsid();</div><div class="line"></div><div class="line">    sa.sa_handler=SIG_IGN;</div><div class="line">    sigemptyset(&amp;sa.sa_mask);</div><div class="line">    sa.sa_flags=0;</div><div class="line"></div><div class="line">    if(sigaction(SIGHUP,&amp;sa,NULL)&lt;0)</div><div class="line">        err_quit(&quot;%s: can&apos;t ignore SIGHUP &quot;,cmd);</div><div class="line">    if((pid=fork())&lt;0)</div><div class="line">        err_quit(&quot;%s: fork error &quot;,cmd);</div><div class="line">    else if(pid!=0)</div><div class="line">        exit(0);</div><div class="line"></div><div class="line">    if(chdir(&quot;/&quot;)&lt;0)</div><div class="line">        err_quit(&quot;%s: can;t cahnge directory to /&quot;,cmd);</div><div class="line"></div><div class="line">    if(rl.rlim_max==RLIM_INFINITY)</div><div class="line">        rl.rlim_max=1024;</div><div class="line">    for(i=0;i&lt;rl.rlim_max;i++)</div><div class="line">        close(i);</div><div class="line"></div><div class="line">    fd0=open(&quot;/dev/null&quot;,O_RDWR);</div><div class="line">    fd1=dup(0);</div><div class="line">    fd2=dup(0);</div><div class="line"></div><div class="line">    openlog(cmd,LOG_CONS,LOG_DAEMON);</div><div class="line">    if(fd0!=0||fd1!=1||fd2!=2)</div><div class="line">    &#123;</div><div class="line">        syslog(LOG_ERR,&quot;unexpected file decription %d %d  %d&quot;,fd0,fd1,fd2);</div><div class="line">        exit(1);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>Glibc库提供了创建守护进程API daemon, 函数原型为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int daemon(int nochdir, int noclose);</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">void daemonize(const char *cmd)</span><br><span class="line">&#123;</span><br><span class="line">    int                 i,fd0,fd1,fd2;</span><br><span class="line">    pid_t               pid;</span><br><span class="line">    struct              rlimit rl;</span><br><span class="line">    struct sigaction    sa;</span><br><span class="line"></span><br><span class="line">    //设置文件模式屏蔽字</span><br><span class="line">    umask(0);</span><br><span class="line"></span><br><span class="line">    if(getrlimit(RLIMIT_NOFILE,&amp;rl)&lt;0)</span><br><span class="line">        err_quit(&quot;%s: can&apos;t get file limit &quot;,cmd);</span><br><span class="line"></span><br><span class="line">    //first blood :fork 一次，使父进程退出，让子进程成为孤儿进程，让子进程成为新会话的手进程，</span><br><span class="line"> </span><br><span class="line">    if ((pid=fork())&lt;0)</span><br><span class="line">        err_quit(&quot;%s:can&apos;t fork &quot;,cmd);</span><br><span class="line">    else if (pid!=0)</span><br><span class="line">        exit(0);</span><br><span class="line">    setsid();</span><br><span class="line"></span><br><span class="line">    sa.sa_handler=SIG_IGN;</span><br><span class="line">    sigemptyset(&amp;sa.sa_mask);</span><br><span class="line">    sa.sa_flags=0;</span><br><span class="line"></span><br><span class="line">    if(sigaction(SIGHUP,&amp;sa,NULL)&lt;0)</span><br><span class="line">        err_quit(&quot;%s: can&apos;t ignore SIGHUP &quot;,cmd);</span><br><span class="line">    if((pid=fork())&lt;0)</span><br><span class="line">        err_quit(&quot;%s: fork error &quot;,cmd);</span><br><span class="line">    else if(pid!=0)</span><br><span class="line">        exit(0);</span><br><span class="line"></span><br><span class="line">    if(chdir(&quot;/&quot;)&lt;0)</span><br><span class="line">        err_quit(&quot;%s: can;t cahnge directory to /&quot;,cmd);</span><br><span class="line"></span><br><span class="line">    if(rl.rlim_max==RLIM_INFINITY)</span><br><span class="line">        rl.rlim_max=1024;</span><br><span class="line">    for(i=0;i&lt;rl.rlim_max;i++)</span><br><span class="line">        close(i);</span><br><span class="line"></span><br><span class="line">    fd0=open(&quot;/dev/null&quot;,O_RDWR);</span><br><span class="line">    fd1=dup(0);</span><br><span class="line">    fd2=dup(0);</span><br><span class="line"></span><br><span class="line">    openlog(cmd,LOG_CONS,LOG_DAEMON);</span><br><span class="line">    if(fd0!=0||fd1!=1||fd2!=2)</span><br><span class="line">    &#123;</span><br><span class="line">        syslog(LOG_ERR,&quot;unexpected file decription %d %d  %d&quot;,fd0,fd1,fd2);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Glibc库提供了创建守护进程API daemon, 函数原型为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int daemon(int nochdir, int noclose);</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -436,6 +385,10 @@
       
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/12/linux中最大文件描述符数/" rel="next" title="linux 最大文件描述符">
+                <i class="fa fa-chevron-left"></i> linux 最大文件描述符
+              </a>
             
           </div>
 
@@ -510,7 +463,7 @@
       <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
-               src="/uploads/lufei.jpg"
+               src="/images/avatar.gif"
                alt="Yujie" />
           <p class="site-author-name" itemprop="name">Yujie</p>
            
@@ -521,8 +474,8 @@
 
           
             <div class="site-state-item site-state-posts">
-              <a href="/archives">
-                <span class="site-state-item-count">10</span>
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -535,7 +488,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -592,8 +545,8 @@
       <div class="footer-inner">
         <div class="copyright" >
   
-  &copy;  2015 - 
-  <span itemprop="copyrightYear">2018</span>
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -608,7 +561,7 @@
 <div class="theme-info">
   主题 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT.Muse
   </a>
 </div>
 

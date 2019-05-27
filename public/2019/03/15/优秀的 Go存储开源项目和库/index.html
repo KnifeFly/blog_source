@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="go," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="优秀的 Go存储开源项目和库A curated list of awesome Go storage projects and libraries. Inspired by awesome-go. ContributingPlease take a quick gander at the contribution guidelines first. Thanks to all contributo">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="优秀的 Go存储开源项目和库">
+<meta property="og:url" content="http://yoursite.com/2019/03/15/优秀的 Go存储开源项目和库/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="优秀的 Go存储开源项目和库A curated list of awesome Go storage projects and libraries. Inspired by awesome-go. ContributingPlease take a quick gander at the contribution guidelines first. Thanks to all contributo">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-05-21T14:36:37.809Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="优秀的 Go存储开源项目和库">
+<meta name="twitter:description" content="优秀的 Go存储开源项目和库A curated list of awesome Go storage projects and libraries. Inspired by awesome-go. ContributingPlease take a quick gander at the contribution guidelines first. Thanks to all contributo">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/03/15/优秀的 Go存储开源项目和库/"/>
+
+
+
+
+
+  <title>优秀的 Go存储开源项目和库 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/15/优秀的 Go存储开源项目和库/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">优秀的 Go存储开源项目和库</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-03-15T20:18:29+08:00">
+                2019-03-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="优秀的-Go存储开源项目和库"><a href="#优秀的-Go存储开源项目和库" class="headerlink" title="优秀的 Go存储开源项目和库"></a>优秀的 Go存储开源项目和库</h1><p>A curated list of awesome Go storage projects and libraries. Inspired by <a href="https://github.com/avelino/awesome-go" target="_blank" rel="noopener">awesome-go</a>.</p>
+<h3 id="Contributing"><a href="#Contributing" class="headerlink" title="Contributing"></a>Contributing</h3><p>Please take a quick gander at the <a href="https://github.com/gostor/awesome-go-storage/blob/master/CONTRIBUTING.md" target="_blank" rel="noopener">contribution guidelines</a> first. Thanks to all <a href="https://github.com/gostor/awesome-go-storage/graphs/contributors" target="_blank" rel="noopener">contributors</a>; you rock!</p>
+<h4 id="If-you-see-a-package-or-project-here-that-is-no-longer-maintained-or-is-not-a-good-fit-please-submit-a-pull-request-to-improve-this-file-Thank-you"><a href="#If-you-see-a-package-or-project-here-that-is-no-longer-maintained-or-is-not-a-good-fit-please-submit-a-pull-request-to-improve-this-file-Thank-you" class="headerlink" title="If you see a package or project here that is no longer maintained or is not a good fit, please submit a pull request to improve this file. Thank you!"></a><em>If you see a package or project here that is no longer maintained or is not a good fit, please submit a pull request to improve this file. Thank you!</em></h4><h3 id="Contents"><a href="#Contents" class="headerlink" title="Contents"></a>Contents</h3><ul>
+<li>Awesome Go Storage<ul>
+<li><a href="https://github.com/gostor/awesome-go-storage#storage-server" target="_blank" rel="noopener">Storage Server</a></li>
+<li><a href="https://github.com/gostor/awesome-go-storage#key-value-store" target="_blank" rel="noopener">Key-Value Store</a></li>
+<li><a href="https://github.com/gostor/awesome-go-storage#file-system" target="_blank" rel="noopener">File System</a></li>
+<li><a href="https://github.com/gostor/awesome-go-storage#database" target="_blank" rel="noopener">Database</a></li>
+<li><a href="https://github.com/gostor/awesome-go-storage#database-drivers" target="_blank" rel="noopener">Database Drivers</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="Storage-Server"><a href="#Storage-Server" class="headerlink" title="Storage Server"></a>Storage Server</h2><p><em>Storage Servers implemented in Go.</em></p>
+<ul>
+<li><a href="https://github.com/minio/minio" target="_blank" rel="noopener">minio</a> - Minio is an open source object storage server compatible with Amazon S3 APIs.</li>
+<li><a href="https://github.com/ncw/rclone" target="_blank" rel="noopener">rclone</a> - “rsync for cloud storage” - Google Drive, Amazon Drive, S3, Dropbox, Backblaze B2, One Drive, Swift, Hubic, Cloudfile…</li>
+<li><a href="https://github.com/perkeep/perkeep" target="_blank" rel="noopener">perkeep</a> - Perkeep is your personal storage system for life: a way of storing, syncing, sharing, modelling and backing up content.</li>
+<li><a href="https://github.com/s3git/s3git" target="_blank" rel="noopener">s3git</a> - Git for Cloud Storage. Distributed Version Control for Data.</li>
+<li><a href="https://github.com/storj/storj" target="_blank" rel="noopener">storj</a> - Decentralized cloud object storage that is affordable, easy to use, private, and secure.</li>
+<li><a href="https://github.com/rook/rook" target="_blank" rel="noopener">rook</a> - Open, Cloud Native, and Universal Distributed Storage.</li>
+<li><a href="https://github.com/rancher/longhorn" target="_blank" rel="noopener">longhorn</a> Longhorn is an open source persistent block storage server delivered via containers.</li>
+</ul>
+<a id="more"></a>
+<h2 id="Key-Value-Store"><a href="#Key-Value-Store" class="headerlink" title="Key-Value Store"></a>Key-Value Store</h2><p><em>Key-Value Store implemented in Go.</em></p>
+<ul>
+<li><a href="https://github.com/prologic/bitcask" target="_blank" rel="noopener">Bitcask</a> - Bitcask is an embeddable, persistent and fast key-value (KV) database written in pure Go with predictable read/write performance, low latency and high throughput thanks to the bitcask on-disk layout (LSM+WAL).</li>
+<li><a href="https://github.com/dgraph-io/badger" target="_blank" rel="noopener">BadgerDB</a> - BadgerDB is an embeddable, persistent, simple and fast key-value (KV) database written in pure Go. It’s meant to be a performant alternative to non-Go-based key-value stores like RocksDB.</li>
+<li><a href="https://github.com/dcoker/biscuit" target="_blank" rel="noopener">biscuit</a> - Biscuit is a multi-region HA key-value store for your AWS infrastructure secrets.</li>
+<li><a href="https://github.com/hashicorp/consul" target="_blank" rel="noopener">consul</a> - Distributed consistent replicated key-value store for service discovery and configuration.</li>
+<li><a href="https://github.com/peterbourgon/diskv" target="_blank" rel="noopener">diskv</a> - A disk-backed key-value store.</li>
+<li><a href="https://github.com/coreos/etcd" target="_blank" rel="noopener">etcd</a> - Distributed reliable key-value store for the most critical data of a distributed system.</li>
+<li><a href="https://github.com/patrickmn/go-cache" target="_blank" rel="noopener">go-cache</a> - An in-memory key:value store/cache (similar to Memcached) library for Go, suitable for single-machine applications.</li>
+</ul>
+<h2 id="File-System"><a href="#File-System" class="headerlink" title="File System"></a>File System</h2><p><em>File Systems implemented in Go.</em></p>
+<ul>
+<li><a href="https://github.com/git-lfs/git-lfs" target="_blank" rel="noopener">git-lfs</a> - Git extension for versioning large files.</li>
+<li><a href="https://github.com/chrislusf/seaweedfs" target="_blank" rel="noopener">seaweedfs</a> - SeaweedFS is a simple and highly scalable distributed file system for small files.</li>
+<li><a href="https://github.com/fsnotify/fsnotify" target="_blank" rel="noopener">fsnotify</a> - Cross-platform file system notifications for Go.</li>
+<li><a href="https://github.com/kahing/goofys" target="_blank" rel="noopener">goofys</a> - A high-performance, POSIX-ish Amazon S3 file system written in Go.</li>
+<li><a href="https://github.com/coreos/go-systemd" target="_blank" rel="noopener">go-systemd</a> - Go bindings to systemd socket activation, journal, D-Bus, and unit files.</li>
+<li><a href="https://github.com/GoogleCloudPlatform/gcsfuse" target="_blank" rel="noopener">gcsfuse</a> - A user-space file system for interacting with Google Cloud Storage.</li>
+<li><a href="https://github.com/ovh/svfs" target="_blank" rel="noopener">svfs</a> - A virtual file system over Openstack Swift built upon fuse.</li>
+<li><a href="https://github.com/spf13/afero" target="_blank" rel="noopener">afero</a> - A FileSystem Abstraction System for Go</li>
+</ul>
+<h2 id="Database"><a href="#Database" class="headerlink" title="Database"></a>Database</h2><p><em>Databases implemented in Go.</em></p>
+<ul>
+<li><a href="https://github.com/allegro/bigcache" target="_blank" rel="noopener">BigCache</a> - Efficient key/value cache for gigabytes of data.</li>
+<li><a href="https://github.com/boltdb/bolt" target="_blank" rel="noopener">bolt</a> - A low-level key/value database for Go. This original version by Ben Johnson has been marked as unmaintained and forked by <a href="https://github.com/coreos/bbolt" target="_blank" rel="noopener">CoreOS bbolt</a>.</li>
+<li><a href="https://github.com/tidwall/buntdb" target="_blank" rel="noopener">buntdb</a> - A fast, embeddable, in-memory key/value database for Go with custom indexing and spatial support.</li>
+<li><a href="https://github.com/muesli/cache2go" target="_blank" rel="noopener">cache2go</a> - An in-memory key:value cache which supports automatic invalidation based on timeouts.</li>
+<li><a href="https://github.com/cockroachdb/cockroach" target="_blank" rel="noopener">cockroach</a> - A Scalable, Geo-Replicated, Transactional Datastore</li>
+<li><a href="https://github.com/codingsince1985/couchcache" target="_blank" rel="noopener">couchcache</a> - A RESTful caching micro-service backed by Couchbase server.</li>
+<li><a href="https://github.com/CovenantSQL/CovenantSQL" target="_blank" rel="noopener">CovenantSQL</a> - A SQL Database with Blockchain features.</li>
+<li><a href="https://github.com/dgraph-io/dgraph" target="_blank" rel="noopener">dgraph</a> - Scalable, Distributed, Low Latency, High Throughput Graph Database.</li>
+<li><a href="https://github.com/peterbourgon/diskv" target="_blank" rel="noopener">diskv</a> - A home-grown disk-backed key-value store.</li>
+<li><a href="https://github.com/krotik/eliasdb" target="_blank" rel="noopener">eliasdb</a> - Dependency-free, transactional graph database with REST API, phrase search and SQL-like query language.</li>
+<li><a href="https://github.com/emitter-io/emitter" target="_blank" rel="noopener">emitter</a> - Scalable, low-latency, distributed &amp; secure pub/sub database with time-series message storage, suitable for IoT, gaming, apps and real-time web.</li>
+<li><a href="https://github.com/couchbase/goforestdb" target="_blank" rel="noopener">forestdb</a> - Go bindings for ForestDB.</li>
+<li><a href="https://github.com/bluele/gcache" target="_blank" rel="noopener">GCache</a> - Cache library with support for expirable Cache, LFU, LRU and ARC.</li>
+<li><a href="https://github.com/melihmucuk/geocache" target="_blank" rel="noopener">geocache</a> - An in-memory cache that is suitable for geolocation based applications.</li>
+<li><a href="https://github.com/pmylund/go-cache" target="_blank" rel="noopener">go-cache</a> - An in-memory key:value store/cache (similar to Memcached) library for Go, suitable for single-machine applications.</li>
+<li><a href="https://github.com/syndtr/goleveldb" target="_blank" rel="noopener">goleveldb</a> - An implementation of the <a href="https://github.com/google/leveldb" target="_blank" rel="noopener">LevelDB</a> key/value database in the Go.</li>
+<li><a href="https://github.com/golang/groupcache" target="_blank" rel="noopener">groupcache</a> - Groupcache is a caching and cache-filling library, intended as a replacement for memcached in many cases.</li>
+<li><a href="https://github.com/influxdb/influxdb" target="_blank" rel="noopener">influxdb</a> - Scalable datastore for metrics, events, and real-time analytics</li>
+<li><a href="https://github.com/siddontang/ledisdb" target="_blank" rel="noopener">ledisdb</a> - Ledisdb is a high performance NoSQL like Redis based on LevelDB.</li>
+<li><a href="https://github.com/jmhodges/levigo" target="_blank" rel="noopener">levigo</a> - Levigo is a Go wrapper for LevelDB.</li>
+<li><a href="https://github.com/couchbase/moss" target="_blank" rel="noopener">moss</a> - Moss is a simple LSM key-value storage engine written in 100% Go.</li>
+<li><a href="https://github.com/attic-labs/noms" target="_blank" rel="noopener">noms</a> - The versioned, forkable, syncable database.</li>
+<li><a href="https://github.com/fern4lvarez/piladb" target="_blank" rel="noopener">piladb</a> - Lightweight RESTful database engine based on stack data structures.</li>
+<li><a href="https://github.com/nuveo/prest" target="_blank" rel="noopener">pREST</a> - Serve a RESTful API from any PostgreSQL database.</li>
+<li><a href="https://github.com/prometheus/prometheus" target="_blank" rel="noopener">prometheus</a> - Monitoring system and time series database.</li>
+<li><a href="https://github.com/rqlite/rqlite" target="_blank" rel="noopener">rqlite</a> - The lightweight, distributed, relational database built on SQLite.</li>
+<li><a href="https://github.com/nanobox-io/golang-scribble" target="_blank" rel="noopener">scribble</a> - A tiny flat file JSON store.</li>
+<li><a href="https://github.com/pingcap/tidb" target="_blank" rel="noopener">tidb</a> - TiDB is a distributed SQL database. Inspired by the design of Google F1.</li>
+<li><a href="https://github.com/HouzuoGuo/tiedot" target="_blank" rel="noopener">tiedot</a> - Your NoSQL database powered by Golang.</li>
+<li><a href="https://github.com/tidwall/tile38" target="_blank" rel="noopener">Tile38</a> - A geolocation DB with spatial index and realtime geofencing.</li>
+</ul>
+<p><em>Database schema migration.</em></p>
+<ul>
+<li><a href="https://github.com/GuiaBolso/darwin" target="_blank" rel="noopener">darwin</a> - Database schema evolution library for Go</li>
+<li><a href="https://github.com/steinbacher/goose" target="_blank" rel="noopener">goose</a> - Database migration tool. You can manage your database’s evolution by creating incremental SQL or Go scripts.</li>
+<li><a href="https://github.com/go-gormigrate/gormigrate" target="_blank" rel="noopener">gormigrate</a> - Database schema migration helper for Gorm ORM.</li>
+<li><a href="https://github.com/mattes/migrate" target="_blank" rel="noopener">migrate</a> - Database migration handling in Golang support MySQL, PostgreSQL, Cassandra, and SQLite.</li>
+<li><a href="https://github.com/pravasan/pravasan" target="_blank" rel="noopener">pravasan</a> - Simple Migration tool - currently for MySQL but planning to support soon for Postgres, SQLite, MongoDB, etc.,</li>
+<li><a href="https://github.com/markbates/pop/tree/master/soda" target="_blank" rel="noopener">soda</a> - Database migration, creation, ORM, etc… for MySQL, PostgreSQL, and SQLite.</li>
+<li><a href="https://github.com/rubenv/sql-migrate" target="_blank" rel="noopener">sql-migrate</a> - Database migration tool. Allows embedding migrations into the application using go-bindata.</li>
+</ul>
+<p><em>Database tools.</em></p>
+<ul>
+<li><a href="https://github.com/siddontang/go-mysql" target="_blank" rel="noopener">go-mysql</a> - A go toolset to handle MySQL protocol and replication.</li>
+<li><a href="https://github.com/siddontang/go-mysql-elasticsearch" target="_blank" rel="noopener">go-mysql-elasticsearch</a> - Sync your MySQL data into Elasticsearch automatically.</li>
+<li><a href="https://github.com/flike/kingshard" target="_blank" rel="noopener">kingshard</a> - kingshard is a high performance proxy for MySQL powered by Golang.</li>
+<li><a href="https://github.com/2tvenom/myreplication" target="_blank" rel="noopener">myreplication</a> - MySql binary log replication listener. Support statement and row based replication.</li>
+<li><a href="https://github.com/outbrain/orchestrator" target="_blank" rel="noopener">orchestrator</a> - MySQL replication topology manager &amp; visualizer</li>
+<li><a href="https://github.com/sosedoff/pgweb" target="_blank" rel="noopener">pgweb</a> - A web-based PostgreSQL database browser</li>
+<li><a href="https://github.com/youtube/vitess" target="_blank" rel="noopener">vitess</a> - vitess provides servers and tools which facilitate scaling of MySQL databases for large scale web services.</li>
+<li><a href="https://github.com/xo/usql" target="_blank" rel="noopener">usql</a> - universal command-line interface for SQL databases</li>
+</ul>
+<p><em>SQL query builder, libraries for building and using SQL.</em></p>
+<ul>
+<li><a href="https://github.com/mgutz/dat" target="_blank" rel="noopener">dat</a> - Go Postgres Data Access Toolkit</li>
+<li><a href="https://github.com/gchaincl/dotsql" target="_blank" rel="noopener">Dotsql</a> - Go library that helps you keep sql files in one place and use it with ease.</li>
+<li><a href="https://github.com/doug-martin/goqu" target="_blank" rel="noopener">goqu</a> - An idiomatic SQL builder and query library.</li>
+<li><a href="https://github.com/galeone/igor" target="_blank" rel="noopener">igor</a> - Abstraction layer for PostgreSQL that supports advanced functionality and uses gorm-like syntax.</li>
+<li><a href="https://github.com/go-ozzo/ozzo-dbx" target="_blank" rel="noopener">ozzo-dbx</a> - Powerful data retrieval methods as well as DB-agnostic query building capabilities.</li>
+<li><a href="https://github.com/variadico/scaneo" target="_blank" rel="noopener">scaneo</a> - Generate Go code to convert database rows into arbitrary structs.</li>
+<li><a href="https://github.com/elgris/sqrl" target="_blank" rel="noopener">sqrl</a> - SQL query builder, fork of Squirrel with improved performance.</li>
+<li><a href="https://github.com/Masterminds/squirrel" target="_blank" rel="noopener">Squirrel</a> - Go library that helps you build SQL queries.</li>
+<li><a href="https://github.com/knq/xo" target="_blank" rel="noopener">xo</a> - Generate idiomatic Go code for databases based on existing schema definitions or custom queries supporting PostgreSQL, MySQL, SQLite, Oracle, and Microsoft SQL Server.</li>
+</ul>
+<h2 id="Database-Drivers"><a href="#Database-Drivers" class="headerlink" title="Database Drivers"></a>Database Drivers</h2><p><em>Libraries for connecting and operating databases.</em></p>
+<ul>
+<li>Relational Databases<ul>
+<li><a href="https://github.com/viant/bgc" target="_blank" rel="noopener">bgc</a> - Datastore Connectivity for BigQuery for go.</li>
+<li><a href="https://github.com/nakagami/firebirdsql" target="_blank" rel="noopener">firebirdsql</a> - Firebird RDBMS SQL driver for Go</li>
+<li><a href="https://github.com/mattn/go-adodb" target="_blank" rel="noopener">go-adodb</a> - Microsoft ActiveX Object DataBase driver for go that using database/sql.</li>
+<li><a href="https://github.com/rounds/go-bqstreamer" target="_blank" rel="noopener">go-bqstreamer</a> - BigQuery fast and concurrent stream insert.</li>
+<li><a href="https://github.com/denisenkom/go-mssqldb" target="_blank" rel="noopener">go-mssqldb</a> - Microsoft MSSQL driver in go language.</li>
+<li><a href="https://github.com/mattn/go-oci8" target="_blank" rel="noopener">go-oci8</a> - Oracle driver for go that using database/sql.</li>
+<li><a href="https://github.com/go-sql-driver/mysql" target="_blank" rel="noopener">go-sql-driver/mysql</a> - MySQL driver for Go.</li>
+<li><a href="https://github.com/mattn/go-sqlite3" target="_blank" rel="noopener">go-sqlite3</a> - SQLite3 driver for go that using database/sql.</li>
+<li><a href="https://github.com/minus5/gofreetds" target="_blank" rel="noopener">gofreetds</a> Microsoft MSSQL driver. Go wrapper over <a href="http://www.freetds.org/" target="_blank" rel="noopener">FreeTDS</a>.</li>
+<li><a href="https://github.com/jackc/pgx" target="_blank" rel="noopener">pgx</a> - PostgreSQL driver supporting features beyond those exposed by database/sql.</li>
+<li><a href="https://github.com/lib/pq" target="_blank" rel="noopener">pq</a> - Pure Go Postgres driver for database/sql.</li>
+</ul>
+</li>
+<li>NoSQL Databases<ul>
+<li><a href="https://github.com/aerospike/aerospike-client-go" target="_blank" rel="noopener">aerospike-client-go</a> - Aerospike client in Go language.</li>
+<li><a href="https://github.com/solher/arangolite" target="_blank" rel="noopener">arangolite</a> - Lightweight golang driver for ArangoDB.</li>
+<li><a href="https://github.com/viant/asc" target="_blank" rel="noopener">asc</a> - Datastore Connectivity for Aerospike for go.</li>
+<li><a href="https://github.com/google/cayley" target="_blank" rel="noopener">cayley</a> - A graph database with support for multiple backends.</li>
+<li><a href="https://github.com/viant/dsc" target="_blank" rel="noopener">dsc</a> - Datastore connectivity for SQL, NoSQL, structured files.</li>
+<li><a href="https://github.com/underarmour/dynago" target="_blank" rel="noopener">dynago</a> - Dynago is a principle of least surprise client for DynamoDB</li>
+<li><a href="https://github.com/couchbase/go-couchbase" target="_blank" rel="noopener">go-couchbase</a> - Couchbase client in Go</li>
+<li><a href="https://github.com/fjl/go-couchdb" target="_blank" rel="noopener">go-couchdb</a> - Yet another CouchDB HTTP API wrapper for Go</li>
+<li><a href="https://github.com/couchbase/gocb" target="_blank" rel="noopener">gocb</a> - Official Couchbase Go SDK</li>
+<li><a href="http://gocql.github.io/" target="_blank" rel="noopener">gocql</a> - A Go language driver for Apache Cassandra.</li>
+<li><a href="https://github.com/bradfitz/gomemcache/" target="_blank" rel="noopener">gomemcache</a> - memcache client library for the Go programming language.</li>
+<li><a href="https://github.com/GoRethink/gorethink" target="_blank" rel="noopener">gorethink</a> - Go language driver for RethinkDB</li>
+<li><a href="https://github.com/zegl/goriak" target="_blank" rel="noopener">goriak</a> - Go language driver for Riak KV</li>
+<li><a href="https://godoc.org/labix.org/v2/mgo" target="_blank" rel="noopener">mgo</a> - MongoDB driver for the Go language that implements a rich and well tested selection of features under a very simple API following standard Go idioms.</li>
+<li><a href="https://github.com/cihangir/neo4j" target="_blank" rel="noopener">neo4j</a> - Neo4j Rest API Bindings for Golang</li>
+<li><a href="https://github.com/davemeehan/Neo4j-GO" target="_blank" rel="noopener">Neo4j-GO</a> - Neo4j REST Client in golang.</li>
+<li><a href="https://github.com/jmcvetta/neoism" target="_blank" rel="noopener">neoism</a> - Neo4j client for Golang</li>
+<li><a href="https://github.com/gomodule/redigo" target="_blank" rel="noopener">redigo</a> - Redigo is a Go client for the Redis database.</li>
+<li><a href="https://github.com/go-redis/redis" target="_blank" rel="noopener">redis</a> - Redis client for Golang</li>
+<li><a href="https://github.com/hoisie/redis" target="_blank" rel="noopener">redis</a> - A simple, powerful Redis client for Go.</li>
+<li><a href="https://github.com/bsm/redeo" target="_blank" rel="noopener">redis</a> - Redis-protocol compatible TCP servers/services.</li>
+</ul>
+</li>
+<li>Search and Analytic Databases<ul>
+<li><a href="https://github.com/blevesearch/bleve" target="_blank" rel="noopener">bleve</a> - A modern text indexing library for go.</li>
+<li><a href="https://github.com/olivere/elastic" target="_blank" rel="noopener">elastic</a> - Elasticsearch client for Go.</li>
+<li><a href="https://github.com/mattbaird/elastigo" target="_blank" rel="noopener">elastigo</a> - A Elasticsearch client library.</li>
+<li><a href="https://github.com/belogik/goes" target="_blank" rel="noopener">goes</a> - A library to interact with Elasticsearch.</li>
+<li><a href="https://github.com/seiflotfy/skizze" target="_blank" rel="noopener">skizze</a> - A probabilistic data-structures service and storage.</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/14/kafka高可用设计(下)/" rel="next" title="kafka高可用设计(下)">
+                <i class="fa fa-chevron-left"></i> kafka高可用设计(下)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/Raft 一致性算法论文译文/" rel="prev" title="Raft 一致性算法论文译文">
+                Raft 一致性算法论文译文 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#优秀的-Go存储开源项目和库"><span class="nav-number">1.</span> <span class="nav-text">优秀的 Go存储开源项目和库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Contributing"><span class="nav-number">1.0.1.</span> <span class="nav-text">Contributing</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#If-you-see-a-package-or-project-here-that-is-no-longer-maintained-or-is-not-a-good-fit-please-submit-a-pull-request-to-improve-this-file-Thank-you"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">If you see a package or project here that is no longer maintained or is not a good fit, please submit a pull request to improve this file. Thank you!</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Contents"><span class="nav-number">1.0.2.</span> <span class="nav-text">Contents</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Storage-Server"><span class="nav-number">1.1.</span> <span class="nav-text">Storage Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Key-Value-Store"><span class="nav-number">1.2.</span> <span class="nav-text">Key-Value Store</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#File-System"><span class="nav-number">1.3.</span> <span class="nav-text">File System</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Database"><span class="nav-number">1.4.</span> <span class="nav-text">Database</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Database-Drivers"><span class="nav-number">1.5.</span> <span class="nav-text">Database Drivers</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

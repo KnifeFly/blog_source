@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="kafka," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="Kafka NotLeaderForPartitionException异常异常分析1.Kafka日志分析 发现Kafka日志中有比较多的org.apache.kafka.common.errors.NotLeaderForPartitionException异常信息，该异常从字面解释就是某个分区的leader找不到，具体异常信息如下： 12019-01-18 22:01:00,802 ERROR">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka运营-NotLeaderForPartitionException异常">
+<meta property="og:url" content="http://yoursite.com/2019/01/03/kafka运营-NotLeaderForPartitionException异常/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="Kafka NotLeaderForPartitionException异常异常分析1.Kafka日志分析 发现Kafka日志中有比较多的org.apache.kafka.common.errors.NotLeaderForPartitionException异常信息，该异常从字面解释就是某个分区的leader找不到，具体异常信息如下： 12019-01-18 22:01:00,802 ERROR">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-20T05:57:10.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka运营-NotLeaderForPartitionException异常">
+<meta name="twitter:description" content="Kafka NotLeaderForPartitionException异常异常分析1.Kafka日志分析 发现Kafka日志中有比较多的org.apache.kafka.common.errors.NotLeaderForPartitionException异常信息，该异常从字面解释就是某个分区的leader找不到，具体异常信息如下： 12019-01-18 22:01:00,802 ERROR">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/01/03/kafka运营-NotLeaderForPartitionException异常/"/>
+
+
+
+
+
+  <title>Kafka运营-NotLeaderForPartitionException异常 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/03/kafka运营-NotLeaderForPartitionException异常/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Kafka运营-NotLeaderForPartitionException异常</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-03T12:11:22+08:00">
+                2019-01-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Kafka-NotLeaderForPartitionException异常"><a href="#Kafka-NotLeaderForPartitionException异常" class="headerlink" title="Kafka NotLeaderForPartitionException异常"></a>Kafka NotLeaderForPartitionException异常</h2><h3 id="异常分析"><a href="#异常分析" class="headerlink" title="异常分析"></a>异常分析</h3><p>1.Kafka日志分析</p>
+<p>发现Kafka日志中有比较多的org.apache.kafka.common.errors.NotLeaderForPartitionException异常信息，该异常从字面解释就是某个分区的leader找不到，具体异常信息如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2019</span>-<span class="number">01</span>-<span class="number">18</span> <span class="number">22</span>:<span class="number">01</span>:<span class="number">00</span>,<span class="number">802</span> ERROR kafka.server.ReplicaFetcherThread: [ReplicaFetcherThread-<span class="number">0</span>-<span class="number">118</span>]: Error <span class="keyword">for</span> partition [kafka_custflow_topic_test,<span class="number">5</span>] to broker <span class="number">118</span>:org.apache.kafka.common.errors.NotLeaderForPartitionException: This server is not the leader <span class="keyword">for</span> that topic-partition.</span><br></pre></td></tr></table></figure>
+<p>通常来说该异常信息是由于kafka和zk连接存在超时，接着导致Controller重新选举导致获取元数据不正确，timed out的那台Broker所持有的partition就会出现NotLeaderForPartitionException，kafka中连接zk超时日志格式信息如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:55,916 WARN org.apache.zookeeper.ClientCnxn: Client session timed out, have not heard from server in 7329ms for sessionid 0x2677edb3ac1f8d5</span><br><span class="line">2019-01-18 21:59:55,916 INFO org.apache.zookeeper.ClientCnxn: Client session timed out, have not heard from server in 7329ms for sessionid 0x2677edb3ac1f8d5, closing socket connection and attempting reconnect</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:56,075 INFO org.apache.zookeeper.ClientCnxn: Opening socket connection to server mfsmaster/121.9.240.249:2181. Will not attempt to authenticate using SASL (unknown error)</span><br><span class="line">2019-01-18 21:59:56,075 INFO org.apache.zookeeper.ClientCnxn: Socket connection established to mfsmaster/121.9.240.249:2181, initiating session</span><br><span class="line">2019-01-18 21:59:56,080 WARN org.apache.zookeeper.ClientCnxn: Unable to reconnect to ZooKeeper service, session 0x2677edb3ac1f8d5 has expired</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.I0Itec.zkclient.ZkClient: zookeeper state changed (Expired)</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.apache.zookeeper.ClientCnxn: Unable to reconnect to ZooKeeper service, session 0x2677edb3ac1f8d5 has expired, closing socket connection</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.apache.zookeeper.ZooKeeper: Initiating client connection, connectString=SR-CNSX-GDFS-240-251:2181,SR-CNSX-GDFS-240-252:2181,SR-CNSX-GDFS-240-253:2181,mfslogger:2181,mfsmaster:2181/kafka sessionTimeout=6000 watcher=org.I0Itec.zkclient.ZkClient@7957dc72</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.apache.zookeeper.ClientCnxn: EventThread shut down for session: 0x2677edb3ac1f8d5</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:56,094 INFO org.I0Itec.zkclient.ZkClient: zookeeper state changed (SyncConnected)</span><br><span class="line">2019-01-18 21:59:56,095 INFO kafka.server.KafkaHealthcheck$SessionExpireListener: re-registering broker info in ZK for broker 121</span><br><span class="line">2019-01-18 21:59:56,095 INFO kafka.utils.ZKCheckedEphemeral: Creating /brokers/ids/121 (is it secure? false)</span><br><span class="line">2019-01-18 21:59:56,112 INFO kafka.utils.ZKCheckedEphemeral: Result of znode creation is: OK</span><br><span class="line">2019-01-18 21:59:56,113 INFO kafka.utils.ZkUtils: Registered broker 121 at path /brokers/ids/121 with addresses: EndPoint(SR-CNSX-GDFS-240-252,9092,ListenerName(PLAINTEXT),PLAINTEXT)</span><br><span class="line">2019-01-18 21:59:56,113 INFO kafka.server.KafkaHealthcheck$SessionExpireListener: done re-registering broker</span><br><span class="line">2019-01-18 21:59:56,113 INFO kafka.server.KafkaHealthcheck$SessionExpireListener: Subscribing to /brokers/topics path to watch for new topics</span><br></pre></td></tr></table></figure>
+<p>2.zk日志分析</p>
+<p>同时分析zk日志信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:55,961 WARN org.apache.zookeeper.server.NIOServerCnxn: caught end of stream exception</span><br><span class="line">EndOfStreamException: Unable to read additional data from client sessionid 0x2677edb3ac1f8d5, likely client has closed socket</span><br><span class="line">        at org.apache.zookeeper.server.NIOServerCnxn.doIO(NIOServerCnxn.java:231)</span><br><span class="line">        at org.apache.zookeeper.server.NIOServerCnxnFactory.run(NIOServerCnxnFactory.java:208)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line">2019-01-18 21:59:55,962 INFO org.apache.zookeeper.server.NIOServerCnxn: Closed socket connection for client /121.9.240.252:40660 which had sessionid 0x2677edb3ac1f8d5</span><br><span class="line">2019-01-18 21:59:56,001 INFO org.apache.zookeeper.server.ZooKeeperServer: Expiring session 0x2677edb3ac1f8d5, timeout of 6000ms exceeded</span><br><span class="line">2019-01-18 21:59:56,001 INFO org.apache.zookeeper.server.PrepRequestProcessor: Processed session termination for sessionid: 0x2677edb3ac1f8d5</span><br></pre></td></tr></table></figure>
+<p>综合zk和kafka日志信息，可以看出kafka和zk session超时之后，session会被zk主动关闭，之后kafka会重新连接到zk集群，基本是在1s之内kafka新的session已经建立，所以从短时间内kafka服务没问题。</p>
+<p>3.gc日志分析</p>
+<p>Gc 日志中基本没有Full GC</p>
+<p>4.系统资源分析</p>
+<ul>
+<li>晚上9~10业务晚高峰，数据量通常比较大</li>
+<li>CPU 内存正常</li>
+<li>IO在晚高峰时存在突刺</li>
+</ul>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>1.kafka增大session time out </p>
+<p>当前默认值是6s，可适当加大超时时间</p>
+<p>2.增加kafka磁盘</p>
+<p>3.增加磁盘IO处理线程数</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/kafka/" rel="tag"># kafka</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/23/理解channel/" rel="next" title="理解Go Channel">
+                <i class="fa fa-chevron-left"></i> 理解Go Channel
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/02/14/kafka 高可用设计(上)/" rel="prev" title="kafka高可用设计(上)">
+                kafka高可用设计(上) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Kafka-NotLeaderForPartitionException异常"><span class="nav-number">1.</span> <span class="nav-text">Kafka NotLeaderForPartitionException异常</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#异常分析"><span class="nav-number">1.1.</span> <span class="nav-text">异常分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案"><span class="nav-number">1.2.</span> <span class="nav-text">解决方案</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

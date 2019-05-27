@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next mist use-motion" lang="zh-Hans">
+<html class="theme-next muse use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -102,7 +102,7 @@
 <meta property="og:site_name" content="KnifeFly">
 <meta property="og:description" content="​    因为Nginx是利用信号来实现平滑升级、更换日志文件、配置文件实时生效、重启服务等功能的，所以在Nginx的启动过程中会向操作系统内核注册所使用到的信号，其代码实现如下 12345678910int ngx_cdeclmain(int argc, char *const *argv)&amp;#123;    ……    // 初始化信号    if (ngx_init_signals(cycl">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-03-31T10:44:02.830Z">
+<meta property="og:updated_time" content="2018-08-29T15:39:24.651Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="nginx 信号处理">
 <meta name="twitter:description" content="​    因为Nginx是利用信号来实现平滑升级、更换日志文件、配置文件实时生效、重启服务等功能的，所以在Nginx的启动过程中会向操作系统内核注册所使用到的信号，其代码实现如下 12345678910int ngx_cdeclmain(int argc, char *const *argv)&amp;#123;    ……    // 初始化信号    if (ngx_init_signals(cycl">
@@ -113,8 +113,8 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Mist',
-    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
     tabs: true,
     motion: true,
@@ -211,28 +211,8 @@
         </li>
       
         
-        <li class="menu-item menu-item-categories">
-          <a href="/categories" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
-            
-            分类
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-about">
-          <a href="/about" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
-            
-            关于
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-archives">
-          <a href="/archives" rel="section">
+          <a href="/archives/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -242,7 +222,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/tags" rel="section">
+          <a href="/tags/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -288,7 +268,7 @@
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Yujie">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/lufei.jpg">
+      <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -334,37 +314,6 @@
           
 
           
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计</span>
-                
-                <span title="字数统计">
-                  
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长</span>
-                
-                <span title="阅读时长">
-                  
-                </span>
-              
-            </div>
-          
 
           
 
@@ -382,20 +331,20 @@
 
       
         <p>​    因为Nginx是利用信号来实现平滑升级、更换日志文件、配置文件实时生效、重启服务等功能的，所以在Nginx的启动过程中会向操作系统内核注册所使用到的信号，其代码实现如下</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> ngx_cdecl</div><div class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span> *<span class="keyword">const</span> *argv)</div><div class="line">&#123;</div><div class="line">    ……</div><div class="line">    <span class="comment">// 初始化信号</span></div><div class="line">    <span class="keyword">if</span> (ngx_init_signals(cycle-&gt;<span class="built_in">log</span>) != NGX_OK) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">    &#125;</div><div class="line">    ……</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ngx_cdecl</span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span> *<span class="keyword">const</span> *argv)</span><br><span class="line">&#123;</span><br><span class="line">    ……</span><br><span class="line">    <span class="comment">// 初始化信号</span></span><br><span class="line">    <span class="keyword">if</span> (ngx_init_signals(cycle-&gt;<span class="built_in">log</span>) != NGX_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ……</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <a id="more"></a>
 <p>​    signals是一个全局数组，保存的是ngx_signal_t数据类型，定义了各种信号信息以及处理函数，ngx_init_signals在程序main入口处调用，注册各种信号，ngx_init_signals()实现如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ngx_int_t</span></div><div class="line">ngx_init_signals(<span class="keyword">ngx_log_t</span> *<span class="built_in">log</span>)</div><div class="line">&#123;</div><div class="line">    <span class="keyword">ngx_signal_t</span>      *sig;</div><div class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span>   <span class="title">sa</span>;</span>  </div><div class="line"></div><div class="line">    <span class="comment">// 遍历signals数组，注册各种信号处理函数</span></div><div class="line">    <span class="keyword">for</span> (sig = signals; sig-&gt;signo != <span class="number">0</span>; sig++) &#123;</div><div class="line">        ngx_memzero(&amp;sa, <span class="keyword">sizeof</span>(struct sigaction));</div><div class="line">        sa.sa_handler = sig-&gt;handler;  </div><div class="line">        sigemptyset(&amp;sa.sa_mask);</div><div class="line">        <span class="comment">//向内核注册信号的回调方法</span></div><div class="line">        <span class="keyword">if</span> (sigaction(sig-&gt;signo, &amp;sa, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</div><div class="line">			……</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> NGX_OK;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ngx_int_t</span></span><br><span class="line">ngx_init_signals(<span class="keyword">ngx_log_t</span> *<span class="built_in">log</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">ngx_signal_t</span>      *sig;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span>   <span class="title">sa</span>;</span>  </span><br><span class="line"></span><br><span class="line">    <span class="comment">// 遍历signals数组，注册各种信号处理函数</span></span><br><span class="line">    <span class="keyword">for</span> (sig = signals; sig-&gt;signo != <span class="number">0</span>; sig++) &#123;</span><br><span class="line">        ngx_memzero(&amp;sa, <span class="keyword">sizeof</span>(struct sigaction));</span><br><span class="line">        sa.sa_handler = sig-&gt;handler;  </span><br><span class="line">        sigemptyset(&amp;sa.sa_mask);</span><br><span class="line">        <span class="comment">//向内核注册信号的回调方法</span></span><br><span class="line">        <span class="keyword">if</span> (sigaction(sig-&gt;signo, &amp;sa, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">			……</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> NGX_OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>​    Nginx采用ngx_signal_t结构体来保存信号id 信号名称 信号处理函数，signals是一个ngx_signal_t类型的全局数组，用来保存各个信号的信息，不同信号的处理函数都是ngx_signal_handler，<strong>ngx_signal_handler函数的逻辑主要是根据信号类型来设置不同的全局标志变量，ngx_terminate等全局标志变量都是sig_atomic_t数据类型，sig_atomic_t可以在操作系统层面提供的读写原子性，保证在对ngx_terminate变量的读的时候不会被信号中断，不过比较奇怪的是ngx_terminate变量没有添加volatile关键字，编译器会对优化变量的访问方式，如果ngx_terminate的赋值只是更改了寄存器中变量的值，而主循环中读的却是内存中的变量值，岂不是出问题？</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// ngx_terminate的声明：</span></div><div class="line"><span class="keyword">sig_atomic_t</span>  ngx_sigalrm;</div><div class="line"><span class="keyword">sig_atomic_t</span>  ngx_terminate;</div><div class="line"><span class="keyword">sig_atomic_t</span>  ngx_quit;</div><div class="line">....</div><div class="line"></div><div class="line"><span class="comment">// 信号处理函数大概逻辑</span></div><div class="line"><span class="keyword">switch</span> (signo) &#123;</div><div class="line">    case ngx_signal_value(NGX_SHUTDOWN_SIGNAL):</div><div class="line">        ngx_quit = <span class="number">1</span>;</div><div class="line">        action = <span class="string">", shutting down"</span>;</div><div class="line">        <span class="keyword">break</span>;</div><div class="line"></div><div class="line">    case ngx_signal_value(NGX_TERMINATE_SIGNAL):</div><div class="line">    <span class="keyword">case</span> SIGINT:</div><div class="line">        ngx_terminate = <span class="number">1</span>;</div><div class="line">        action = <span class="string">", exiting"</span>;</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    ...</div><div class="line">    <span class="keyword">break</span>;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ngx_terminate的声明：</span></span><br><span class="line"><span class="keyword">sig_atomic_t</span>  ngx_sigalrm;</span><br><span class="line"><span class="keyword">sig_atomic_t</span>  ngx_terminate;</span><br><span class="line"><span class="keyword">sig_atomic_t</span>  ngx_quit;</span><br><span class="line">....</span><br><span class="line"></span><br><span class="line"><span class="comment">// 信号处理函数大概逻辑</span></span><br><span class="line"><span class="keyword">switch</span> (signo) &#123;</span><br><span class="line">    case ngx_signal_value(NGX_SHUTDOWN_SIGNAL):</span><br><span class="line">        ngx_quit = <span class="number">1</span>;</span><br><span class="line">        action = <span class="string">", shutting down"</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    case ngx_signal_value(NGX_TERMINATE_SIGNAL):</span><br><span class="line">    <span class="keyword">case</span> SIGINT:</span><br><span class="line">        ngx_terminate = <span class="number">1</span>;</span><br><span class="line">        action = <span class="string">", exiting"</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
 <p>​    nginx命令行启动中提供了参数-s参数来搞一些事情，例如stop/quit/reopen/reload，如果nginx进程已经起来了，则可以通过-s参数来给master进程发送信号来控制nginx。ngx_signal_process函数主要是读master进程的pid文件，获取进程的pid，最后给master进程发送相关信号。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 如果启动的进程，有信号相关的参数，则像已经存在的masrer进程发送信号，然后自己退出</span></div><div class="line"><span class="keyword">if</span> (ngx_signal) &#123;</div><div class="line">    <span class="keyword">return</span> ngx_signal_process(cycle, ngx_signal);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果启动的进程，有信号相关的参数，则像已经存在的masrer进程发送信号，然后自己退出</span></span><br><span class="line"><span class="keyword">if</span> (ngx_signal) &#123;</span><br><span class="line">    <span class="keyword">return</span> ngx_signal_process(cycle, ngx_signal);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>​    在初始化流程中设置好了信号相关处理函数。<strong>master进程在派生出worker进程之前会屏蔽一大堆信号，例如SIGCHLD/SIGALRM/SIGINT等，防止在创建worker进程时受到干扰，worker进程的ngx_worker_process_init初始化函数中会重新设置worker进程的信号屏蔽字，把屏蔽字设置为空以便worker进程也可以正常处理各种信号</strong>。</p>
 <p>​    master进程的主循环会在调用sigsuspend(&amp;set)函数时阻塞，sigsuspend函数的功能主要是先用已经被清空的信号集代替当前进程中的信号集，然后阻塞等待信号，等信号处理函数返回之后会用老的信号屏蔽字替换新的信号屏蔽字。</p>
 <p>​    master进程对信号的设置大概如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// ngx_master_process_cycle 函数</span></div><div class="line">...</div><div class="line">sigemptyset(&amp;<span class="built_in">set</span>);</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGCHLD);</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGALRM);</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGIO);</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGINT);</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_RECONFIGURE_SIGNAL));</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_REOPEN_SIGNAL));</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_NOACCEPT_SIGNAL));</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_TERMINATE_SIGNAL));</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_SHUTDOWN_SIGNAL));</div><div class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_CHANGEBIN_SIGNAL));</div><div class="line"></div><div class="line"><span class="comment">//上面屏蔽一系列的信号，以防创建worker进程时，被打扰。</span></div><div class="line"><span class="keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;<span class="built_in">set</span>, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</div><div class="line">    ngx_log_error(NGX_LOG_ALERT, cycle-&gt;<span class="built_in">log</span>, ngx_errno,</div><div class="line">                  <span class="string">"sigprocmask() failed"</span>);</div><div class="line">&#125;</div><div class="line"><span class="comment">//清空信号集</span></div><div class="line">sigemptyset(&amp;<span class="built_in">set</span>);</div><div class="line">...</div><div class="line"><span class="keyword">for</span>(;;) &#123;</div><div class="line">	...        </div><div class="line">	sigsuspend(&amp;<span class="built_in">set</span>); <span class="comment">// 阻塞等待信号</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ngx_master_process_cycle 函数</span></span><br><span class="line">...</span><br><span class="line">sigemptyset(&amp;<span class="built_in">set</span>);</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGCHLD);</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGALRM);</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGIO);</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, SIGINT);</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_RECONFIGURE_SIGNAL));</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_REOPEN_SIGNAL));</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_NOACCEPT_SIGNAL));</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_TERMINATE_SIGNAL));</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_SHUTDOWN_SIGNAL));</span><br><span class="line">sigaddset(&amp;<span class="built_in">set</span>, ngx_signal_value(NGX_CHANGEBIN_SIGNAL));</span><br><span class="line"></span><br><span class="line"><span class="comment">//上面屏蔽一系列的信号，以防创建worker进程时，被打扰。</span></span><br><span class="line"><span class="keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;<span class="built_in">set</span>, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">    ngx_log_error(NGX_LOG_ALERT, cycle-&gt;<span class="built_in">log</span>, ngx_errno,</span><br><span class="line">                  <span class="string">"sigprocmask() failed"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//清空信号集</span></span><br><span class="line">sigemptyset(&amp;<span class="built_in">set</span>);</span><br><span class="line">...</span><br><span class="line"><span class="keyword">for</span>(;;) &#123;</span><br><span class="line">	...        </span><br><span class="line">	sigsuspend(&amp;<span class="built_in">set</span>); <span class="comment">// 阻塞等待信号</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>​    worker进程对信号设置大概如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// ngx_worker_process_cycle() -&gt; ngx_worker_process_init()</span></div><div class="line"></div><div class="line"><span class="comment">// ngx_worker_process_init函数</span></div><div class="line">...</div><div class="line"><span class="comment">// worker进程对从父进程继承而来的信号屏蔽字重新设置为空，以可以处理各种信号</span></div><div class="line">sigemptyset(&amp;<span class="built_in">set</span>);</div><div class="line"></div><div class="line"><span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;<span class="built_in">set</span>, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</div><div class="line">    ngx_log_error(NGX_LOG_ALERT, cycle-&gt;<span class="built_in">log</span>, ngx_errno,</div><div class="line">                  <span class="string">"sigprocmask() failed"</span>);</div><div class="line">&#125;</div><div class="line">...</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ngx_worker_process_cycle() -&gt; ngx_worker_process_init()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ngx_worker_process_init函数</span></span><br><span class="line">...</span><br><span class="line"><span class="comment">// worker进程对从父进程继承而来的信号屏蔽字重新设置为空，以可以处理各种信号</span></span><br><span class="line">sigemptyset(&amp;<span class="built_in">set</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;<span class="built_in">set</span>, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">    ngx_log_error(NGX_LOG_ALERT, cycle-&gt;<span class="built_in">log</span>, ngx_errno,</span><br><span class="line">                  <span class="string">"sigprocmask() failed"</span>);</span><br><span class="line">&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 <p>​    worker进程的主循环也会不停地检测各种信号全局标志变量，具体可参考nginx程序框架部分</p>
 
       
@@ -495,7 +444,7 @@
       <section class="site-overview sidebar-panel sidebar-panel-active">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
-               src="/uploads/lufei.jpg"
+               src="/images/avatar.gif"
                alt="Yujie" />
           <p class="site-author-name" itemprop="name">Yujie</p>
            
@@ -506,8 +455,8 @@
 
           
             <div class="site-state-item site-state-posts">
-              <a href="/archives">
-                <span class="site-state-item-count">10</span>
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -520,7 +469,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -561,8 +510,8 @@
       <div class="footer-inner">
         <div class="copyright" >
   
-  &copy;  2015 - 
-  <span itemprop="copyrightYear">2018</span>
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -577,7 +526,7 @@
 <div class="theme-info">
   主题 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT.Muse
   </a>
 </div>
 
