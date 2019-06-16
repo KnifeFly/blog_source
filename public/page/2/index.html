@@ -260,6 +260,280 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/20/Kafka集群扩容/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/20/Kafka集群扩容/" itemprop="url">Kafka 集群扩容</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-20T15:11:39+08:00">
+                2018-05-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Kafka-集群扩容"><a href="#Kafka-集群扩容" class="headerlink" title="Kafka 集群扩容"></a>Kafka 集群扩容</h1><p>kafka 集群在新增机器后是不会把历史已经创建的topic数据信息迁移到新加入集群的机器，只有新创建的topic才会分布到新机器。若想把历史topic数据均匀分布到加入机器后的新集群，需要人为操作，好在kafka提供了相应的工具可简单地完成数据迁移工作。</p>
+<p>迁移数据的过程是手动启动的，但是执行过程是完全自动化的。在kafka后台内部中，kafka将添加新的服务器，并作为正在迁移分区的follower，来完全复制该分区现有的数据。当新服务器完全复制该分区的内容并加入同步副本，成为现有副本之一后，就将现有的副本分区上的数据删除。</p>
+<p>分区重新分配工具可以用于跨broker迁移分区，理想的分区分配将确保所有的broker数据负载和分区大小。分区分配工具没有自动研究kafka集群的数据分布和迁移分区达到负载分布的能力，因此，管理员要弄清楚哪些topic或分区应该迁移。</p>
+<h2 id="数据清理"><a href="#数据清理" class="headerlink" title="数据清理"></a>数据清理</h2><p>在数据迁移的过程中涉及大量的数据复制，对于数据存储量大的topic，如果历史数据不是必须的，可以适当地删除数据，针对某些topic设置retetion时间，操作成功后无需重启kafka，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./kafka-configs.sh --zookeeper zookeeper:2181/kafka --entity-type topics --entity-name input_kafka_nginxLog_topic --alter --add-config retention.ms=86400000</span><br></pre></td></tr></table></figure>
+<h2 id="数据分区"><a href="#数据分区" class="headerlink" title="数据分区"></a>数据分区</h2><p>分区分配工具的3种模式:</p>
+<ul>
+<li><p>–<strong>generate</strong>: 这个选项命令，是生成分配规则json文件的，生成“候选人”重新分配到指定的topic的所有parition都移动到新的broker。此选项，仅提供了一个方便的方式来生成特定的topic和目标broker列表的分区重新分配 “计划”。该命令选项会在shell终端输出JSON格式的重新分区后的数据。在使用该选项时，broker选择需要注意加上新机器ID</p>
+</li>
+<li><p>–<strong>execute</strong>: 这个选项命令，是执行你用–generate 生成的分配规则json文件的，（用–reassignment-json-file 选项），可以是自定义的分配计划，也可以是由管理员或通过–generate选项生成的。</p>
+</li>
+<li><p>–<strong>verify</strong>: 这个选项命令，是验证执行–execute重新分配后，列出所有分区的状态，状态可以是成功完成，失败或正在进行中的。</p>
+</li>
+</ul>
+<h3 id="generate"><a href="#generate" class="headerlink" title="generate"></a>generate</h3><ol>
+<li>确认需要重新分区的topic名称，并以JSON格式写到文件中，示例：</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"topics"</span>: [&#123;<span class="attr">"topic"</span>: <span class="string">"input_kafka_nginxLog_topic"</span>&#125;],</span><br><span class="line">  <span class="attr">"version"</span>: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>生成新的分区列表配置， 示例：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-reassign-partitions --zookeeper zookeeper:2181/kafka/kafka --topics-to-move-json-file ./topic.json --broker-list 117,118,119,120,121 --generate</span><br></pre></td></tr></table></figure>
+<p>该命令会在shell界面上以JSON格式输出重新分区后的配置，需要手动保存topic_reassgin.json文件中，后续execute会用到</p>
+<h3 id="execute"><a href="#execute" class="headerlink" title="execute"></a>execute</h3><p>该命令执行重新分区操作，根据重新分区配置，会更改历史数据，异步操作。该操作存在大量磁盘和网络IO，如果kafka队列中该topic存在大量的数据，执行时间很长</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-reassign-partitions --zookeeper zookeeper:2181/kafka --reassignment-json-file ~/after.json --execute</span><br></pre></td></tr></table></figure>
+<h3 id="verify"><a href="#verify" class="headerlink" title="verify"></a>verify</h3><p>该命令可以确认第二部操作是否操作完成，如果所有分区数据都为done则表示重分区成功</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">)kafka-reassign-partitions --zookeeper zookeeper:2181/kafka --reassignment-json-file ~/after.json --verify</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/16/zookeeper分布式锁/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/16/zookeeper分布式锁/" itemprop="url">zookeeper实现分布式锁</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-16T19:21:51+08:00">
+                2018-05-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="基于Zookeeper的分布式锁"><a href="#基于Zookeeper的分布式锁" class="headerlink" title="基于Zookeeper的分布式锁"></a>基于Zookeeper的分布式锁</h1><p><a href="http://www.dengshenyu.com/java/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/2017/10/23/zookeeper-distributed-lock.html" target="_blank" rel="noopener">原文地址</a></p>
+<p>实现分布式锁目前有三种流行方案，分别为基于数据库、Redis、Zookeeper的方案，其中前两种方案网络上有很多资料可以参考，本文不做展开。我们来看下使用Zookeeper如何实现分布式锁。</p>
+<h2 id="什么是Zookeeper？"><a href="#什么是Zookeeper？" class="headerlink" title="什么是Zookeeper？"></a>什么是Zookeeper？</h2><p>Zookeeper（业界简称zk）是一种提供配置管理、分布式协同以及命名的中心化服务，这些提供的功能都是分布式系统中非常底层且必不可少的基本功能，但是如果自己实现这些功能而且要达到高吞吐、低延迟同时还要保持一致性和可用性，实际上非常困难。因此zookeeper提供了这些功能，开发者在zookeeper之上构建自己的各种分布式系统。</p>
+<p>虽然zookeeper的实现比较复杂，但是它提供的模型抽象却是非常简单的。Zookeeper提供一个多层级的节点命名空间（节点称为znode），每个节点都用一个以斜杠（/）分隔的路径表示，而且每个节点都有父节点（根节点除外），非常类似于文件系统。例如，/foo/doo这个表示一个znode，它的父节点为/foo，父父节点为/，而/为根节点没有父节点。与文件系统不同的是，这些节点都可以设置关联的数据，而文件系统中只有文件节点可以存放数据而目录节点不行。Zookeeper为了保证高吞吐和低延迟，在内存中维护了这个树状的目录结构，这种特性使得Zookeeper不能用于存放大量的数据，每个节点的存放数据上限为1M。</p>
+<p>而为了保证高可用，zookeeper需要以集群形态来部署，这样只要集群中大部分机器是可用的（能够容忍一定的机器故障），那么zookeeper本身仍然是可用的。客户端在使用zookeeper时，需要知道集群机器列表，通过与集群中的某一台机器建立TCP连接来使用服务，客户端使用这个TCP链接来发送请求、获取结果、获取监听事件以及发送心跳包。如果这个连接异常断开了，客户端可以连接到另外的机器上。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/05/16/zookeeper分布式锁/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/15/CDH集群部署/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1289,323 +1563,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/09/24/python装饰器函数式编程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/09/24/python装饰器函数式编程/" itemprop="url">python装饰器函数式编程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-24T13:52:36+08:00">
-                2016-09-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="函数式编程"><a href="#函数式编程" class="headerlink" title="函数式编程"></a>函数式编程</h1><blockquote>
-<p>函数式编程（英语：functional programming）或称函数程序设计,又称泛函编程,是一种编程典范,它将电脑运算视为数学上的函数计算,并且避免使用程序状态以及易变对象,函数编程语言最重要的基础是λ演算（lambda calculus,而且λ演算的函数可以接受函数当作输入（引数）和输出（传出值）</p>
-</blockquote>
-<p>函数式编程范式相对命令式编程(Imperative programming),函数式编程更加强调程序执行的结果而非执行的过程,倡导利用若干简单的执行单元让计算结果不断渐进,逐层推导复杂的运算,而不是设计一个复杂的执行过程.而命令式编程使用各种变量以及复杂的控制语句来编写逻辑代码,最初图灵机的设计就是属于命令式编程,在纸带上面刻各种孔,然后机器根据纸带上的孔执行各种命令.C/C++ Java Python等各种面向对象编程其实都属于命令式编程范围,虽然现在这些高级语言或多或少都已经支持Lambda表达式以开始支持函数式编程,但是相比Lisp Haskell Clojure等这些纯正函数式语言,Python在函数式编程方面支持的相对少一点.</p>
-<h2 id="Python-Lambda"><a href="#Python-Lambda" class="headerlink" title="Python Lambda"></a>Python Lambda</h2><blockquote>
-<p>λ演算（英语：lambda calculus，λ-calculus）是一套从数学逻辑中发展，以变量绑定和替换的规则，来研究函数如何抽象化定义、函数如何被应用以及递归的形式系统。它由数学家阿隆佐·邱奇在20世纪30年代首次发表。Lambda演算作为一种广泛用途的计算模型，可以清晰地定义什么是一个可计算函数，而任何可计算函数都能以这种形式表达和求值，它能模拟单一磁带图灵机的计算过程；尽管如此，Lambda演算强调的是变换规则的运用，而非实现它们的具体机器。</p>
-</blockquote>
-<p>说到Python支持函数式编程必须得说道Lambda表达式,Lambda按照wiki上说法比较复杂,其实简单的说Lambda表达式就是匿名函数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lambda argument: manipulate(argument)</span><br></pre></td></tr></table></figure>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">squares = map(lambda x: x * x, range(9))</span><br><span class="line">print squares</span><br></pre></td></tr></table></figure>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">number_list = range(-5, 5)</span><br><span class="line">less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</span><br><span class="line">print(less_than_zero)</span><br></pre></td></tr></table></figure>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">number_list = range(-5, 5)</span><br><span class="line">less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</span><br><span class="line">print(less_than_zero)</span><br></pre></td></tr></table></figure>
-<p>上面三个代码片段就是map/reduce/filter和lambda表达式结合的一个例子,python在支持lambda时,为了不让开发者乱用这个特性,lambda设计的比较简单,就是在lamba后面加函数以及操作,只要使用得当lambda可以让代码看起来更加简洁优雅,但是如果使用不当代码可读性会很差</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/09/24/python装饰器函数式编程/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/04/15/rsync 使用/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/04/15/rsync 使用/" itemprop="url">Rsync使用</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-04-15T21:01:29+08:00">
-                2016-04-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Rsync-使用"><a href="#Rsync-使用" class="headerlink" title="Rsync 使用"></a>Rsync 使用</h1><p>1、服务端与客户端的定义</p>
-<p>​    A机器向B机器发送数据，  或者A机器向B机器拉取数据</p>
-<p>​    那么A均为客户端， B均为服务端</p>
-<p>2、是否需要启动rsync服务</p>
-<p>​    客户端不需要， 服务端需要</p>
-<p>​    启动rsync进程： systemctl start rsyncd</p>
-<p>​    设置rsync开机自启动： systemctl enable rsyncd</p>
-<p>3、rsync相关配置</p>
-<p>​    1）模块配置， 固定为/etc/rsyncd.conf, 权限644即可</p>
-<p>​    2）用户密码配置， 可以在/etc/rsyncd.conf配置该文件路径， 推荐使用/etc/rsyncd.secret, 权限必须为600</p>
-<p>​    3）日志回滚配置 /etc/logrotate.d/rsyncd.rotate， 按需添加</p>
-<p>4、rsyncd.conf举例说明</p>
-<blockquote>
-<p>###全局配置， 生效于每个模块， 并会被模块中相同的配置项覆盖</p>
-<p>uid = root</p>
-<p>gid = root</p>
-<p>use chroot = no</p>
-<p>pid file = /var/run/rsyncd.pid</p>
-<p>#设置rsync用户密码配置文件路径</p>
-<p>secrets file = /etc/rsyncd.secret</p>
-<p>timeout = 300</p>
-<p>read only = yes</p>
-<p>write only = no</p>
-<p>#设置最大连接数</p>
-<p>max connections = 2048</p>
-<p>dont compress = <em>.gz </em>.tgz <em>.zip </em>.z <em>.Z </em>.rpm <em>.deb </em>.bz2</p>
-<p>#设置rsync日志文件， 若未设置， 则默认将日志写入syslog， 即/var/log/message，  当前版本的rsync不支持关闭日志， 所以若设置了该项， 记得添加日志回滚， 避免日志文件挤爆磁盘</p>
-<p>log file = /var/log/rsync.log</p>
-<p>syslog facility = local3</p>
-<p>###分模块配置， 注意rsync配置时，注释必须另起一行 </p>
-<p>#模块名</p>
-<p>[test-module]</p>
-<p>#模块根目录，注意该目录若不存在， rsync不会自动创建， 传输将报错</p>
-<p>path = /mylog/test/ori_data/</p>
-<p>#设置为可写</p>
-<p>read only = no</p>
-<p>#rsync用户名</p>
-<p>auth users = mylog</p>
-</blockquote>
-<p>5、rsyncd.secret举例说明</p>
-<p>格式为 用户名:密码 ， 例如</p>
-<p>mylog:abc123</p>
-<p>mylog2:abc456</p>
-<p>6、rsync基础命令</p>
-<p>在使用rsync传输之前， 需要在本机创建一个密码文件， 名称随意，例如命名为rsync.key， 权限必须是600， 并且内容只包含要使用的密码（例如 abc123）</p>
-<ol>
-<li><p>这条命令， 表示将本机/home/test/目录下的所有内容，使用模块test-module传输到192.168.1.2， 根据模块配置， 这些内容将被传输到/mylog/test/ori_data/目录下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/rsync-az–timeout=30–contimeout=15–password-file=rsync.key /home/test/ mylog@192.168.1.2::test-module</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<ol>
-<li><p>注意这里/home/test/改为/home/test ， test-module模块名后面添加了一层子目录/test/ ， 这条命令表示将本机的/home/test目录本身， 使用模块test-module传输到192.168.1.2， 根据模块配置， 这些内容将被传输到/mylog/test/ori_data/test/目录下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/rsync-az–timeout=30–contimeout=15–password-file=rsync.key /home/test mylog@192.168.1.2::test-module/test/</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<ol>
-<li><p>相比于第一条命令， 这里修改了最后两个参数的顺序， 表示从192.168.1.2拉取数据到本机的/home/test/目录下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/rsync-az–timeout=30–contimeout=15–password-file=rsync.key  mylog@192.168.1.2::test-module /home/test/</span><br></pre></td></tr></table></figure></li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1656,7 +1613,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1669,7 +1626,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">14</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

@@ -26,13 +26,13 @@ memetrika.xml配置
         <shard>
             <internal_replication>true</internal_replication>
             <replica>
-                <host>103.252.235.33</host>
+                <host>ip1</host>
                 <port>9000</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
             </replica>
             <replica>
-                <host>103.252.235.34</host>
+                <host>ip2</host>
                 <port>9001</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
@@ -42,13 +42,13 @@ memetrika.xml配置
         <shard>
             <internal_replication>true</internal_replication>
             <replica>
-                <host>103.252.235.34</host>
+                <host>ip2</host>
                 <port>9000</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
             </replica>
             <replica>
-                <host>103.252.235.33</host>
+                <host>ip1</host>
                 <port>9001</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
@@ -58,13 +58,13 @@ memetrika.xml配置
         <shard>
             <internal_replication>true</internal_replication>
             <replica>
-                <host>103.252.235.35</host>
+                <host>ip3</host>
                 <port>9000</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
             </replica>
             <replica>
-                <host>103.252.235.36</host>
+                <host>ip4</host>
                 <port>9001</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
@@ -74,13 +74,13 @@ memetrika.xml配置
         <shard>
             <internal_replication>true</internal_replication>
             <replica>
-                <host>103.252.235.36</host>
+                <host>ip4</host>
                 <port>9000</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
             </replica>
             <replica>
-                <host>103.252.235.35</host>
+                <host>ip3</host>
                 <port>9001</port>
                 <user>xcloud</user>
                 <password>Xcloud2018#ZzVv</password>
@@ -91,19 +91,19 @@ memetrika.xml配置
 
 <zookeeper-servers>
   <node index="1">
-    <host>103.252.235.33</host>
+    <host>ip1</host>
     <port>2181</port>
   </node>
   <node index="2">
-    <host>103.252.235.34</host>
+    <host>ip2</host>
     <port>2181</port>
   </node>
   <node index="3">
-    <host>103.252.235.35</host>
+    <host>ip3</host>
     <port>2181</port>
   </node>
   <node index="4">
-    <host>103.252.235.36</host>
+    <host>ip4</host>
     <port>2181</port>
   </node>
 </zookeeper-servers>
@@ -120,14 +120,14 @@ FROM system.clusters
 ┌─cluster─────────────────────┬─shard_num─┬─shard_weight─┬─replica_num─┬─host_name──────┬─host_address───┬─port─┬─is_local─┬─user────┬─default_database─┐
 │ test_shard_localhost        │         1 │            1 │           1 │ localhost      │ ::1            │ 9000 │        1 │ default │                  │
 │ test_shard_localhost_secure │         1 │            1 │           1 │ localhost      │ ::1            │ 9440 │        0 │ default │                  │
-│ xcloud_cluster              │         1 │            1 │           1 │ 103.252.235.33 │ 103.252.235.33 │ 9000 │        0 │ xcloud  │                  │
-│ xcloud_cluster              │         1 │            1 │           2 │ 103.252.235.34 │ 103.252.235.34 │ 9001 │        0 │ xcloud  │                  │
-│ xcloud_cluster              │         2 │            1 │           1 │ 103.252.235.34 │ 103.252.235.34 │ 9000 │        1 │ xcloud  │                  │
-│ xcloud_cluster              │         2 │            1 │           2 │ 103.252.235.33 │ 103.252.235.33 │ 9001 │        1 │ xcloud  │                  │
-│ xcloud_cluster              │         3 │            1 │           1 │ 103.252.235.35 │ 103.252.235.35 │ 9000 │        0 │ xcloud  │                  │
-│ xcloud_cluster              │         3 │            1 │           2 │ 103.252.235.36 │ 103.252.235.36 │ 9001 │        0 │ xcloud  │                  │
-│ xcloud_cluster              │         4 │            1 │           1 │ 103.252.235.36 │ 103.252.235.36 │ 9000 │        0 │ xcloud  │                  │
-│ xcloud_cluster              │         4 │            1 │           2 │ 103.252.235.35 │ 103.252.235.35 │ 9001 │        0 │ xcloud  │                  │
+│ xcloud_cluster              │         1 │            1 │           1 │ ip1 │ ip1 │ 9000 │        0 │ xcloud  │                  │
+│ xcloud_cluster              │         1 │            1 │           2 │ ip2 │ ip2 │ 9001 │        0 │ xcloud  │                  │
+│ xcloud_cluster              │         2 │            1 │           1 │ ip2 │ ip2 │ 9000 │        1 │ xcloud  │                  │
+│ xcloud_cluster              │         2 │            1 │           2 │ ip1 │ ip1 │ 9001 │        1 │ xcloud  │                  │
+│ xcloud_cluster              │         3 │            1 │           1 │ ip3 │ ip3 │ 9000 │        0 │ xcloud  │                  │
+│ xcloud_cluster              │         3 │            1 │           2 │ ip4 │ ip4 │ 9001 │        0 │ xcloud  │                  │
+│ xcloud_cluster              │         4 │            1 │           1 │ ip4 │ ip4 │ 9000 │        0 │ xcloud  │                  │
+│ xcloud_cluster              │         4 │            1 │           2 │ ip3 │ ip3 │ 9001 │        0 │ xcloud  │                  │
 └─────────────────────────────┴───────────┴──────────────┴─────────────┴────────────────┴────────────────┴──────┴──────────┴─────────┴──────────────────┘
 ```
 
