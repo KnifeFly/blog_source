@@ -1,5 +1,5 @@
 ---
-title: Spark Container 内存控制策略
+title: YARN Container 内存控制策略
 date: 2019-06-15 10:01:29
 tags: 大数据
 ---
