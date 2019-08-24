@@ -94,13 +94,13 @@
 
 
 
-<meta name="description" content="原文地址：https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/index.html Spark 作为一个基于内存的分布式计算引擎，其内存管理模块在整个系统中扮演着非常重要的角色。理解 Spark 内存管理的基本原理，有助于更好地开发 Spark 应用程序和进行性能调">
+<meta name="description" content="原文地址 Spark 作为一个基于内存的分布式计算引擎，其内存管理模块在整个系统中扮演着非常重要的角色。理解 Spark 内存管理的基本原理，有助于更好地开发 Spark 应用程序和进行性能调优。本文旨在梳理出 Spark 内存管理的脉络，抛砖引玉，引出读者对这个话题的深入探讨。本文中阐述的原理基于 Spark 2.1 版本，阅读本文需要读者有一定的 Spark 和 Java 基础，了解 RDD、">
 <meta name="keywords" content="大数据">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spark 内存管理">
 <meta property="og:url" content="http://yoursite.com/2019/07/15/Spark 内存管理/index.html">
 <meta property="og:site_name" content="KnifeFly">
-<meta property="og:description" content="原文地址：https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/index.html Spark 作为一个基于内存的分布式计算引擎，其内存管理模块在整个系统中扮演着非常重要的角色。理解 Spark 内存管理的基本原理，有助于更好地开发 Spark 应用程序和进行性能调">
+<meta property="og:description" content="原文地址 Spark 作为一个基于内存的分布式计算引擎，其内存管理模块在整个系统中扮演着非常重要的角色。理解 Spark 内存管理的基本原理，有助于更好地开发 Spark 应用程序和进行性能调优。本文旨在梳理出 Spark 内存管理的脉络，抛砖引玉，引出读者对这个话题的深入探讨。本文中阐述的原理基于 Spark 2.1 版本，阅读本文需要读者有一定的 Spark 和 Java 基础，了解 RDD、">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/image001.png">
 <meta property="og:image" content="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/image002.png">
@@ -110,10 +110,10 @@
 <meta property="og:image" content="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/image006.png">
 <meta property="og:image" content="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/image007.png">
 <meta property="og:image" content="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/image008.png">
-<meta property="og:updated_time" content="2019-07-26T03:04:28.106Z">
+<meta property="og:updated_time" content="2019-08-08T12:51:27.924Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spark 内存管理">
-<meta name="twitter:description" content="原文地址：https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/index.html Spark 作为一个基于内存的分布式计算引擎，其内存管理模块在整个系统中扮演着非常重要的角色。理解 Spark 内存管理的基本原理，有助于更好地开发 Spark 应用程序和进行性能调">
+<meta name="twitter:description" content="原文地址 Spark 作为一个基于内存的分布式计算引擎，其内存管理模块在整个系统中扮演着非常重要的角色。理解 Spark 内存管理的基本原理，有助于更好地开发 Spark 应用程序和进行性能调优。本文旨在梳理出 Spark 内存管理的脉络，抛砖引玉，引出读者对这个话题的深入探讨。本文中阐述的原理基于 Spark 2.1 版本，阅读本文需要读者有一定的 Spark 和 Java 基础，了解 RDD、">
 <meta name="twitter:image" content="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/image001.png">
 
 
@@ -339,7 +339,7 @@
       
 
       
-        <p>原文地址：<a href="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/index.html</a></p>
+        <p><a href="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-apache-spark-memory-management/index.html" target="_blank" rel="noopener">原文地址</a></p>
 <p>Spark 作为一个基于内存的分布式计算引擎，其内存管理模块在整个系统中扮演着非常重要的角色。理解 Spark 内存管理的基本原理，有助于更好地开发 Spark 应用程序和进行性能调优。本文旨在梳理出 Spark 内存管理的脉络，抛砖引玉，引出读者对这个话题的深入探讨。本文中阐述的原理基于 Spark 2.1 版本，阅读本文需要读者有一定的 Spark 和 Java 基础，了解 RDD、Shuffle、JVM 等相关概念。</p>
 <p>在执行 Spark 的应用程序时，Spark 集群会启动 Driver 和 Executor 两种 JVM 进程，前者为主控进程，负责创建 Spark 上下文，提交 Spark 作业（Job），并将作业转化为计算任务（Task），在各个 Executor 进程间协调任务的调度，后者负责在工作节点上执行具体的计算任务，并将结果返回给 Driver，同时为需要持久化的 RDD 提供存储功能[1]。由于 Driver 的内存管理相对来说较为简单，本文主要对 Executor 的内存管理进行分析，下文中的 Spark 内存均特指 Executor 的内存。</p>
 <h2 id="1-堆内和堆外内存规划"><a href="#1-堆内和堆外内存规划" class="headerlink" title="1. 堆内和堆外内存规划"></a>1. 堆内和堆外内存规划</h2><p>作为一个 JVM 进程，Executor 的内存管理建立在 JVM 的内存管理之上，Spark 对 JVM 的堆内（On-heap）空间进行了更为详细的分配，以充分利用内存。同时，Spark 引入了堆外（Off-heap）内存，使之可以直接在工作节点的系统内存中开辟空间，进一步优化了内存的使用。</p>
@@ -486,8 +486,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/05/28/ClickHouse高可用集群搭建/" rel="next" title="ClickHouse 高可用集群设计">
-                <i class="fa fa-chevron-left"></i> ClickHouse 高可用集群设计
+              <a href="/2019/06/15/YARN Container内存控制/" rel="next" title="YARN Container 内存控制策略">
+                <i class="fa fa-chevron-left"></i> YARN Container 内存控制策略
               </a>
             
           </div>
@@ -495,6 +495,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/24/ClickHouse运营总结/" rel="prev" title="ClickHouse 运营总结">
+                ClickHouse 运营总结 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -571,7 +575,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>

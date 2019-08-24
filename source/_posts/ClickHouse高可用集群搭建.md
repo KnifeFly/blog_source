@@ -1,7 +1,7 @@
 ---
 title: ClickHouse 高可用集群设计
 date: 2019-05-28 19:19:29
-tags: NoSQL
+tags: ClickHouse
 ---
 
 ClickHouse采用分片 + 副本实现高可用集群，下面以4台服务器为例子，讲述设计一个高可用的分布式集群需要注意的几个地方。

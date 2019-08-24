@@ -260,6 +260,267 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/15/nginx-系统框架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/07/15/nginx-系统框架/" itemprop="url">nginx 系统框架</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-15T20:35:19+08:00">
+                2017-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="Nginx-进程模型"><a href="#Nginx-进程模型" class="headerlink" title="Nginx 进程模型"></a>Nginx 进程模型</h1><p>Nginx 进程模型采用master/worker进程模型，一个master进程，多个worker进程。master进程主要工作就是重载配置文件、监听信号(重载配置文件/重新打开日志文件等)、监控worker，而worker进程核心就是处理网络事件以及定时相关操作，maser和worker之间通信机制采用socketpair + 共享内存 + 信号，worker和worker之间通信机制采用socketpair通信。</p>
+<hr>
+<h2 id="1-Nginx启动流程"><a href="#1-Nginx启动流程" class="headerlink" title="1. Nginx启动流程"></a>1. Nginx启动流程</h2><ul>
+<li>命令行参数解析，获取主配置文件路径等，ngx_process_options</li>
+<li>各种初始化工作，调用各个模块create_conf和init_conf方法、创建pid文件、创建共享内存、监听套接字、调用各个模块init_module方法…，初始化工作主要在ngx_init_cycle这个函数中完成</li>
+<li>注册各种信号处理函数，主要在ngx_init_signals函数中完成，在signals全局数组中保存了各种信号以及相应的信号处理函数</li>
+<li>创建后台daemon进程</li>
+<li>创建pid文件</li>
+<li>根据启动参数判断启动哪种模式，master/worker进程模式则进入ngx_master_process_cycle函数</li>
+</ul>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/07/15/nginx-系统框架/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/15/Linux信号安全处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/15/Linux信号安全处理/" itemprop="url">Linux信号安全处理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-15T15:37:21+08:00">
+                2017-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="信号处理机制"><a href="#信号处理机制" class="headerlink" title="信号处理机制"></a>信号处理机制</h2><p>在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：</p>
+<pre><code>- 在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：
+- 在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：
+</code></pre><p>当内核发送一个信号给进程时，它将会修改进程的pending位向量，譬如说，当内核发送一个SIGINT信号给进程，那么它会将进程的pending[SIGINT]的值设置成 1。同样地，当进程屏蔽掉一个信号时，那么它会修改blocked位向量。当进程屏蔽掉一个信号之后，内核仍然可以发送这个信号给进程(保存在进程的pending位向量中)，但进程不会接收并处理这个信号。只有当进程解除了对这个信号的屏蔽之后，进程才会接收并处理这个信号。</p>
+<p>下面的程序一开始就屏蔽了SIGINT信号，所以即使内核发送SIGINT信号给这个程序，这个信号也不会得到处理。而当程序解除了对SIGINT的屏蔽之后，这个SIGINT信号才会得到处理：</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/05/15/Linux信号安全处理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/15/lighttpd-程序框架/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1182,7 +1443,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
