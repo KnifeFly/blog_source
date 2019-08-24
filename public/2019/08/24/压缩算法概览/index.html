@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Linux," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="压缩算法概览 压缩的理论（它与算法信息论密切相关）以及率有损理论，这个领域的研究工作主要是由美国学者克劳德·香农（Claude Elwood Shannon）奠定的，他在二十世纪四十年代末期及五十年代早期发表了这方面的基础性的论文。 Lempel-Ziv（LZ）压缩方法是最流行的无损存储算法之一。DEFLATE是LZ的一个变体，它针对解压速度与压缩率进行了优化，虽然它的压缩速度可能非常缓慢，PKZ">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="压缩算法概览">
+<meta property="og:url" content="http://yoursite.com/2019/08/24/压缩算法概览/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="压缩算法概览 压缩的理论（它与算法信息论密切相关）以及率有损理论，这个领域的研究工作主要是由美国学者克劳德·香农（Claude Elwood Shannon）奠定的，他在二十世纪四十年代末期及五十年代早期发表了这方面的基础性的论文。 Lempel-Ziv（LZ）压缩方法是最流行的无损存储算法之一。DEFLATE是LZ的一个变体，它针对解压速度与压缩率进行了优化，虽然它的压缩速度可能非常缓慢，PKZ">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-08-24T06:22:22.578Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="压缩算法概览">
+<meta name="twitter:description" content="压缩算法概览 压缩的理论（它与算法信息论密切相关）以及率有损理论，这个领域的研究工作主要是由美国学者克劳德·香农（Claude Elwood Shannon）奠定的，他在二十世纪四十年代末期及五十年代早期发表了这方面的基础性的论文。 Lempel-Ziv（LZ）压缩方法是最流行的无损存储算法之一。DEFLATE是LZ的一个变体，它针对解压速度与压缩率进行了优化，虽然它的压缩速度可能非常缓慢，PKZ">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/08/24/压缩算法概览/"/>
+
+
+
+
+
+  <title>压缩算法概览 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/24/压缩算法概览/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">压缩算法概览</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-24T14:21:29+08:00">
+                2019-08-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="压缩算法概览"><a href="#压缩算法概览" class="headerlink" title="压缩算法概览"></a>压缩算法概览</h1><blockquote>
+<p>压缩的理论（它与<a href="https://zh.wikipedia.org/wiki/算法信息论" target="_blank" rel="noopener">算法信息论</a>密切相关）以及<a href="https://zh.wikipedia.org/wiki/率失真理论" target="_blank" rel="noopener">率有损理论</a>，这个领域的研究工作主要是由美国学者<a href="https://zh.wikipedia.org/wiki/克劳德·香农" target="_blank" rel="noopener">克劳德·香农</a>（Claude Elwood Shannon）奠定的，他在二十世纪四十年代末期及五十年代早期发表了这方面的基础性的论文。</p>
+<p>Lempel-Ziv（LZ）压缩方法是最流行的无损存储算法之一。<a href="https://zh.wikipedia.org/wiki/DEFLATE" target="_blank" rel="noopener">DEFLATE</a>是LZ的一个变体，它针对解压速度与压缩率进行了优化，虽然它的压缩速度可能非常缓慢，<a href="https://zh.wikipedia.org/w/index.php?title=PKZIP&amp;action=edit&amp;redlink=1" target="_blank" rel="noopener">PKZIP</a>、<a href="https://zh.wikipedia.org/wiki/Gzip" target="_blank" rel="noopener">gzip</a>以及<a href="https://zh.wikipedia.org/wiki/PNG" target="_blank" rel="noopener">PNG</a>都在使用DEFLATE。<a href="https://zh.wikipedia.org/wiki/LZW" target="_blank" rel="noopener">LZW</a>（Lempel-Ziv-Welch）是<a href="https://zh.wikipedia.org/wiki/Unisys" target="_blank" rel="noopener">Unisys</a>的<a href="https://zh.wikipedia.org/wiki/专利" target="_blank" rel="noopener">专利</a>，直到2003年6月专利到期限，这种方法用于<a href="https://zh.wikipedia.org/wiki/GIF" target="_blank" rel="noopener">GIF</a>图像。另外值得一提的是LZR （LZ-Renau） 方法，它是Zip方法的基础。LZ方法使用基于表格的压缩模型，其中表格中的条目用重复的数据串替换。对于大多数的LZ方法来说，这个表格是从最初的输入数据动态生成的。这个表格经常采用<a href="https://zh.wikipedia.org/wiki/霍夫曼编码" target="_blank" rel="noopener">霍夫曼编码</a>维护（例如SHRI、LZX）。 当前一个性能良好基于LZ的编码机制是<a href="https://zh.wikipedia.org/w/index.php?title=LZX_(algorithm" target="_blank" rel="noopener">LZX</a>&amp;action=edit&amp;redlink=1)，它用于微软公司的<a href="https://zh.wikipedia.org/wiki/CAB" target="_blank" rel="noopener">CAB</a>格式。</p>
+</blockquote>
+<p>压缩算法分为两个层面：</p>
+<ol>
+<li>熵编码：根据消息中每个符号出现的概率，然后通过某种映射用更短的符号替代原来的符号，核心在于提高符号的信息熵，哈夫曼编码最为典型。</li>
+<li>字典编码：提取信息中的重复部分作为字典，然后通过字典和某种映射替代这些重复的部分，核心在于替代重复，LZ77和LZ78算法最为典型。</li>
+</ol>
+<h1 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h1><p><strong>Gzip</strong>是若干种<a href="https://zh.wikipedia.org/wiki/文件压缩" target="_blank" rel="noopener">文件压缩</a><a href="https://zh.wikipedia.org/wiki/程序" target="_blank" rel="noopener">程序</a>的简称，通常指<a href="https://zh.wikipedia.org/wiki/GNU計劃" target="_blank" rel="noopener">GNU计划</a>的实现，gzip的基础是<a href="https://zh.wikipedia.org/wiki/DEFLATE" target="_blank" rel="noopener">DEFLATE</a>，DEFLATE是<a href="https://zh.wikipedia.org/wiki/LZ77与LZ78" target="_blank" rel="noopener">LZ77</a>与<a href="https://zh.wikipedia.org/wiki/哈夫曼编码" target="_blank" rel="noopener">哈夫曼编码</a>的一个组合体。Gzip编码格式在<a href="https://link.juejin.im/?target=https%3A%2F%2Ftools.ietf.org%2Fhtml%2Frfc1952" target="_blank" rel="noopener">RFC 1952</a>中定义。</p>
+<p>Gzip亚搜文件格式如下为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| ID1 | ID2 | CM | FLG | MTIME（4字节） | XFL | OS | ---&gt; more</span><br></pre></td></tr></table></figure>
+<p>在Centos操作系统中空Gzip文件文件大小为26字节，用二进制查看工具查看文件内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0000000 8b1f 0808 c8fb 5d60 0300 6568 6c6c 006f</span><br><span class="line">0000020 0003 0000 0000 0000 0000</span><br><span class="line">0000032</span><br></pre></td></tr></table></figure>
+<ul>
+<li>其中 ID1 和 ID2 分别是 0x1f 和 0x8b，用来标识文件格式是 gzip</li>
+<li>CM 标识 加密算法，目前 0-7是保留字，8 指的是 <a href="https://link.juejin.im/?target=https%3A%2F%2Fzh.wikipedia.org%2Fwiki%2FDEFLATE" target="_blank" rel="noopener">deflate 算法</a></li>
+<li>FLG标志位</li>
+<li>MTIME 指的是源文件最近一次修改时间，存的是 Unix 时间戳</li>
+<li>XFL defalte 算法中 2 表示使用压缩率最高的算法，4 表示使用压缩速度最快的算法</li>
+<li>OS 标识压缩程序运行的文件系统，以处理 EOF 等的问题</li>
+<li>more 后面是根据 FLG 的开启情况决定的，可能会有 循环冗余校验码、源文件长度、附加信息等多种其他信息</li>
+</ul>
+<a id="more"></a>
+<h3 id="HTTP-Gzip"><a href="#HTTP-Gzip" class="headerlink" title="HTTP Gzip"></a>HTTP Gzip</h3><p>在HTTP协议中 可以通过设置<strong>Content-Encoding</strong>字段来说明数据的压缩方法，客户端也可以再请求时设置<strong>Accept-Encoding</strong> 字段说明自己可以接受哪些压缩方法</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Content-Encoding</span>: gzip</span><br><span class="line"><span class="attribute">Content-Encoding</span>: compress</span><br><span class="line"><span class="attribute">Content-Encoding</span>: deflate</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Accept-Encoding</span>: gzip, deflate</span><br></pre></td></tr></table></figure>
+<p>Nginx服务器中设置gZip的配置大概如下：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">gzip</span> <span class="literal">on</span>;</span><br><span class="line"><span class="attribute">gzip_types</span> application/javascript application/x-javascript text/css;</span><br><span class="line"><span class="attribute">gzip_disable</span> <span class="string">"MSIE [1-6]\."</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="文件Gzip"><a href="#文件Gzip" class="headerlink" title="文件Gzip"></a>文件Gzip</h3><p>CentOS系统自带的gzip命令默认压缩级别是-6，可支持的级别为[-1, -9] ，越高的压缩率则在压缩和解压时更耗CPU，同时耗时也更长，但事压缩之后文件同时也会越小。</p>
+<p>对于nginx原始日志采用gzip压缩之后可大大减小文件体积，410M非压缩文件的nginx原始日志，文件行数758515，每行大概700字节，采用6级别gzip压缩之后的文件大小为89M，可大大的减小原始文件大小，达到了500%的压缩比。可以发现gzip命令对同一个文件压缩和解压耗时不一样，通常压缩会更耗时，因为这和gzip压缩算法有关系。</p>
+<p>gzip文件可以直接追加写gzip压缩的二进制数据，且不会破坏原先完整的压缩包，这也是日志系统中经常会用到的技术手段。</p>
+<h2 id="deflate-算法"><a href="#deflate-算法" class="headerlink" title="deflate 算法"></a>deflate 算法</h2><blockquote>
+<p><strong>DEFLATE</strong>是同时使用了<a href="https://zh.wikipedia.org/wiki/LZ77与LZ78" target="_blank" rel="noopener">LZ77</a>算法与<a href="https://zh.wikipedia.org/wiki/哈夫曼编码" target="_blank" rel="noopener">哈夫曼编码</a>（Huffman Coding）的一个<a href="https://zh.wikipedia.org/wiki/无损数据压缩" target="_blank" rel="noopener">无损数据压缩</a><a href="https://zh.wikipedia.org/wiki/算法" target="_blank" rel="noopener">算法</a>。它最初是由<a href="https://zh.wikipedia.org/wiki/菲尔·卡茨" target="_blank" rel="noopener">菲尔·卡茨</a>（Phil Katz）为他的<a href="https://zh.wikipedia.org/w/index.php?title=PKZIP&amp;action=edit&amp;redlink=1" target="_blank" rel="noopener">PKZIP</a>软件第二版所定义的，后来被<a href="https://tools.ietf.org/html/rfc1951" target="_blank" rel="noopener">RFC 1951</a>标准化。</p>
+</blockquote>
+<p>典型的字典编码，较早出现并流行的两种通用压缩算法。LZ77压缩算法用于分析输入数据，并确定如何通过用元数据替换冗余信息来减小输入数据的大小。与已编码数据部分相同的数据部分被少量元数据替换，这些元数据指示如何再次扩展这些部分。编码算法用于将数据和元数据结合起来，并将其序列化为字节流，随后可以对其进行解码和解压缩。LZ77算法的核心思路是如果一个串中有两个重复的串，<strong>那么只需要知道第一个串的内容和后面串相对于第一个串起始位置的距离 + 串的长度</strong>。比如： ABCDEFGABCDEFH → ABCDEFG(7,6)H。7 指的是往前第 7 个数开始，6 指的是重复串的长度，ABCDEFG(7,6)H 完全可以表示前面的串，并且是没有二义性的。</p>
+<p>压缩：LZ77 用 滑动窗口（sliding-window compression）来实现这个算法。具体思路是扫描头从串的头部开始扫描串，在扫描头的前面有一个长度为 N 的滑动窗口。如果发现扫描头处的串和窗口里的 <strong>最长匹配串</strong>是相同的，则用（两个串之间的距离，串的长度）来代替后一个重复的串，同时还需要添加一个表示是真实串还是替换后的“串”的字节在前面以方便解压（此串需要在 真实串和替换“串” 之前都有存在。压缩因为要在窗口里寻找重复串相对来说效率是比较低的（LZ77 还是通过 Hash 等系列方法提高了很多）</p>
+<p>具体可以参考<a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-wusp/fb98aa28-5cd7-407f-8869-a6cef1ff1ccb" target="_blank" rel="noopener">这篇微软的文章</a></p>
+<p>解压：gzip的解压流程大概是：观察压缩后的整个串，每个小串前都有一个标识要标记是原始串还是替换“串”，通过这个标识就能以 O（1）的复杂度直接读完并且替换完替换“串”，整体上效率是非常可观的。</p>
+<h3 id="Huffman-Coding"><a href="#Huffman-Coding" class="headerlink" title="Huffman Coding"></a>Huffman Coding</h3><blockquote>
+<p><strong>霍夫曼编码</strong>（英语：Huffman Coding），又译为<strong>哈夫曼编码</strong>、<strong>赫夫曼编码</strong>，是一种用于<a href="https://zh.wikipedia.org/wiki/无损数据压缩" target="_blank" rel="noopener">无损数据压缩</a>的<a href="https://zh.wikipedia.org/wiki/熵编码" target="_blank" rel="noopener">熵编码</a>（权编码）<a href="https://zh.wikipedia.org/wiki/演算法" target="_blank" rel="noopener">算法</a>。由美国计算机科学家<a href="https://zh.wikipedia.org/wiki/大衛·霍夫曼" target="_blank" rel="noopener">大卫·霍夫曼</a>（David Albert Huffman）在1952年发明。</p>
+</blockquote>
+<p>霍夫曼编码使用<a href="https://zh.wikipedia.org/w/index.php?title=變長編碼表&amp;action=edit&amp;redlink=1" target="_blank" rel="noopener">变长编码表</a>对源符号（如文件中的一个字母）进行编码，其中<a href="https://zh.wikipedia.org/w/index.php?title=變長編碼表&amp;action=edit&amp;redlink=1" target="_blank" rel="noopener">变长编码表</a>是通过一种评估来源符号出现几率的方法得到的，出现几率高的字母使用较短的编码，反之出现几率低的则使用较长的编码，这便使编码之后的字符串的平均长度、<a href="https://zh.wikipedia.org/wiki/期望值" target="_blank" rel="noopener">期望值</a>降低。</p>
+<p>霍夫曼树又称最优二叉树，是一种带权路径长度最短的<a href="https://zh.wikipedia.org/wiki/二叉树" target="_blank" rel="noopener">二叉树</a>。所谓树的带权路径长度，就是树中所有的叶结点的权值乘上其到根结点的路径长度。</p>
+<p>压缩：压缩过程就是创建一棵树的过程</p>
+<p>解压：Huffman Coding 之后需要维护一张 Huffman Map 表，来记录重新编码后的字符串，根据这张表，还原原始串也是非常高效的。</p>
+<h2 id="特定领域压缩算法"><a href="#特定领域压缩算法" class="headerlink" title="特定领域压缩算法"></a>特定领域压缩算法</h2><p>快速压缩算法：<a href="https://www.wikiwand.com/zh-hans/LZ4" target="_blank" rel="noopener">LZ4</a>，<a href="https://www.wikiwand.com/zh-hans/Snappy" target="_blank" rel="noopener">Snappy</a>，都衍生自L77算法，具有还不错的压缩率以及极快的压缩解压速率，广泛用于RPC调用时传输数据压缩，LZ4还被用于内存压缩技术</p>
+<p>无状态Zip压缩算法：<a href="http://www.libslz.org/" target="_blank" rel="noopener">Stateless ZIP library - SLZ</a>，提供了基于 zlib 实现的流数据压缩器</p>
+<p>数值压缩算法：<a href="http://www.360doc.com/content/17/1017/10/33093582_695630243.shtml" target="_blank" rel="noopener">Varint 与 ZigZag</a>，Varint 可以压缩较小的正数，ZigZag 可以处理负数及大整数使之也可以使用 Varint 编码压缩，protobuf和thrift二进制序列化算法中都使用了二者结合的方式来压缩数字类型</p>
+<p>JSON字符串压缩算法：<a href="https://blog.csdn.net/zhenyu5211314/article/details/52367185" target="_blank" rel="noopener">CJSON 和 HPack</a>，通过数据格式转换减少字符数实现数据压缩</p>
+<p>其他还有各种针对如数据库数据，时序数据，图片，音频，视频等各种数据的无损压缩算法</p>
+<p>参考文章：</p>
+<ol>
+<li>[<a href="https://zhangbohun.github.io/2019/04/01/无损压缩算法理论学习总结/" target="_blank" rel="noopener">无损压缩算法理论学习总结</a>]</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/24/ClickHouse运营总结/" rel="next" title="ClickHouse 运营总结">
+                <i class="fa fa-chevron-left"></i> ClickHouse 运营总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#压缩算法概览"><span class="nav-number">1.</span> <span class="nav-text">压缩算法概览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gzip"><span class="nav-number">2.</span> <span class="nav-text">gzip</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Gzip"><span class="nav-number">2.0.1.</span> <span class="nav-text">HTTP Gzip</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件Gzip"><span class="nav-number">2.0.2.</span> <span class="nav-text">文件Gzip</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deflate-算法"><span class="nav-number">2.1.</span> <span class="nav-text">deflate 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Huffman-Coding"><span class="nav-number">2.1.1.</span> <span class="nav-text">Huffman Coding</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特定领域压缩算法"><span class="nav-number">2.2.</span> <span class="nav-text">特定领域压缩算法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

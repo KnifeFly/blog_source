@@ -260,6 +260,152 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/24/压缩算法概览/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/24/压缩算法概览/" itemprop="url">压缩算法概览</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-24T14:21:29+08:00">
+                2019-08-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="压缩算法概览"><a href="#压缩算法概览" class="headerlink" title="压缩算法概览"></a>压缩算法概览</h1><blockquote>
+<p>压缩的理论（它与<a href="https://zh.wikipedia.org/wiki/算法信息论" target="_blank" rel="noopener">算法信息论</a>密切相关）以及<a href="https://zh.wikipedia.org/wiki/率失真理论" target="_blank" rel="noopener">率有损理论</a>，这个领域的研究工作主要是由美国学者<a href="https://zh.wikipedia.org/wiki/克劳德·香农" target="_blank" rel="noopener">克劳德·香农</a>（Claude Elwood Shannon）奠定的，他在二十世纪四十年代末期及五十年代早期发表了这方面的基础性的论文。</p>
+<p>Lempel-Ziv（LZ）压缩方法是最流行的无损存储算法之一。<a href="https://zh.wikipedia.org/wiki/DEFLATE" target="_blank" rel="noopener">DEFLATE</a>是LZ的一个变体，它针对解压速度与压缩率进行了优化，虽然它的压缩速度可能非常缓慢，<a href="https://zh.wikipedia.org/w/index.php?title=PKZIP&amp;action=edit&amp;redlink=1" target="_blank" rel="noopener">PKZIP</a>、<a href="https://zh.wikipedia.org/wiki/Gzip" target="_blank" rel="noopener">gzip</a>以及<a href="https://zh.wikipedia.org/wiki/PNG" target="_blank" rel="noopener">PNG</a>都在使用DEFLATE。<a href="https://zh.wikipedia.org/wiki/LZW" target="_blank" rel="noopener">LZW</a>（Lempel-Ziv-Welch）是<a href="https://zh.wikipedia.org/wiki/Unisys" target="_blank" rel="noopener">Unisys</a>的<a href="https://zh.wikipedia.org/wiki/专利" target="_blank" rel="noopener">专利</a>，直到2003年6月专利到期限，这种方法用于<a href="https://zh.wikipedia.org/wiki/GIF" target="_blank" rel="noopener">GIF</a>图像。另外值得一提的是LZR （LZ-Renau） 方法，它是Zip方法的基础。LZ方法使用基于表格的压缩模型，其中表格中的条目用重复的数据串替换。对于大多数的LZ方法来说，这个表格是从最初的输入数据动态生成的。这个表格经常采用<a href="https://zh.wikipedia.org/wiki/霍夫曼编码" target="_blank" rel="noopener">霍夫曼编码</a>维护（例如SHRI、LZX）。 当前一个性能良好基于LZ的编码机制是<a href="https://zh.wikipedia.org/w/index.php?title=LZX_(algorithm" target="_blank" rel="noopener">LZX</a>&amp;action=edit&amp;redlink=1)，它用于微软公司的<a href="https://zh.wikipedia.org/wiki/CAB" target="_blank" rel="noopener">CAB</a>格式。</p>
+</blockquote>
+<p>压缩算法分为两个层面：</p>
+<ol>
+<li>熵编码：根据消息中每个符号出现的概率，然后通过某种映射用更短的符号替代原来的符号，核心在于提高符号的信息熵，哈夫曼编码最为典型。</li>
+<li>字典编码：提取信息中的重复部分作为字典，然后通过字典和某种映射替代这些重复的部分，核心在于替代重复，LZ77和LZ78算法最为典型。</li>
+</ol>
+<h1 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h1><p><strong>Gzip</strong>是若干种<a href="https://zh.wikipedia.org/wiki/文件压缩" target="_blank" rel="noopener">文件压缩</a><a href="https://zh.wikipedia.org/wiki/程序" target="_blank" rel="noopener">程序</a>的简称，通常指<a href="https://zh.wikipedia.org/wiki/GNU計劃" target="_blank" rel="noopener">GNU计划</a>的实现，gzip的基础是<a href="https://zh.wikipedia.org/wiki/DEFLATE" target="_blank" rel="noopener">DEFLATE</a>，DEFLATE是<a href="https://zh.wikipedia.org/wiki/LZ77与LZ78" target="_blank" rel="noopener">LZ77</a>与<a href="https://zh.wikipedia.org/wiki/哈夫曼编码" target="_blank" rel="noopener">哈夫曼编码</a>的一个组合体。Gzip编码格式在<a href="https://link.juejin.im/?target=https%3A%2F%2Ftools.ietf.org%2Fhtml%2Frfc1952" target="_blank" rel="noopener">RFC 1952</a>中定义。</p>
+<p>Gzip亚搜文件格式如下为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| ID1 | ID2 | CM | FLG | MTIME（4字节） | XFL | OS | ---&gt; more</span><br></pre></td></tr></table></figure>
+<p>在Centos操作系统中空Gzip文件文件大小为26字节，用二进制查看工具查看文件内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0000000 8b1f 0808 c8fb 5d60 0300 6568 6c6c 006f</span><br><span class="line">0000020 0003 0000 0000 0000 0000</span><br><span class="line">0000032</span><br></pre></td></tr></table></figure>
+<ul>
+<li>其中 ID1 和 ID2 分别是 0x1f 和 0x8b，用来标识文件格式是 gzip</li>
+<li>CM 标识 加密算法，目前 0-7是保留字，8 指的是 <a href="https://link.juejin.im/?target=https%3A%2F%2Fzh.wikipedia.org%2Fwiki%2FDEFLATE" target="_blank" rel="noopener">deflate 算法</a></li>
+<li>FLG标志位</li>
+<li>MTIME 指的是源文件最近一次修改时间，存的是 Unix 时间戳</li>
+<li>XFL defalte 算法中 2 表示使用压缩率最高的算法，4 表示使用压缩速度最快的算法</li>
+<li>OS 标识压缩程序运行的文件系统，以处理 EOF 等的问题</li>
+<li>more 后面是根据 FLG 的开启情况决定的，可能会有 循环冗余校验码、源文件长度、附加信息等多种其他信息</li>
+</ul>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/08/24/压缩算法概览/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/24/ClickHouse运营总结/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1217,140 +1363,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/kafka高可用设计(下)/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/02/14/kafka高可用设计(下)/" itemprop="url">kafka高可用设计(下)</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-02-14T23:01:22+08:00">
-                2019-02-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>本文转发自<a href="http://www.jasongj.com/" target="_blank" rel="noopener"><strong>技术世界</strong></a>，<a href="http://www.jasongj.com/2015/06/08/KafkaColumn3" target="_blank" rel="noopener">原文链接</a>　<a href="http://www.jasongj.com/2015/06/08/KafkaColumn3" target="_blank" rel="noopener">http://www.jasongj.com/2015/06/08/KafkaColumn3</a></p>
-<p>本文在上篇文章 基础上，更加深入讲解了Kafka的HA机制，主要阐述了HA相关各种场景，如Broker failover，Controller failover，Topic创建/删除，Broker启动，Follower从Leader fetch数据等详细处理过程。同时介绍了Kafka提供的与Replication相关的工具，如重新分配Partition等。</p>
-<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>　　本文在上篇文章基础上，更加深入讲解了Kafka的HA机制，主要阐述了HA相关各种场景，如Broker failover，Controller failover，Topic创建/删除，Broker启动，Follower从Leader fetch数据等详细处理过程。同时介绍了Kafka提供的与Replication相关的工具，如重新分配Partition等。</p>
-<h1 id="Broker-Failover过程"><a href="#Broker-Failover过程" class="headerlink" title="Broker Failover过程"></a>Broker Failover过程</h1><h2 id="Controller对Broker-failure的处理过程"><a href="#Controller对Broker-failure的处理过程" class="headerlink" title="Controller对Broker failure的处理过程"></a>Controller对Broker failure的处理过程</h2><ol>
-<li>Controller在Zookeeper的<code>/brokers/ids</code>节点上注册Watch。一旦有Broker宕机（本文用宕机代表任何让Kafka认为其Broker die的情景，包括但不限于机器断电，网络不可用，GC导致的Stop The World，进程crash等），其在Zookeeper对应的Znode会自动被删除，Zookeeper会fire Controller注册的Watch，Controller即可获取最新的幸存的Broker列表。</li>
-<li>Controller决定set_p，该集合包含了宕机的所有Broker上的所有Partition。</li>
-<li>对set_p中的每一个Partition：<br>　　3.1 从<code>/brokers/topics/[topic]/partitions/[partition]/state</code>读取该Partition当前的ISR。<br>　　3.2 决定该Partition的新Leader。如果当前ISR中有至少一个Replica还幸存，则选择其中一个作为新Leader，新的ISR则包含当前ISR中所有幸存的Replica。否则选择该Partition中任意一个幸存的Replica作为新的Leader以及ISR（该场景下可能会有潜在的数据丢失）。如果该Partition的所有Replica都宕机了，则将新的Leader设置为-1。<br>　　3.3 将新的Leader，ISR和新的<code>leader_epoch</code>及<code>controller_epoch</code>写入<code>/brokers/topics/[topic]/partitions/[partition]/state</code>。注意，该操作只有Controller版本在3.1至3.3的过程中无变化时才会执行，否则跳转到3.1。</li>
-<li>直接通过RPC向set_p相关的Broker发送LeaderAndISRRequest命令。Controller可以在一个RPC操作中发送多个命令从而提高效率。<br>　　Broker failover顺序图如下所示。<br><a href="http://www.jasongj.com/img/kafka/KafkaColumn2/kafka_broker_failover.png" target="_blank" rel="noopener"><img src="http://www.jasongj.com/img/kafka/KafkaColumn2/kafka_broker_failover.png" alt="broker failover sequence diagram "></a></li>
-</ol>
-<p>　　LeaderAndIsrRequest结构如下<br><a href="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrRequest.png" target="_blank" rel="noopener"><img src="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrRequest.png" alt="LeaderAndIsrRequest"></a></p>
-<p>　　LeaderAndIsrResponse结构如下<br><a href="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrResponse.png" target="_blank" rel="noopener"><img src="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrResponse.png" alt="LeaderAndIsrResponse"></a></p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/02/14/kafka高可用设计(下)/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/kafka 高可用设计(上)/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1489,7 +1501,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/03/kafka运营-NotLeaderForPartitionException异常/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/kafka高可用设计(下)/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Yujie">
@@ -1508,7 +1520,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/01/03/kafka运营-NotLeaderForPartitionException异常/" itemprop="url">Kafka运营-NotLeaderForPartitionException异常</a></h1>
+                <a class="post-title-link" href="/2019/02/14/kafka高可用设计(下)/" itemprop="url">kafka高可用设计(下)</a></h1>
         
 
         <div class="post-meta">
@@ -1520,8 +1532,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-03T12:11:22+08:00">
-                2019-01-03
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-02-14T23:01:22+08:00">
+                2019-02-14
               </time>
             
 
@@ -1559,32 +1571,24 @@
 
       
         
-          
-            <h2 id="Kafka-NotLeaderForPartitionException异常"><a href="#Kafka-NotLeaderForPartitionException异常" class="headerlink" title="Kafka NotLeaderForPartitionException异常"></a>Kafka NotLeaderForPartitionException异常</h2><h3 id="异常分析"><a href="#异常分析" class="headerlink" title="异常分析"></a>异常分析</h3><p>1.Kafka日志分析</p>
-<p>发现Kafka日志中有比较多的org.apache.kafka.common.errors.NotLeaderForPartitionException异常信息，该异常从字面解释就是某个分区的leader找不到，具体异常信息如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2019</span>-<span class="number">01</span>-<span class="number">18</span> <span class="number">22</span>:<span class="number">01</span>:<span class="number">00</span>,<span class="number">802</span> ERROR kafka.server.ReplicaFetcherThread: [ReplicaFetcherThread-<span class="number">0</span>-<span class="number">118</span>]: Error <span class="keyword">for</span> partition [kafka_custflow_topic_test,<span class="number">5</span>] to broker <span class="number">118</span>:org.apache.kafka.common.errors.NotLeaderForPartitionException: This server is not the leader <span class="keyword">for</span> that topic-partition.</span><br></pre></td></tr></table></figure>
-<p>通常来说该异常信息是由于kafka和zk连接存在超时，接着导致Controller重新选举导致获取元数据不正确，timed out的那台Broker所持有的partition就会出现NotLeaderForPartitionException，kafka中连接zk超时日志格式信息如下:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:55,916 WARN org.apache.zookeeper.ClientCnxn: Client session timed out, have not heard from server in 7329ms for sessionid 0x2677edb3ac1f8d5</span><br><span class="line">2019-01-18 21:59:55,916 INFO org.apache.zookeeper.ClientCnxn: Client session timed out, have not heard from server in 7329ms for sessionid 0x2677edb3ac1f8d5, closing socket connection and attempting reconnect</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:56,075 INFO org.apache.zookeeper.ClientCnxn: Opening socket connection to server mfsmaster/121.9.240.249:2181. Will not attempt to authenticate using SASL (unknown error)</span><br><span class="line">2019-01-18 21:59:56,075 INFO org.apache.zookeeper.ClientCnxn: Socket connection established to mfsmaster/121.9.240.249:2181, initiating session</span><br><span class="line">2019-01-18 21:59:56,080 WARN org.apache.zookeeper.ClientCnxn: Unable to reconnect to ZooKeeper service, session 0x2677edb3ac1f8d5 has expired</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.I0Itec.zkclient.ZkClient: zookeeper state changed (Expired)</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.apache.zookeeper.ClientCnxn: Unable to reconnect to ZooKeeper service, session 0x2677edb3ac1f8d5 has expired, closing socket connection</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.apache.zookeeper.ZooKeeper: Initiating client connection, connectString=SR-CNSX-GDFS-240-251:2181,SR-CNSX-GDFS-240-252:2181,SR-CNSX-GDFS-240-253:2181,mfslogger:2181,mfsmaster:2181/kafka sessionTimeout=6000 watcher=org.I0Itec.zkclient.ZkClient@7957dc72</span><br><span class="line">2019-01-18 21:59:56,080 INFO org.apache.zookeeper.ClientCnxn: EventThread shut down for session: 0x2677edb3ac1f8d5</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:56,094 INFO org.I0Itec.zkclient.ZkClient: zookeeper state changed (SyncConnected)</span><br><span class="line">2019-01-18 21:59:56,095 INFO kafka.server.KafkaHealthcheck$SessionExpireListener: re-registering broker info in ZK for broker 121</span><br><span class="line">2019-01-18 21:59:56,095 INFO kafka.utils.ZKCheckedEphemeral: Creating /brokers/ids/121 (is it secure? false)</span><br><span class="line">2019-01-18 21:59:56,112 INFO kafka.utils.ZKCheckedEphemeral: Result of znode creation is: OK</span><br><span class="line">2019-01-18 21:59:56,113 INFO kafka.utils.ZkUtils: Registered broker 121 at path /brokers/ids/121 with addresses: EndPoint(SR-CNSX-GDFS-240-252,9092,ListenerName(PLAINTEXT),PLAINTEXT)</span><br><span class="line">2019-01-18 21:59:56,113 INFO kafka.server.KafkaHealthcheck$SessionExpireListener: done re-registering broker</span><br><span class="line">2019-01-18 21:59:56,113 INFO kafka.server.KafkaHealthcheck$SessionExpireListener: Subscribing to /brokers/topics path to watch for new topics</span><br></pre></td></tr></table></figure>
-<p>2.zk日志分析</p>
-<p>同时分析zk日志信息：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">2019-01-18 21:59:55,961 WARN org.apache.zookeeper.server.NIOServerCnxn: caught end of stream exception</span><br><span class="line">EndOfStreamException: Unable to read additional data from client sessionid 0x2677edb3ac1f8d5, likely client has closed socket</span><br><span class="line">        at org.apache.zookeeper.server.NIOServerCnxn.doIO(NIOServerCnxn.java:231)</span><br><span class="line">        at org.apache.zookeeper.server.NIOServerCnxnFactory.run(NIOServerCnxnFactory.java:208)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line">2019-01-18 21:59:55,962 INFO org.apache.zookeeper.server.NIOServerCnxn: Closed socket connection for client /121.9.240.252:40660 which had sessionid 0x2677edb3ac1f8d5</span><br><span class="line">2019-01-18 21:59:56,001 INFO org.apache.zookeeper.server.ZooKeeperServer: Expiring session 0x2677edb3ac1f8d5, timeout of 6000ms exceeded</span><br><span class="line">2019-01-18 21:59:56,001 INFO org.apache.zookeeper.server.PrepRequestProcessor: Processed session termination for sessionid: 0x2677edb3ac1f8d5</span><br></pre></td></tr></table></figure>
-<p>综合zk和kafka日志信息，可以看出kafka和zk session超时之后，session会被zk主动关闭，之后kafka会重新连接到zk集群，基本是在1s之内kafka新的session已经建立，所以从短时间内kafka服务没问题。</p>
-<p>3.gc日志分析</p>
-<p>Gc 日志中基本没有Full GC</p>
-<p>4.系统资源分析</p>
-<ul>
-<li>晚上9~10业务晚高峰，数据量通常比较大</li>
-<li>CPU 内存正常</li>
-<li>IO在晚高峰时存在突刺</li>
-</ul>
-<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>1.kafka增大session time out </p>
-<p>当前默认值是6s，可适当加大超时时间</p>
-<p>2.增加kafka磁盘</p>
-<p>3.增加磁盘IO处理线程数</p>
-
-          
+          <p>本文转发自<a href="http://www.jasongj.com/" target="_blank" rel="noopener"><strong>技术世界</strong></a>，<a href="http://www.jasongj.com/2015/06/08/KafkaColumn3" target="_blank" rel="noopener">原文链接</a>　<a href="http://www.jasongj.com/2015/06/08/KafkaColumn3" target="_blank" rel="noopener">http://www.jasongj.com/2015/06/08/KafkaColumn3</a></p>
+<p>本文在上篇文章 基础上，更加深入讲解了Kafka的HA机制，主要阐述了HA相关各种场景，如Broker failover，Controller failover，Topic创建/删除，Broker启动，Follower从Leader fetch数据等详细处理过程。同时介绍了Kafka提供的与Replication相关的工具，如重新分配Partition等。</p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>　　本文在上篇文章基础上，更加深入讲解了Kafka的HA机制，主要阐述了HA相关各种场景，如Broker failover，Controller failover，Topic创建/删除，Broker启动，Follower从Leader fetch数据等详细处理过程。同时介绍了Kafka提供的与Replication相关的工具，如重新分配Partition等。</p>
+<h1 id="Broker-Failover过程"><a href="#Broker-Failover过程" class="headerlink" title="Broker Failover过程"></a>Broker Failover过程</h1><h2 id="Controller对Broker-failure的处理过程"><a href="#Controller对Broker-failure的处理过程" class="headerlink" title="Controller对Broker failure的处理过程"></a>Controller对Broker failure的处理过程</h2><ol>
+<li>Controller在Zookeeper的<code>/brokers/ids</code>节点上注册Watch。一旦有Broker宕机（本文用宕机代表任何让Kafka认为其Broker die的情景，包括但不限于机器断电，网络不可用，GC导致的Stop The World，进程crash等），其在Zookeeper对应的Znode会自动被删除，Zookeeper会fire Controller注册的Watch，Controller即可获取最新的幸存的Broker列表。</li>
+<li>Controller决定set_p，该集合包含了宕机的所有Broker上的所有Partition。</li>
+<li>对set_p中的每一个Partition：<br>　　3.1 从<code>/brokers/topics/[topic]/partitions/[partition]/state</code>读取该Partition当前的ISR。<br>　　3.2 决定该Partition的新Leader。如果当前ISR中有至少一个Replica还幸存，则选择其中一个作为新Leader，新的ISR则包含当前ISR中所有幸存的Replica。否则选择该Partition中任意一个幸存的Replica作为新的Leader以及ISR（该场景下可能会有潜在的数据丢失）。如果该Partition的所有Replica都宕机了，则将新的Leader设置为-1。<br>　　3.3 将新的Leader，ISR和新的<code>leader_epoch</code>及<code>controller_epoch</code>写入<code>/brokers/topics/[topic]/partitions/[partition]/state</code>。注意，该操作只有Controller版本在3.1至3.3的过程中无变化时才会执行，否则跳转到3.1。</li>
+<li>直接通过RPC向set_p相关的Broker发送LeaderAndISRRequest命令。Controller可以在一个RPC操作中发送多个命令从而提高效率。<br>　　Broker failover顺序图如下所示。<br><a href="http://www.jasongj.com/img/kafka/KafkaColumn2/kafka_broker_failover.png" target="_blank" rel="noopener"><img src="http://www.jasongj.com/img/kafka/KafkaColumn2/kafka_broker_failover.png" alt="broker failover sequence diagram "></a></li>
+</ol>
+<p>　　LeaderAndIsrRequest结构如下<br><a href="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrRequest.png" target="_blank" rel="noopener"><img src="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrRequest.png" alt="LeaderAndIsrRequest"></a></p>
+<p>　　LeaderAndIsrResponse结构如下<br><a href="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrResponse.png" target="_blank" rel="noopener"><img src="http://www.jasongj.com/img/kafka/KafkaColumn3/LeaderAndIsrResponse.png" alt="LeaderAndIsrResponse"></a></p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/02/14/kafka高可用设计(下)/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1668,7 +1672,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-count">29</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
