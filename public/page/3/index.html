@@ -260,6 +260,140 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/15/Golang垃圾回收剖析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/15/Golang垃圾回收剖析/" itemprop="url">Golang垃圾回收机制</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-15T12:11:22+08:00">
+                2018-02-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>转载自：(<a href="http://legendtkl.com/2017/04/28/golang-gc/" target="_blank" rel="noopener">http://legendtkl.com/2017/04/28/golang-gc/</a>)</p>
+<h2 id="1-Golang-GC-发展"><a href="#1-Golang-GC-发展" class="headerlink" title="1.Golang GC 发展"></a>1.Golang GC 发展</h2><p>Golang 从第一个版本以来，GC 一直是大家诟病最多的。但是每一个版本的发布基本都伴随着 GC 的改进。下面列出一些比较重要的改动。</p>
+<ul>
+<li>v1.1 STW</li>
+<li>v1.3 Mark STW, Sweep 并行</li>
+<li>v1.5 三色标记法</li>
+<li>v1.8 hybrid write barrier</li>
+</ul>
+<h2 id="2-GC-算法简介"><a href="#2-GC-算法简介" class="headerlink" title="2. GC 算法简介"></a>2. GC 算法简介</h2><p>这一小节介绍三种经典的 GC 算法：引用计数（reference counting）、标记-清扫（mark &amp; sweep）、节点复制（Copying Garbage Collection），分代收集（Generational Garbage Collection）。</p>
+<h3 id="2-1-引用计数"><a href="#2-1-引用计数" class="headerlink" title="2.1 引用计数"></a>2.1 引用计数</h3><p>引用计数的思想非常简单：每个单元维护一个域，保存其它单元指向它的引用数量（类似有向图的入度）。当引用数量为 0 时，将其回收。引用计数是渐进式的，能够将内存管理的开销分布到整个程序之中。C++ 的 share_ptr 使用的就是引用计算方法。</p>
+<p>引用计数算法实现一般是把所有的单元放在一个单元池里，比如类似 free list。这样所有的单元就被串起来了，就可以进行引用计数了。新分配的单元计数值被设置为 1（注意不是 0，因为申请一般都说 ptr = new object 这种）。每次有一个指针被设为指向该单元时，该单元的计数值加 1；而每次删除某个指向它的指针时，它的计数值减 1。当其引用计数为 0 的时候，该单元会被进行回收。虽然这里说的比较简单，实现的时候还是有很多细节需要考虑，比如删除某个单元的时候，那么它指向的所有单元都需要对引用计数减 1。那么如果这个时候，发现其中某个指向的单元的引用计数又为 0，那么是递归的进行还是采用其他的策略呢？递归处理的话会导致系统颠簸。关于这些细节这里就不讨论了，可以参考文章后面的给的参考资料。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/02/15/Golang垃圾回收剖析/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/15/nginx-信号处理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1568,7 +1702,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-count">30</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
