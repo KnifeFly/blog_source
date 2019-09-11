@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="ClickHouse," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="ClickHouse zk依赖优化ClickHouse 集群严重依赖zookeeper，clickhouse集群服务会在zk上存储大量的信息，例如数据库表metadata、blocksr、replicas等信息，znode节点和数据量/数据表呈线性相关。 ClickHouse把zk当做三种服务的结合，协调服务，日志服务、数据表catalog service。同时clickhouse在启动时还会对存">
+<meta name="keywords" content="ClickHouse">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ClickHouse zk依赖优化">
+<meta property="og:url" content="http://yoursite.com/2019/06/15/ClickHouse zk依赖优化/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="ClickHouse zk依赖优化ClickHouse 集群严重依赖zookeeper，clickhouse集群服务会在zk上存储大量的信息，例如数据库表metadata、blocksr、replicas等信息，znode节点和数据量/数据表呈线性相关。 ClickHouse把zk当做三种服务的结合，协调服务，日志服务、数据表catalog service。同时clickhouse在启动时还会对存">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-11T06:31:51.557Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ClickHouse zk依赖优化">
+<meta name="twitter:description" content="ClickHouse zk依赖优化ClickHouse 集群严重依赖zookeeper，clickhouse集群服务会在zk上存储大量的信息，例如数据库表metadata、blocksr、replicas等信息，znode节点和数据量/数据表呈线性相关。 ClickHouse把zk当做三种服务的结合，协调服务，日志服务、数据表catalog service。同时clickhouse在启动时还会对存">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/06/15/ClickHouse zk依赖优化/"/>
+
+
+
+
+
+  <title>ClickHouse zk依赖优化 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/15/ClickHouse zk依赖优化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ClickHouse zk依赖优化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-15T12:01:54+08:00">
+                2019-06-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="ClickHouse-zk依赖优化"><a href="#ClickHouse-zk依赖优化" class="headerlink" title="ClickHouse zk依赖优化"></a>ClickHouse zk依赖优化</h1><p>ClickHouse 集群严重依赖zookeeper，clickhouse集群服务会在zk上存储大量的信息，例如数据库表metadata、blocksr、replicas等信息，znode节点和数据量/数据表呈线性相关。</p>
+<p>ClickHouse把zk当做三种服务的结合，协调服务，日志服务、数据表catalog service。同时clickhouse在启动时还会对存在本地表的schema信息和存在zk上的schema信息做校验，如果两者存在差异则启动异常。</p>
+<p>当前我们没有能力针对clickhouse做源码定制化，只能通过一些优化手段，让zk不至于成为整个系统的瓶颈。</p>
+<p>第一原则是clickhouse依赖的zk不要和其他组件公用，其次是zk的各种参数调优。线上我们有个ClickHouse集群依赖的zk和其他组件公用，并且该zk还数据还存在机械盘上，严重影响到了ClickHouse集群的性能。ClickHouse从老的公用zookeeper中迁移到新的zookeeper的一些流程：</p>
+<ol>
+<li>新部署一个zookeeper组件，把zk组件的dataDir和dataLogDir存放固盘，如果条件允许的话这两个目录最好不要存放在同一个固盘;</li>
+</ol>
+<ol>
+<li>从老Zookeeper中获取最新的snapshot，并且传输到新zookeeper中myid最大的三台机器上(假设zk节点为5);</li>
+</ol>
+<ol>
+<li>增大新zookeeper的syncLimit和initLimit配置项，避免zookeeper在leader选举时同步snapshot超时，导致leader选举失败，因为clickhouse在zookeeper上创建的节点很多，并且snapshot文件挺大；</li>
+</ol>
+<ol>
+<li>新zookeeper部署完成后，检测clickhouse在zk上的znode节点是否和老节点一致;</li>
+</ol>
+<ol>
+<li><p>更改clickhouse配置文件中zk相关的设置，涉及到的主要配置文件:</p>
+<blockquote>
+<p>/etc/clickhouse-server/metrika.xml</p>
+<p>/etc/clickhouse-server-wingman/metrika.xml</p>
+<p>/etc/clickhouse-server/config-preprocessed.xml</p>
+</blockquote>
+</li>
+</ol>
+<ol>
+<li>停止入库到clickhouse的程序，例如logkit、zabbix to clickhouse程序</li>
+</ol>
+<ol>
+<li>停止clickhouse各个分片服务 <blockquote>
+<p>service clickhouse-server stop</p>
+<p>service clickhouse-server-wingman stop</p>
+</blockquote>
+</li>
+</ol>
+<p>其次是zookeeper参数调优，可以参考官方文档：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># http://hadoop.apache.org/zookeeper/docs/current/zookeeperAdmin.html</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The number of milliseconds of each tick</span></span><br><span class="line"><span class="attr">tickTime</span>=<span class="number">2000</span></span><br><span class="line"><span class="comment"># The number of ticks that the initial</span></span><br><span class="line"><span class="comment"># synchronization phase can take</span></span><br><span class="line"><span class="attr">initLimit</span>=<span class="number">30000</span></span><br><span class="line"><span class="comment"># The number of ticks that can pass between</span></span><br><span class="line"><span class="comment"># sending a request and getting an acknowledgement</span></span><br><span class="line"><span class="attr">syncLimit</span>=<span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="attr">maxClientCnxns</span>=<span class="number">2000</span></span><br><span class="line"></span><br><span class="line"><span class="attr">maxSessionTimeout</span>=<span class="number">60000000</span></span><br><span class="line"><span class="comment"># the directory where the snapshot is stored.</span></span><br><span class="line"><span class="attr">dataDir</span>=/opt/zookeeper/&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;/data</span><br><span class="line"><span class="comment"># Place the dataLogDir to a separate physical disc for better performance</span></span><br><span class="line"><span class="attr">dataLogDir</span>=/opt/zookeeper/&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;/logs</span><br><span class="line"></span><br><span class="line">autopurge.snapRetainCount=10</span><br><span class="line">autopurge.purgeInterval=1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># To avoid seeks ZooKeeper allocates space in the transaction log file in</span></span><br><span class="line"><span class="comment"># blocks of preAllocSize kilobytes. The default block size is 64M. One reason</span></span><br><span class="line"><span class="comment"># for changing the size of the blocks is to reduce the block size if snapshots</span></span><br><span class="line"><span class="comment"># are taken more often. (Also, see snapCount).</span></span><br><span class="line"><span class="attr">preAllocSize</span>=<span class="number">131072</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Clients can submit requests faster than ZooKeeper can process them,</span></span><br><span class="line"><span class="comment"># especially if there are a lot of clients. To prevent ZooKeeper from running</span></span><br><span class="line"><span class="comment"># out of memory due to queued requests, ZooKeeper will throttle clients so that</span></span><br><span class="line"><span class="comment"># there is no more than globalOutstandingLimit outstanding requests in the</span></span><br><span class="line"><span class="comment"># system. The default limit is 1,000.ZooKeeper logs transactions to a</span></span><br><span class="line"><span class="comment"># transaction log. After snapCount transactions are written to a log file a</span></span><br><span class="line"><span class="comment"># snapshot is started and a new transaction log file is started. The default</span></span><br><span class="line"><span class="comment"># snapCount is 10,000.</span></span><br><span class="line"><span class="attr">snapCount</span>=<span class="number">3000000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If this option is defined, requests will be will logged to a trace file named</span></span><br><span class="line"><span class="comment"># traceFile.year.month.day.</span></span><br><span class="line"><span class="comment">#traceFile=</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Leader accepts client connections. Default value is "yes". The leader machine</span></span><br><span class="line"><span class="comment"># coordinates updates. For higher update throughput at thes slight expense of</span></span><br><span class="line"><span class="comment"># read throughput the leader can be configured to not accept clients and focus</span></span><br><span class="line"><span class="comment"># on coordination.</span></span><br><span class="line"><span class="attr">leaderServes</span>=<span class="literal">yes</span></span><br><span class="line"></span><br><span class="line"><span class="attr">standaloneEnabled</span>=<span class="literal">false</span></span><br><span class="line"><span class="attr">dynamicConfigFile</span>=/etc/zookeeper-&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;/conf/zoo.cfg.dynamic</span><br></pre></td></tr></table></figure>
+<p>Java虚拟机参数调优：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">NAME</span>=zookeeper-&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;</span><br><span class="line"><span class="attr">ZOOCFGDIR</span>=/etc/<span class="variable">$NAME</span>/conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># TODO this is really ugly</span></span><br><span class="line"><span class="comment"># How to find out, which jars are needed?</span></span><br><span class="line"><span class="comment"># seems, that log4j requires the log4j.properties file to be in the classpath</span></span><br><span class="line"><span class="attr">CLASSPATH</span>=<span class="string">"$ZOOCFGDIR:/usr/build/classes:/usr/build/lib/*.jar:/usr/share/zookeeper/zookeeper-3.5.1-metrika.jar:/usr/share/zookeeper/slf4j-log4j12-1.7.5.jar:/usr/share/zookeeper/slf4j-api-1.7.5.jar:/usr/share/zookeeper/servlet-api-2.5-20081211.jar:/usr/share/zookeeper/netty-3.7.0.Final.jar:/usr/share/zookeeper/log4j-1.2.16.jar:/usr/share/zookeeper/jline-2.11.jar:/usr/share/zookeeper/jetty-util-6.1.26.jar:/usr/share/zookeeper/jetty-6.1.26.jar:/usr/share/zookeeper/javacc.jar:/usr/share/zookeeper/jackson-mapper-asl-1.9.11.jar:/usr/share/zookeeper/jackson-core-asl-1.9.11.jar:/usr/share/zookeeper/commons-cli-1.2.jar:/usr/src/java/lib/*.jar:/usr/etc/zookeeper"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">ZOOCFG</span>=<span class="string">"$ZOOCFGDIR/zoo.cfg"</span></span><br><span class="line"><span class="attr">ZOO_LOG_DIR</span>=/var/log/<span class="variable">$NAME</span></span><br><span class="line"><span class="attr">USER</span>=zookeeper</span><br><span class="line"><span class="attr">GROUP</span>=zookeeper</span><br><span class="line"><span class="attr">PIDDIR</span>=/var/run/<span class="variable">$NAME</span></span><br><span class="line"><span class="attr">PIDFILE</span>=<span class="variable">$PIDDIR</span>/<span class="variable">$NAME</span>.pid</span><br><span class="line"><span class="attr">SCRIPTNAME</span>=/etc/init.d/<span class="variable">$NAME</span></span><br><span class="line"><span class="attr">JAVA</span>=/usr/bin/java</span><br><span class="line"><span class="attr">ZOOMAIN</span>=<span class="string">"org.apache.zookeeper.server.quorum.QuorumPeerMain"</span></span><br><span class="line"><span class="attr">ZOO_LOG4J_PROP</span>=<span class="string">"INFO,ROLLINGFILE"</span></span><br><span class="line"><span class="attr">JMXLOCALONLY</span>=<span class="literal">false</span></span><br><span class="line"><span class="attr">JAVA_OPTS</span>=<span class="string">"-Xms&#123;&#123; cluster.get('xms','128M') &#125;&#125; \</span></span><br><span class="line"><span class="string">    -Xmx&#123;&#123; cluster.get('xmx','1G') &#125;&#125; \</span></span><br><span class="line"><span class="string">    -Xloggc:/var/log/$NAME/zookeeper-gc.log \</span></span><br><span class="line"><span class="string">    -XX:+UseGCLogFileRotation \</span></span><br><span class="line"><span class="string">    -XX:NumberOfGCLogFiles=16 \</span></span><br><span class="line"><span class="string">    -XX:GCLogFileSize=16M \</span></span><br><span class="line"><span class="string">    -verbose:gc \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCTimeStamps \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCDateStamps \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCDetails</span></span><br><span class="line"><span class="string">    -XX:+PrintTenuringDistribution \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCApplicationStoppedTime \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCApplicationConcurrentTime \</span></span><br><span class="line"><span class="string">    -XX:+PrintSafepointStatistics \</span></span><br><span class="line"><span class="string">    -XX:+UseParNewGC \</span></span><br><span class="line"><span class="string">    -XX:+UseConcMarkSweepGC \</span></span><br><span class="line"><span class="string">-XX:+CMSParallelRemarkEnabled"</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ClickHouse/" rel="tag"># ClickHouse</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/15/YARN Container内存控制/" rel="next" title="YARN Container 内存控制策略">
+                <i class="fa fa-chevron-left"></i> YARN Container 内存控制策略
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/15/Spark 内存管理/" rel="prev" title="Spark 内存管理">
+                Spark 内存管理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ClickHouse-zk依赖优化"><span class="nav-number">1.</span> <span class="nav-text">ClickHouse zk依赖优化</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

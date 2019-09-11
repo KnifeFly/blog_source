@@ -92,7 +92,7 @@ ClickHouse集群有4台机器，2019-06-14这一天集群的数据记录条数�
 
 
 
-# ClickHouse解压缩
+## ClickHouse解压缩
 
 当我们在查询ClickHouse数据库数据时，如果采用perf工具对ClickHouse进程采样，会发现LZ_decompress_fast方法占用的CPU时间最多。
 

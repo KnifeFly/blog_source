@@ -104,7 +104,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/images/image-20190825110851852.png">
 <meta property="og:image" content="http://yoursite.com/images/057302aba5041790af404c2c781c4dd3.png">
-<meta property="og:updated_time" content="2019-08-25T04:52:44.867Z">
+<meta property="og:updated_time" content="2019-08-25T04:54:36.330Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ClickHouse 数据压缩与解压">
 <meta name="twitter:description" content="ClickHouse 数据压缩与解压ClickHouse 是一款真正面向列的DBMS，就是一款列式数据库，所以ClickHouse非常适合作为OLAP的数据查询引擎。通常列式数据库具有非常好的数据压缩效果，因为每列数据的数据类型一致，保存时会作为一个数组数据挨着保存，这样压缩算法具有非常好的压缩效果，在OLAP查询场景下可以有效的提高整个系统的吞吐量。 ClickHouse目前支持的数据压缩算法是">
@@ -345,7 +345,7 @@
 <p>每行原始数据信息大概如下，每条JSON格式的数据记录大概是1000字节左右，2.4亿条JSON格式的输入数据大小为240G左右。如果是以CSV格式存储，则单条记录大小大概是380字节，2.4亿条CSV格式的输入数据大小为93G。</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"timeStamp"</span>:<span class="string">"2019-06-14 02:37:31"</span>,<span class="attr">"date"</span>:<span class="string">"2019-06-14"</span>,<span class="attr">"province"</span>:<span class="string">"GZ"</span>,<span class="attr">"isp"</span>:<span class="string">"CM"</span>,<span class="attr">"upstream_addr"</span>:<span class="string">""</span>,<span class="attr">"hostname"</span>:<span class="string">"SR-CNCM-GZKWE-38-23"</span>,<span class="attr">"machineIP"</span>:<span class="string">"xxx"</span>,<span class="attr">"country"</span>:<span class="string">"CN"</span>,<span class="attr">"scheme"</span>:<span class="string">"https"</span>,<span class="attr">"upstream_local_port"</span>:<span class="string">""</span>,<span class="attr">"channel"</span>:<span class="string">"xxx"</span>,<span class="attr">"node"</span>:<span class="string">"IDC-CNCM-GZKWE-Dnion"</span>,<span class="attr">"cacheGroup"</span>:<span class="string">"SG-CNCM-GZKWE-cacheOpt-01"</span>,<span class="attr">"city"</span>:<span class="string">"KWE"</span>,<span class="attr">"view"</span>:<span class="string">"CN_CM_XN_GZ"</span>,<span class="attr">"status"</span>:<span class="string">"200"</span>,<span class="attr">"customer"</span>:<span class="string">"meitu"</span>,<span class="attr">"nodeisp"</span>:<span class="string">"CM"</span>,<span class="attr">"app"</span>:<span class="string">"APP-WEB"</span>,<span class="attr">"http_host"</span>:<span class="string">"api.meipai.com"</span>,<span class="attr">"upstream_status"</span>:<span class="string">"200"</span>,<span class="attr">"deviceID"</span>:<span class="string">"9233d8bbfe37eed97679b6f768858d06"</span>,<span class="attr">"remote_addr"</span>:<span class="string">"223.104.96.19"</span>,<span class="attr">"request_id"</span>:<span class="string">"31f80ef11dc338493cf25c5334dcbfc8"</span>,<span class="attr">"serviceGroupId"</span>:<span class="string">"1152"</span>,<span class="attr">"request"</span>:<span class="string">""</span>,<span class="attr">"http_referer"</span>:<span class="string">""</span>,<span class="attr">"serverType"</span>:<span class="string">"0"</span>,<span class="attr">"conn_state"</span>:<span class="string">""</span>,<span class="attr">"upstream_keepalive"</span>:<span class="string">"1"</span>,<span class="attr">"http_user_agent"</span>:<span class="string">""</span>,<span class="attr">"body_bytes_sent"</span>:<span class="string">"8069"</span>,<span class="attr">"client_rtt"</span>:<span class="number">0.029</span>,<span class="attr">"ssl_handshake_time"</span>:<span class="number">0</span>,<span class="attr">"response_time"</span>:<span class="number">0.259</span>,<span class="attr">"first_byte_time"</span>:<span class="number">-0</span>,<span class="attr">"upstream_response_time"</span>:<span class="string">"0.258"</span>,<span class="attr">"bytes_sent"</span>:<span class="string">"8364"</span>,<span class="attr">"download_time"</span>:<span class="number">-0</span>,<span class="attr">"half_rtt_time"</span>:<span class="number">2685.709</span>,<span class="attr">"request_time"</span>:<span class="number">0.259</span>&#125;</span><br></pre></td></tr></table></figure>
 <p>总结：2.4亿条原始nginx日志，原始JSON格式数据大小240G，CSV格式的数据大小为93G，存储到ClickHouse后占用磁盘大小12G左右。不管以哪种方式存储，ClickHouse具体非常好的数据压缩比。目前线上是从kafka消费JSON格式数据入库到ClickHouse。如果数据表字段少一点或者是数据都存储在一台机器上，ClickHouse压缩比会更高。<a href="https://zhuanlan.zhihu.com/p/32662689" target="_blank" rel="noopener">ClickHouse数据压缩</a>这篇文章有测试过1亿条数据记录ES存储磁盘占用33GB，ClickHouse磁盘占用1.4GB。</p>
-<h1 id="ClickHouse解压缩"><a href="#ClickHouse解压缩" class="headerlink" title="ClickHouse解压缩"></a>ClickHouse解压缩</h1><p>当我们在查询ClickHouse数据库数据时，如果采用perf工具对ClickHouse进程采样，会发现LZ_decompress_fast方法占用的CPU时间最多。</p>
+<h2 id="ClickHouse解压缩"><a href="#ClickHouse解压缩" class="headerlink" title="ClickHouse解压缩"></a>ClickHouse解压缩</h2><p>当我们在查询ClickHouse数据库数据时，如果采用perf工具对ClickHouse进程采样，会发现LZ_decompress_fast方法占用的CPU时间最多。</p>
 <p><img src="/images/057302aba5041790af404c2c781c4dd3.png" alt="sd"></p>
 <p>ClickHouse数据以压缩的形式存储在本地磁盘中，当数据查询时ClickHouse为了减少CPU使用资源会尽量少做一些事情。在许多情况下，所有潜在的耗时计算都已经得到了很好的优化，而且用户编写了一个经过深思熟虑的查询，那么剩下要做的就是执行解压缩。</p>
 <p>那么为什么LZ4解压缩成为一个瓶颈呢？<a href="https://github.com/lz4/lz4/" target="_blank" rel="noopener">LZ4</a>看起来是一种非常轻的算法:数据解压缩速率通常是每个处理器内核1到3 GB/s，具体取决于数据。这比典型的磁盘子系统快得多。此外，我们使用所有可用的中央处理器内核，解压缩在所有物理内核之间线性扩展。</p>
@@ -469,7 +469,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-count">31</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -517,7 +517,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ClickHouse-数据压缩与解压"><span class="nav-number">1.</span> <span class="nav-text">ClickHouse 数据压缩与解压</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#压缩比"><span class="nav-number">1.1.</span> <span class="nav-text">压缩比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ClickHouse解压缩"><span class="nav-number">2.</span> <span class="nav-text">ClickHouse解压缩</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ClickHouse-数据压缩与解压"><span class="nav-number">1.</span> <span class="nav-text">ClickHouse 数据压缩与解压</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#压缩比"><span class="nav-number">1.1.</span> <span class="nav-text">压缩比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ClickHouse解压缩"><span class="nav-number">1.2.</span> <span class="nav-text">ClickHouse解压缩</span></a></li></ol></li></ol></div>
             
 
           </div>

@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="linux," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -94,18 +94,13 @@
 
 
 
-<meta name="description" content="linux最大文件描述符数前言 关于Linux下系统,进程能最大能打开的文件描述符数看过好多文章,但大都没有完整,详细说明每个值表示什么意思,在实践中该怎么设置.今天刚好有时间就通过Google来整理了如下的内容.如有错误请指出,谢谢.  系统级别Linux系统级别限制所有用户进程能打开的文件描述符总数可以通过如下的命令查看 12$ cat /proc/sys/fs/file-max 225954">
-<meta name="keywords" content="linux">
-<meta property="og:type" content="article">
-<meta property="og:title" content="linux 最大文件描述符">
-<meta property="og:url" content="http://yoursite.com/2016/01/12/linux中最大文件描述符数/index.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="KnifeFly">
+<meta property="og:url" content="http://yoursite.com/page/4/index.html">
 <meta property="og:site_name" content="KnifeFly">
-<meta property="og:description" content="linux最大文件描述符数前言 关于Linux下系统,进程能最大能打开的文件描述符数看过好多文章,但大都没有完整,详细说明每个值表示什么意思,在实践中该怎么设置.今天刚好有时间就通过Google来整理了如下的内容.如有错误请指出,谢谢.  系统级别Linux系统级别限制所有用户进程能打开的文件描述符总数可以通过如下的命令查看 12$ cat /proc/sys/fs/file-max 225954">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-20T06:07:26.607Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="linux 最大文件描述符">
-<meta name="twitter:description" content="linux最大文件描述符数前言 关于Linux下系统,进程能最大能打开的文件描述符数看过好多文章,但大都没有完整,详细说明每个值表示什么意思,在实践中该怎么设置.今天刚好有时间就通过Google来整理了如下的内容.如有错误请指出,谢谢.  系统级别Linux系统级别限制所有用户进程能打开的文件描述符总数可以通过如下的命令查看 12$ cat /proc/sys/fs/file-max 225954">
+<meta name="twitter:title" content="KnifeFly">
 
 
 
@@ -134,13 +129,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2016/01/12/linux中最大文件描述符数/"/>
+  <link rel="canonical" href="http://yoursite.com/page/4/"/>
 
 
 
 
 
-  <title>linux 最大文件描述符 | KnifeFly</title>
+  <title>KnifeFly</title>
   
 
 
@@ -165,7 +160,9 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail ">
+  <div class="container sidebar-position-left 
+   page-home 
+ ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -248,9 +245,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-
-  <div id="posts" class="posts-expand">
+  <section id="posts" class="posts-expand">
     
+      
 
   
 
@@ -280,7 +277,9 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">linux 最大文件描述符</h1>
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2016/01/12/linux中最大文件描述符数/" itemprop="url">linux 最大文件描述符</a></h1>
         
 
         <div class="post-meta">
@@ -330,7 +329,9 @@
       
 
       
-        <h1 id="linux最大文件描述符数"><a href="#linux最大文件描述符数" class="headerlink" title="linux最大文件描述符数"></a>linux最大文件描述符数</h1><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><blockquote>
+        
+          
+            <h1 id="linux最大文件描述符数"><a href="#linux最大文件描述符数" class="headerlink" title="linux最大文件描述符数"></a>linux最大文件描述符数</h1><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><blockquote>
 <p>关于Linux下系统,进程能最大能打开的文件描述符数看过好多文章,但大都没有完整,详细说明每个值表示什么意思,在实践中该怎么设置.今天刚好有时间就通过Google来整理了如下的内容.如有错误请指出,谢谢.</p>
 </blockquote>
 <h3 id="系统级别"><a href="#系统级别" class="headerlink" title="系统级别"></a>系统级别</h3><p>Linux系统级别限制所有用户进程能打开的文件描述符总数可以通过如下的命令查看</p>
@@ -379,6 +380,8 @@
 <li>nofile &lt; nr_open &lt; file-max</li>
 </ol>
 
+          
+        
       
     </div>
     
@@ -393,36 +396,14 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/linux/" rel="tag"># linux</a>
-          
-        </div>
+
+      
+
       
 
       
       
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/01/15/linux-守护进程/" rel="prev" title="linux 守护进程">
-                linux 守护进程 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
+        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -432,11 +413,14 @@
   </article>
 
 
+    
+  </section>
 
-    <div class="post-spread">
-      
-    </div>
-  </div>
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+  </nav>
+
 
 
           </div>
@@ -444,10 +428,6 @@
 
 
           
-  <div class="comments" id="comments">
-    
-  </div>
-
 
         </div>
         
@@ -468,17 +448,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview sidebar-panel">
+      <section class="site-overview sidebar-panel sidebar-panel-active">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.gif"
@@ -531,22 +502,6 @@
 
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#linux最大文件描述符数"><span class="nav-number">1.</span> <span class="nav-text">linux最大文件描述符数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.0.1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统级别"><span class="nav-number">1.0.2.</span> <span class="nav-text">系统级别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户级别"><span class="nav-number">1.0.3.</span> <span class="nav-text">用户级别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nr-open"><span class="nav-number">1.0.4.</span> <span class="nav-text">nr_open</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NR-FILE"><span class="nav-number">1.0.5.</span> <span class="nav-text">NR_FILE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ulimit-命令"><span class="nav-number">1.0.6.</span> <span class="nav-text">ulimit 命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结-file-max-nr-open-nofile之间的关系"><span class="nav-number">1.0.7.</span> <span class="nav-text">总结 file-max, nr_open, nofile之间的关系</span></a></li></ol></li></ol></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
@@ -660,10 +615,10 @@
   
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
 <script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
 
-
+  
 
   
 

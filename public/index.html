@@ -343,7 +343,7 @@
 <p>每行原始数据信息大概如下，每条JSON格式的数据记录大概是1000字节左右，2.4亿条JSON格式的输入数据大小为240G左右。如果是以CSV格式存储，则单条记录大小大概是380字节，2.4亿条CSV格式的输入数据大小为93G。</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"timeStamp"</span>:<span class="string">"2019-06-14 02:37:31"</span>,<span class="attr">"date"</span>:<span class="string">"2019-06-14"</span>,<span class="attr">"province"</span>:<span class="string">"GZ"</span>,<span class="attr">"isp"</span>:<span class="string">"CM"</span>,<span class="attr">"upstream_addr"</span>:<span class="string">""</span>,<span class="attr">"hostname"</span>:<span class="string">"SR-CNCM-GZKWE-38-23"</span>,<span class="attr">"machineIP"</span>:<span class="string">"xxx"</span>,<span class="attr">"country"</span>:<span class="string">"CN"</span>,<span class="attr">"scheme"</span>:<span class="string">"https"</span>,<span class="attr">"upstream_local_port"</span>:<span class="string">""</span>,<span class="attr">"channel"</span>:<span class="string">"xxx"</span>,<span class="attr">"node"</span>:<span class="string">"IDC-CNCM-GZKWE-Dnion"</span>,<span class="attr">"cacheGroup"</span>:<span class="string">"SG-CNCM-GZKWE-cacheOpt-01"</span>,<span class="attr">"city"</span>:<span class="string">"KWE"</span>,<span class="attr">"view"</span>:<span class="string">"CN_CM_XN_GZ"</span>,<span class="attr">"status"</span>:<span class="string">"200"</span>,<span class="attr">"customer"</span>:<span class="string">"meitu"</span>,<span class="attr">"nodeisp"</span>:<span class="string">"CM"</span>,<span class="attr">"app"</span>:<span class="string">"APP-WEB"</span>,<span class="attr">"http_host"</span>:<span class="string">"api.meipai.com"</span>,<span class="attr">"upstream_status"</span>:<span class="string">"200"</span>,<span class="attr">"deviceID"</span>:<span class="string">"9233d8bbfe37eed97679b6f768858d06"</span>,<span class="attr">"remote_addr"</span>:<span class="string">"223.104.96.19"</span>,<span class="attr">"request_id"</span>:<span class="string">"31f80ef11dc338493cf25c5334dcbfc8"</span>,<span class="attr">"serviceGroupId"</span>:<span class="string">"1152"</span>,<span class="attr">"request"</span>:<span class="string">""</span>,<span class="attr">"http_referer"</span>:<span class="string">""</span>,<span class="attr">"serverType"</span>:<span class="string">"0"</span>,<span class="attr">"conn_state"</span>:<span class="string">""</span>,<span class="attr">"upstream_keepalive"</span>:<span class="string">"1"</span>,<span class="attr">"http_user_agent"</span>:<span class="string">""</span>,<span class="attr">"body_bytes_sent"</span>:<span class="string">"8069"</span>,<span class="attr">"client_rtt"</span>:<span class="number">0.029</span>,<span class="attr">"ssl_handshake_time"</span>:<span class="number">0</span>,<span class="attr">"response_time"</span>:<span class="number">0.259</span>,<span class="attr">"first_byte_time"</span>:<span class="number">-0</span>,<span class="attr">"upstream_response_time"</span>:<span class="string">"0.258"</span>,<span class="attr">"bytes_sent"</span>:<span class="string">"8364"</span>,<span class="attr">"download_time"</span>:<span class="number">-0</span>,<span class="attr">"half_rtt_time"</span>:<span class="number">2685.709</span>,<span class="attr">"request_time"</span>:<span class="number">0.259</span>&#125;</span><br></pre></td></tr></table></figure>
 <p>总结：2.4亿条原始nginx日志，原始JSON格式数据大小240G，CSV格式的数据大小为93G，存储到ClickHouse后占用磁盘大小12G左右。不管以哪种方式存储，ClickHouse具体非常好的数据压缩比。目前线上是从kafka消费JSON格式数据入库到ClickHouse。如果数据表字段少一点或者是数据都存储在一台机器上，ClickHouse压缩比会更高。<a href="https://zhuanlan.zhihu.com/p/32662689" target="_blank" rel="noopener">ClickHouse数据压缩</a>这篇文章有测试过1亿条数据记录ES存储磁盘占用33GB，ClickHouse磁盘占用1.4GB。</p>
-<h1 id="ClickHouse解压缩"><a href="#ClickHouse解压缩" class="headerlink" title="ClickHouse解压缩"></a>ClickHouse解压缩</h1><p>当我们在查询ClickHouse数据库数据时，如果采用perf工具对ClickHouse进程采样，会发现LZ_decompress_fast方法占用的CPU时间最多。</p>
+<h2 id="ClickHouse解压缩"><a href="#ClickHouse解压缩" class="headerlink" title="ClickHouse解压缩"></a>ClickHouse解压缩</h2><p>当我们在查询ClickHouse数据库数据时，如果采用perf工具对ClickHouse进程采样，会发现LZ_decompress_fast方法占用的CPU时间最多。</p>
 <p><img src="/images/057302aba5041790af404c2c781c4dd3.png" alt="sd"></p>
 <p>ClickHouse数据以压缩的形式存储在本地磁盘中，当数据查询时ClickHouse为了减少CPU使用资源会尽量少做一些事情。在许多情况下，所有潜在的耗时计算都已经得到了很好的优化，而且用户编写了一个经过深思熟虑的查询，那么剩下要做的就是执行解压缩。</p>
 <p>那么为什么LZ4解压缩成为一个瓶颈呢？<a href="https://github.com/lz4/lz4/" target="_blank" rel="noopener">LZ4</a>看起来是一种非常轻的算法:数据解压缩速率通常是每个处理器内核1到3 GB/s，具体取决于数据。这比典型的磁盘子系统快得多。此外，我们使用所有可用的中央处理器内核，解压缩在所有物理内核之间线性扩展。</p>
@@ -793,6 +793,163 @@
             </a>
           </div>
           <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/15/ClickHouse zk依赖优化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/15/ClickHouse zk依赖优化/" itemprop="url">ClickHouse zk依赖优化</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-15T12:01:54+08:00">
+                2019-06-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="ClickHouse-zk依赖优化"><a href="#ClickHouse-zk依赖优化" class="headerlink" title="ClickHouse zk依赖优化"></a>ClickHouse zk依赖优化</h1><p>ClickHouse 集群严重依赖zookeeper，clickhouse集群服务会在zk上存储大量的信息，例如数据库表metadata、blocksr、replicas等信息，znode节点和数据量/数据表呈线性相关。</p>
+<p>ClickHouse把zk当做三种服务的结合，协调服务，日志服务、数据表catalog service。同时clickhouse在启动时还会对存在本地表的schema信息和存在zk上的schema信息做校验，如果两者存在差异则启动异常。</p>
+<p>当前我们没有能力针对clickhouse做源码定制化，只能通过一些优化手段，让zk不至于成为整个系统的瓶颈。</p>
+<p>第一原则是clickhouse依赖的zk不要和其他组件公用，其次是zk的各种参数调优。线上我们有个ClickHouse集群依赖的zk和其他组件公用，并且该zk还数据还存在机械盘上，严重影响到了ClickHouse集群的性能。ClickHouse从老的公用zookeeper中迁移到新的zookeeper的一些流程：</p>
+<ol>
+<li>新部署一个zookeeper组件，把zk组件的dataDir和dataLogDir存放固盘，如果条件允许的话这两个目录最好不要存放在同一个固盘;</li>
+</ol>
+<ol>
+<li>从老Zookeeper中获取最新的snapshot，并且传输到新zookeeper中myid最大的三台机器上(假设zk节点为5);</li>
+</ol>
+<ol>
+<li>增大新zookeeper的syncLimit和initLimit配置项，避免zookeeper在leader选举时同步snapshot超时，导致leader选举失败，因为clickhouse在zookeeper上创建的节点很多，并且snapshot文件挺大；</li>
+</ol>
+<ol>
+<li>新zookeeper部署完成后，检测clickhouse在zk上的znode节点是否和老节点一致;</li>
+</ol>
+<ol>
+<li><p>更改clickhouse配置文件中zk相关的设置，涉及到的主要配置文件:</p>
+<blockquote>
+<p>/etc/clickhouse-server/metrika.xml</p>
+<p>/etc/clickhouse-server-wingman/metrika.xml</p>
+<p>/etc/clickhouse-server/config-preprocessed.xml</p>
+</blockquote>
+</li>
+</ol>
+<ol>
+<li>停止入库到clickhouse的程序，例如logkit、zabbix to clickhouse程序</li>
+</ol>
+<ol>
+<li>停止clickhouse各个分片服务 <blockquote>
+<p>service clickhouse-server stop</p>
+<p>service clickhouse-server-wingman stop</p>
+</blockquote>
+</li>
+</ol>
+<p>其次是zookeeper参数调优，可以参考官方文档：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># http://hadoop.apache.org/zookeeper/docs/current/zookeeperAdmin.html</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The number of milliseconds of each tick</span></span><br><span class="line"><span class="attr">tickTime</span>=<span class="number">2000</span></span><br><span class="line"><span class="comment"># The number of ticks that the initial</span></span><br><span class="line"><span class="comment"># synchronization phase can take</span></span><br><span class="line"><span class="attr">initLimit</span>=<span class="number">30000</span></span><br><span class="line"><span class="comment"># The number of ticks that can pass between</span></span><br><span class="line"><span class="comment"># sending a request and getting an acknowledgement</span></span><br><span class="line"><span class="attr">syncLimit</span>=<span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="attr">maxClientCnxns</span>=<span class="number">2000</span></span><br><span class="line"></span><br><span class="line"><span class="attr">maxSessionTimeout</span>=<span class="number">60000000</span></span><br><span class="line"><span class="comment"># the directory where the snapshot is stored.</span></span><br><span class="line"><span class="attr">dataDir</span>=/opt/zookeeper/&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;/data</span><br><span class="line"><span class="comment"># Place the dataLogDir to a separate physical disc for better performance</span></span><br><span class="line"><span class="attr">dataLogDir</span>=/opt/zookeeper/&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;/logs</span><br><span class="line"></span><br><span class="line">autopurge.snapRetainCount=10</span><br><span class="line">autopurge.purgeInterval=1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># To avoid seeks ZooKeeper allocates space in the transaction log file in</span></span><br><span class="line"><span class="comment"># blocks of preAllocSize kilobytes. The default block size is 64M. One reason</span></span><br><span class="line"><span class="comment"># for changing the size of the blocks is to reduce the block size if snapshots</span></span><br><span class="line"><span class="comment"># are taken more often. (Also, see snapCount).</span></span><br><span class="line"><span class="attr">preAllocSize</span>=<span class="number">131072</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Clients can submit requests faster than ZooKeeper can process them,</span></span><br><span class="line"><span class="comment"># especially if there are a lot of clients. To prevent ZooKeeper from running</span></span><br><span class="line"><span class="comment"># out of memory due to queued requests, ZooKeeper will throttle clients so that</span></span><br><span class="line"><span class="comment"># there is no more than globalOutstandingLimit outstanding requests in the</span></span><br><span class="line"><span class="comment"># system. The default limit is 1,000.ZooKeeper logs transactions to a</span></span><br><span class="line"><span class="comment"># transaction log. After snapCount transactions are written to a log file a</span></span><br><span class="line"><span class="comment"># snapshot is started and a new transaction log file is started. The default</span></span><br><span class="line"><span class="comment"># snapCount is 10,000.</span></span><br><span class="line"><span class="attr">snapCount</span>=<span class="number">3000000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If this option is defined, requests will be will logged to a trace file named</span></span><br><span class="line"><span class="comment"># traceFile.year.month.day.</span></span><br><span class="line"><span class="comment">#traceFile=</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Leader accepts client connections. Default value is "yes". The leader machine</span></span><br><span class="line"><span class="comment"># coordinates updates. For higher update throughput at thes slight expense of</span></span><br><span class="line"><span class="comment"># read throughput the leader can be configured to not accept clients and focus</span></span><br><span class="line"><span class="comment"># on coordination.</span></span><br><span class="line"><span class="attr">leaderServes</span>=<span class="literal">yes</span></span><br><span class="line"></span><br><span class="line"><span class="attr">standaloneEnabled</span>=<span class="literal">false</span></span><br><span class="line"><span class="attr">dynamicConfigFile</span>=/etc/zookeeper-&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;/conf/zoo.cfg.dynamic</span><br></pre></td></tr></table></figure>
+<p>Java虚拟机参数调优：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">NAME</span>=zookeeper-&#123;&#123; cluster[<span class="string">'name'</span>] &#125;&#125;</span><br><span class="line"><span class="attr">ZOOCFGDIR</span>=/etc/<span class="variable">$NAME</span>/conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># TODO this is really ugly</span></span><br><span class="line"><span class="comment"># How to find out, which jars are needed?</span></span><br><span class="line"><span class="comment"># seems, that log4j requires the log4j.properties file to be in the classpath</span></span><br><span class="line"><span class="attr">CLASSPATH</span>=<span class="string">"$ZOOCFGDIR:/usr/build/classes:/usr/build/lib/*.jar:/usr/share/zookeeper/zookeeper-3.5.1-metrika.jar:/usr/share/zookeeper/slf4j-log4j12-1.7.5.jar:/usr/share/zookeeper/slf4j-api-1.7.5.jar:/usr/share/zookeeper/servlet-api-2.5-20081211.jar:/usr/share/zookeeper/netty-3.7.0.Final.jar:/usr/share/zookeeper/log4j-1.2.16.jar:/usr/share/zookeeper/jline-2.11.jar:/usr/share/zookeeper/jetty-util-6.1.26.jar:/usr/share/zookeeper/jetty-6.1.26.jar:/usr/share/zookeeper/javacc.jar:/usr/share/zookeeper/jackson-mapper-asl-1.9.11.jar:/usr/share/zookeeper/jackson-core-asl-1.9.11.jar:/usr/share/zookeeper/commons-cli-1.2.jar:/usr/src/java/lib/*.jar:/usr/etc/zookeeper"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">ZOOCFG</span>=<span class="string">"$ZOOCFGDIR/zoo.cfg"</span></span><br><span class="line"><span class="attr">ZOO_LOG_DIR</span>=/var/log/<span class="variable">$NAME</span></span><br><span class="line"><span class="attr">USER</span>=zookeeper</span><br><span class="line"><span class="attr">GROUP</span>=zookeeper</span><br><span class="line"><span class="attr">PIDDIR</span>=/var/run/<span class="variable">$NAME</span></span><br><span class="line"><span class="attr">PIDFILE</span>=<span class="variable">$PIDDIR</span>/<span class="variable">$NAME</span>.pid</span><br><span class="line"><span class="attr">SCRIPTNAME</span>=/etc/init.d/<span class="variable">$NAME</span></span><br><span class="line"><span class="attr">JAVA</span>=/usr/bin/java</span><br><span class="line"><span class="attr">ZOOMAIN</span>=<span class="string">"org.apache.zookeeper.server.quorum.QuorumPeerMain"</span></span><br><span class="line"><span class="attr">ZOO_LOG4J_PROP</span>=<span class="string">"INFO,ROLLINGFILE"</span></span><br><span class="line"><span class="attr">JMXLOCALONLY</span>=<span class="literal">false</span></span><br><span class="line"><span class="attr">JAVA_OPTS</span>=<span class="string">"-Xms&#123;&#123; cluster.get('xms','128M') &#125;&#125; \</span></span><br><span class="line"><span class="string">    -Xmx&#123;&#123; cluster.get('xmx','1G') &#125;&#125; \</span></span><br><span class="line"><span class="string">    -Xloggc:/var/log/$NAME/zookeeper-gc.log \</span></span><br><span class="line"><span class="string">    -XX:+UseGCLogFileRotation \</span></span><br><span class="line"><span class="string">    -XX:NumberOfGCLogFiles=16 \</span></span><br><span class="line"><span class="string">    -XX:GCLogFileSize=16M \</span></span><br><span class="line"><span class="string">    -verbose:gc \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCTimeStamps \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCDateStamps \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCDetails</span></span><br><span class="line"><span class="string">    -XX:+PrintTenuringDistribution \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCApplicationStoppedTime \</span></span><br><span class="line"><span class="string">    -XX:+PrintGCApplicationConcurrentTime \</span></span><br><span class="line"><span class="string">    -XX:+PrintSafepointStatistics \</span></span><br><span class="line"><span class="string">    -XX:+UseParNewGC \</span></span><br><span class="line"><span class="string">    -XX:+UseConcMarkSweepGC \</span></span><br><span class="line"><span class="string">-XX:+CMSParallelRemarkEnabled"</span></span><br></pre></td></tr></table></figure>
+          
         
       
     </div>
@@ -1490,149 +1647,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/kafka 高可用设计(上)/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/02/14/kafka 高可用设计(上)/" itemprop="url">kafka高可用设计(上)</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-02-14T23:01:22+08:00">
-                2019-02-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>本文转发自<a href="http://www.jasongj.com/" target="_blank" rel="noopener"><strong>技术世界</strong></a>，<a href="http://www.jasongj.com/2015/04/24/KafkaColumn2" target="_blank" rel="noopener">原文链接</a>　<a href="http://www.jasongj.com/2015/04/24/KafkaColumn2" target="_blank" rel="noopener">http://www.jasongj.com/2015/04/24/KafkaColumn2</a></p>
-<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>　　Kafka在0.8以前的版本中，并不提供High Availablity机制，一旦一个或多个Broker宕机，则宕机期间其上所有Partition都无法继续提供服务。若该Broker永远不能再恢复，亦或磁盘故障，则其上数据将丢失。而Kafka的设计目标之一即是提供数据持久化，同时对于分布式系统来说，尤其当集群规模上升到一定程度后，一台或者多台机器宕机的可能性大大提高，对于Failover机制的需求非常高。因此，Kafka从0.8开始提供High Availability机制。本文从Data Replication和Leader Election两方面介绍了Kafka的HA机制。</p>
-<h1 id="Kafka为何需要High-Available"><a href="#Kafka为何需要High-Available" class="headerlink" title="Kafka为何需要High Available"></a>Kafka为何需要High Available</h1><h2 id="为何需要Replication"><a href="#为何需要Replication" class="headerlink" title="为何需要Replication"></a>为何需要Replication</h2><p>　　在Kafka在0.8以前的版本中，是没有Replication的，一旦某一个Broker宕机，则其上所有的Partition数据都不可被消费，这与Kafka数据持久性及Delivery Guarantee的设计目标相悖。同时Producer都不能再将数据存于这些Partition中。</p>
-<ul>
-<li>如果Producer使用同步模式则Producer会在尝试重新发送<code>message.send.max.retries</code>（默认值为3）次后抛出Exception，用户可以选择停止发送后续数据也可选择继续选择发送。而前者会造成数据的阻塞，后者会造成本应发往该Broker的数据的丢失。</li>
-<li>如果Producer使用异步模式，则Producer会尝试重新发送<code>message.send.max.retries</code>（默认值为3）次后记录该异常并继续发送后续数据，这会造成数据丢失并且用户只能通过日志发现该问题。</li>
-</ul>
-<p>　　由此可见，在没有Replication的情况下，一旦某机器宕机或者某个Broker停止工作则会造成整个系统的可用性降低。随着集群规模的增加，整个集群中出现该类异常的几率大大增加，因此对于生产系统而言Replication机制的引入非常重要。 　　</p>
-<h2 id="为何需要Leader-Election"><a href="#为何需要Leader-Election" class="headerlink" title="为何需要Leader Election"></a>为何需要Leader Election</h2><p>　　（本文所述Leader Election主要指Replica之间的Leader Election）<br>　　引入Replication之后，同一个Partition可能会有多个Replica，而这时需要在这些Replica中选出一个Leader，Producer和Consumer只与这个Leader交互，其它Replica作为Follower从Leader中复制数据。<br>　　因为需要保证同一个Partition的多个Replica之间的数据一致性（其中一个宕机后其它Replica必须要能继续服务并且即不能造成数据重复也不能造成数据丢失）。如果没有一个Leader，所有Replica都可同时读/写数据，那就需要保证多个Replica之间互相（N×N条通路）同步数据，数据的一致性和有序性非常难保证，大大增加了Replication实现的复杂性，同时也增加了出现异常的几率。而引入Leader后，只有Leader负责数据读写，Follower只向Leader顺序Fetch数据（N条通路），系统更加简单且高效。 　　 　　</p>
-<h1 id="Kafka-HA设计解析"><a href="#Kafka-HA设计解析" class="headerlink" title="Kafka HA设计解析"></a>Kafka HA设计解析</h1><h2 id="如何将所有Replica均匀分布到整个集群"><a href="#如何将所有Replica均匀分布到整个集群" class="headerlink" title="如何将所有Replica均匀分布到整个集群"></a>如何将所有Replica均匀分布到整个集群</h2><p>　　为了更好的做负载均衡，Kafka尽量将所有的Partition均匀分配到整个集群上。一个典型的部署方式是一个Topic的Partition数量大于Broker的数量。同时为了提高Kafka的容错能力，也需要将同一个Partition的Replica尽量分散到不同的机器。实际上，如果所有的Replica都在同一个Broker上，那一旦该Broker宕机，该Partition的所有Replica都无法工作，也就达不到HA的效果。同时，如果某个Broker宕机了，需要保证它上面的负载可以被均匀的分配到其它幸存的所有Broker上。<br>　　Kafka分配Replica的算法如下：</p>
-<ol>
-<li>将所有Broker（假设共n个Broker）和待分配的Partition排序</li>
-<li>将第i个Partition分配到第（i mod n）个Broker上</li>
-<li>将第i个Partition的第j个Replica分配到第（(i + j) mod n）个Broker上</li>
-</ol>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/02/14/kafka 高可用设计(上)/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1678,7 +1697,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-count">31</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
