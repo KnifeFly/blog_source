@@ -260,6 +260,132 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/02/分布式锁的设计/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/02/分布式锁的设计/" itemprop="url">分布式锁的实现</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-02T18:25:01+08:00">
+                2018-04-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><a href="http://www.weizijun.cn/2016/03/17/%E8%81%8A%E4%B8%80%E8%81%8A%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E8%AE%BE%E8%AE%A1/" target="_blank" rel="noopener">原文地址</a></p>
+<h2 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h2><p>前段时间，看到redis作者发布的一篇文章<a href="http://antirez.com/news/101" target="_blank" rel="noopener">《Is Redlock safe?》</a>，Redlock是redis作者基于redis设计的分布式锁的算法。文章起因是有一位分布式的专家写了一篇文章<a href="http://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" target="_blank" rel="noopener">《How to do distributed locking》</a>，质疑Redlock的正确性。redis作者则在《Is Redlock safe?》文章中给予回应，一来一回甚是精彩。文本就为读者一一解析两位专家的争论。</p>
+<p>在了解两位专家的争论前，让我先从我了解的分布式锁一一道来。文章中提到的分布式锁均为排他锁。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/04/02/分布式锁的设计/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/16/nginx互斥锁的实现/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1471,151 +1597,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/15/linux-守护进程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/01/15/linux-守护进程/" itemprop="url">linux 守护进程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-01-15T12:11:22+08:00">
-                2016-01-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="守护进程"><a href="#守护进程" class="headerlink" title="守护进程"></a>守护进程</h1><p>linux 服务端程序很多都是以守护进程的方式对外提供服务, linux 系统本身也有很多守护进程,例如kthreadd用来创建内核进程, kswapd是内存换页守护进程,flush是dump内存中的脏页面到磁盘,jbd提供ext4文件系统的日志日志功能…守护进程命名大部分都是以d结尾. 大部分守护进程都是以root方式运行,没有控制终端,运行在后台. 大部分守护进程都是进程组的组长进程以及会话的首进程,而且是进程组和会话中的唯一进程. 守护进程的父进程一般是系统1号进程,例如initd或者systemd.</p>
-<h1 id="编程规则"><a href="#编程规则" class="headerlink" title="编程规则"></a>编程规则</h1><p>为了让守护进程在后台运行,减少不必要的交互,守护进程的编写有一套编程规则:</p>
-<ul>
-<li>umask将文件模式创建屏蔽字设置一个已知值,通常是0. 由于继承得来的文件模式屏蔽字可能会被设置为拒绝某些权限.</li>
-<li>fork() 然后父进程exit<ul>
-<li>如果守护进程是以shell命令启动, 父进程exit会让shell认为这条命令已经执行完毕</li>
-<li>虽然子进程继承了父进程的进程组ID, 但获得了一个新的进程ID,这保证了子进程不是一个进程组的组长进程  (setid调用的条件)</li>
-</ul>
-</li>
-<li>调用setid创建一个新会话, 如果调用setsid的进程不是一个进程组的组长，此函数创建一个新的会话期setid,setid会让子进程执行三个步骤<ul>
-<li>让子进程成为新会话的首进程</li>
-<li>让子进程成为新进程组的组长进程</li>
-<li>让子进程没有控制终端,如果在调用setsid前，该进程有控制终端，那么与该终端的联系被解除。 如果该进程是一个进程组的组长，此函数返回错误</li>
-<li>为了保证这一点，我们先调用fork()然后exit()，此时只有子进程在运行</li>
-</ul>
-</li>
-<li>再次fork, 这个步骤有些守护进程没有. 此时进程已经成为无终端的会话组长,但它可以重新申请打开一个控制终端,为了使进程不再成为会话组长来禁止进程重新打开控制终端, 再次fork然后父进程exit</li>
-<li>设置工作目录为根目录, 从父进程继承过来的当前工作目录可能在一个挂载的文件系统中</li>
-<li>关闭不再需要的文件描述符</li>
-<li>打开/dev/null, 让文件描述符0 1 2都指向/dev/null</li>
-<li>处理SIGCHLD信号, 处理SIGCHLD信号并不是必须的</li>
-</ul>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/01/15/linux-守护进程/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1666,7 +1647,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-count">32</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
