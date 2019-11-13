@@ -260,6 +260,557 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/21/理解spark闭包/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/21/理解spark闭包/" itemprop="url">理解Spark闭包</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-21T19:15:39+08:00">
+                2018-05-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="理解spark闭包"><a href="#理解spark闭包" class="headerlink" title="理解spark闭包"></a>理解spark闭包</h1><p>什么叫闭包： 跨作用域访问函数变量。又指的一个拥有许多变量和绑定了这些变量的环境的表达式（通常是一个函数），因而这些变量也是该表达式的一部分。</p>
+<p>Spark闭包的问题引出：<br>在spark中实现统计List(1,2,3)的和。如果使用下面的代码，程序打印的结果不是6，而是0。这个和我们编写单机程序的认识有很大不同。为什么呢？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">object Test &#123;</span><br><span class="line">  def main(args:Array[String]):Unit = &#123;</span><br><span class="line">      val conf = new SparkConf().setAppName(&quot;test&quot;);</span><br><span class="line">      val sc = new SparkContext(conf)</span><br><span class="line"></span><br><span class="line">      val rdd = sc.parallelize(List(1,2,3))</span><br><span class="line">      var counter = 0</span><br><span class="line">      //warn: don&apos;t do this</span><br><span class="line">      rdd.foreach(x =&gt; counter += x)</span><br><span class="line">      println(&quot;Counter value: &quot;+counter)</span><br><span class="line"></span><br><span class="line">      sc.stop()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;1234567891011121314</span><br></pre></td></tr></table></figure>
+<p>问题分析：<br>counter是在foreach函数外部定义的，也就是在driver程序中定义，而foreach函数是属于rdd对象的，rdd函数的执行位置是各个worker节点（或者说worker进程），main函数是在driver节点上（或者说driver进程上）执行的，所以当counter变量在driver中定义，被在rdd中使用的时候，出现了变量的“跨域”问题，也就是闭包问题。</p>
+<p>问题解释：<br>对于上面程序中的counter变量，由于在<code>main函数</code>和在<code>rdd对象的foreach函数</code>是属于不同“闭包”的，所以，传进foreach中的counter是一个副本，初始值都为0。foreach中叠加的是counter的副本，不管副本如何变化，都不会影响到main函数中的counter，所以最终打印出来的counter为0.</p>
+<p>当用户提交了一个用scala语言写的Spark程序，Spark框架会调用哪些组件呢？首先，这个Spark程序就是一个“Application”，程序里面的mian函数就是“Driver Program”， 前面已经讲到它的作用，只是，dirver程序的可能运行在客户端，也有可有可能运行在spark集群中，这取决于spark作业提交时参数的选定，比如，yarn-client和yarn-cluster就是分别运行在客户端和spark集群中。在driver程序中会有RDD对象的相关代码操作，比如下面代码的newRDD.map()</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class Test&#123;</span><br><span class="line">  def main(args: Array[String]) &#123;</span><br><span class="line">    val sc = new SparkContext(new SparkConf())</span><br><span class="line">    val newRDD = sc.textFile(&quot;&quot;)</span><br><span class="line"></span><br><span class="line">    newRDD.map(data =&gt; &#123;</span><br><span class="line">      //do something</span><br><span class="line">      println(data.toString)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>涉及到RDD的代码，比如上面RDD的map操作，它们是在Worker节点上面运行的，所以spark会透明地帮用户把这些涉及到RDD操作的代码传给相应的worker节点。如果在RDD map函数中调用了在函数外部定义的对象，因为这些对象需要通过网络从driver所在节点传给其他的worker节点，所以要求这些类是可序列化的，比如在Java或者scala中实现Serializable类，除了java这种序列化机制，还可以选择其他方式，使得序列化工作更加高效。worker节点接收到程序之后，在spark资源管理器的指挥下运行RDD程序。不同worker节点之间的运行操作是并行的。</p>
+<p> 在worker节点上所运行的RDD中代码的变量是保存在worker节点上面的，在spark编程中，很多时候用户需要在driver程序中进行相关数据操作之后把该数据传给RDD对象的方法以做进一步处理，这时候，spark框架会自动帮用户把这些数据通过网络传给相应的worker节点。除了这种以变量的形式定义传输数据到worker节点之外，spark还另外提供了两种机制，分别是broadcast和accumulator。相比于变量的方式，在一定场景下使用broadcast比较有优势，因为所广播的数据在每一个worker节点上面只存一个副本，而在spark算子中使用到的外部变量会在每一个用到它的task中保存一个副本，即使这些task在同一个节点上面。所以当数据量比较大的时候，建议使用广播而不是外部变量。</p>
+<p><strong>理解闭包</strong></p>
+<p>​      Spark中理解起来比较困难的一点是当代码在集群上运行时变量和方法的生命周期和作用域(scope)。当作用于RDD上的操作修改了超出它们作用域范围的变量时，会引起一些混淆。为了说明这个问题，使用下面的例子。该例中使用foreach()，对counter(计数器)进行增加，相同的问题也会发生在其他操作中。</p>
+<p><strong>例子</strong></p>
+<p>​      下面的例子在以本地模式运行(–master = local[n]) 和将它部署到集群中 (例如通过 spark-submit 提交到 YARN)对比发现会产生不同的结果。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> counter =  <span class="number">0</span> </span><br><span class="line"><span class="keyword">var</span> rdd = sc.parallelize(data)</span><br><span class="line"><span class="comment">// 错误,请不要这样做！！</span></span><br><span class="line">rdd.foreach(x =&gt; counter += x)</span><br><span class="line">println( <span class="string">"Counter value: "</span>  + counter)</span><br></pre></td></tr></table></figure>
+<p><strong>本地模式 vs. 集群模式</strong></p>
+<p>​      这里主要的挑战是上面代码的行为是有歧义的。以本地模式运行在单个JVM上，上面的代码会将RDD中的值进行累加，并且将它存储到counter中。这是因为RDD和变量counter在driver节点的相同内存空间中。<br>      然而，以集群模式运行时，会更加复杂，上面的代码的结果也许不会如我们预期的那样。当执行一个作业(job)时,Spark会将RDD分成多个任务(task)–每一个任务都会由一个executor来执行。在执行之前，Spark会计算闭包(closure)。闭包是对executors可见的那部分变量和方法，executors会用闭包来执行RDD上的计算(在这个例子中，闭包是foreach())。这个闭包是被序列化的，并且发送给每个executor。在本地模式中，只有一个executor，所以共享相同的闭包。然而，在集群模式中，就不是这样了。executors会运行在各自的worker节点中，每个executor都有闭包的一个复本。<br>      发送给每个executor的闭包中的变量其实也是复本。每个foreach函数中引用的counter不再是driver节点上的counter。当然，在driver节点的内存中仍然存在这一个counter，但是这个counter对于executors来说是不可见的。executors只能看到自己的闭包中的复本。这样，counter最后的值仍旧是0，因为所有在counter的操作只引用了序列化闭包中的值。<br>      为了在这样的场景中，确保这些行为正确，应该使用累加变量(Accumulator)。在集群中跨节点工作时，Spark中的累加变量提供了一种安全的机制来更新变量。所以可变的全局状态应该使用累加变量来定义。</p>
+<p>所以上面的例子可以这样写：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// counter现在是累加变量</span></span><br><span class="line"><span class="keyword">var</span> counter = sc.accumulator( <span class="number">0</span>) </span><br><span class="line"><span class="keyword">var</span> rdd = sc.parallelize(data) </span><br><span class="line">rdd.foreach(x =&gt; counter += x) </span><br><span class="line">println( <span class="string">"Counter value: "</span> + counter)</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/20/Kafka集群扩容/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/20/Kafka集群扩容/" itemprop="url">Kafka 集群扩容</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-20T15:11:39+08:00">
+                2018-05-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Kafka-集群扩容"><a href="#Kafka-集群扩容" class="headerlink" title="Kafka 集群扩容"></a>Kafka 集群扩容</h1><p>kafka 集群在新增机器后是不会把历史已经创建的topic数据信息迁移到新加入集群的机器，只有新创建的topic才会分布到新机器。若想把历史topic数据均匀分布到加入机器后的新集群，需要人为操作，好在kafka提供了相应的工具可简单地完成数据迁移工作。</p>
+<p>迁移数据的过程是手动启动的，但是执行过程是完全自动化的。在kafka后台内部中，kafka将添加新的服务器，并作为正在迁移分区的follower，来完全复制该分区现有的数据。当新服务器完全复制该分区的内容并加入同步副本，成为现有副本之一后，就将现有的副本分区上的数据删除。</p>
+<p>分区重新分配工具可以用于跨broker迁移分区，理想的分区分配将确保所有的broker数据负载和分区大小。分区分配工具没有自动研究kafka集群的数据分布和迁移分区达到负载分布的能力，因此，管理员要弄清楚哪些topic或分区应该迁移。</p>
+<h2 id="数据清理"><a href="#数据清理" class="headerlink" title="数据清理"></a>数据清理</h2><p>在数据迁移的过程中涉及大量的数据复制，对于数据存储量大的topic，如果历史数据不是必须的，可以适当地删除数据，针对某些topic设置retetion时间，操作成功后无需重启kafka，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./kafka-configs.sh --zookeeper zookeeper:2181/kafka --entity-type topics --entity-name input_kafka_nginxLog_topic --alter --add-config retention.ms=86400000</span><br></pre></td></tr></table></figure>
+<h2 id="数据分区"><a href="#数据分区" class="headerlink" title="数据分区"></a>数据分区</h2><p>分区分配工具的3种模式:</p>
+<ul>
+<li><p>–<strong>generate</strong>: 这个选项命令，是生成分配规则json文件的，生成“候选人”重新分配到指定的topic的所有parition都移动到新的broker。此选项，仅提供了一个方便的方式来生成特定的topic和目标broker列表的分区重新分配 “计划”。该命令选项会在shell终端输出JSON格式的重新分区后的数据。在使用该选项时，broker选择需要注意加上新机器ID</p>
+</li>
+<li><p>–<strong>execute</strong>: 这个选项命令，是执行你用–generate 生成的分配规则json文件的，（用–reassignment-json-file 选项），可以是自定义的分配计划，也可以是由管理员或通过–generate选项生成的。</p>
+</li>
+<li><p>–<strong>verify</strong>: 这个选项命令，是验证执行–execute重新分配后，列出所有分区的状态，状态可以是成功完成，失败或正在进行中的。</p>
+</li>
+</ul>
+<h3 id="generate"><a href="#generate" class="headerlink" title="generate"></a>generate</h3><ol>
+<li>确认需要重新分区的topic名称，并以JSON格式写到文件中，示例：</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"topics"</span>: [&#123;<span class="attr">"topic"</span>: <span class="string">"input_kafka_nginxLog_topic"</span>&#125;],</span><br><span class="line">  <span class="attr">"version"</span>: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>生成新的分区列表配置， 示例：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-reassign-partitions --zookeeper zookeeper:2181/kafka/kafka --topics-to-move-json-file ./topic.json --broker-list 117,118,119,120,121 --generate</span><br></pre></td></tr></table></figure>
+<p>该命令会在shell界面上以JSON格式输出重新分区后的配置，需要手动保存topic_reassgin.json文件中，后续execute会用到</p>
+<h3 id="execute"><a href="#execute" class="headerlink" title="execute"></a>execute</h3><p>该命令执行重新分区操作，根据重新分区配置，会更改历史数据，异步操作。该操作存在大量磁盘和网络IO，如果kafka队列中该topic存在大量的数据，执行时间很长</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-reassign-partitions --zookeeper zookeeper:2181/kafka --reassignment-json-file ~/after.json --execute</span><br></pre></td></tr></table></figure>
+<h3 id="verify"><a href="#verify" class="headerlink" title="verify"></a>verify</h3><p>该命令可以确认第二部操作是否操作完成，如果所有分区数据都为done则表示重分区成功</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">)kafka-reassign-partitions --zookeeper zookeeper:2181/kafka --reassignment-json-file ~/after.json --verify</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/16/zookeeper分布式锁/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/16/zookeeper分布式锁/" itemprop="url">zookeeper实现分布式锁</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-16T19:21:51+08:00">
+                2018-05-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="基于Zookeeper的分布式锁"><a href="#基于Zookeeper的分布式锁" class="headerlink" title="基于Zookeeper的分布式锁"></a>基于Zookeeper的分布式锁</h1><p><a href="http://www.dengshenyu.com/java/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/2017/10/23/zookeeper-distributed-lock.html" target="_blank" rel="noopener">原文地址</a></p>
+<p>实现分布式锁目前有三种流行方案，分别为基于数据库、Redis、Zookeeper的方案，其中前两种方案网络上有很多资料可以参考，本文不做展开。我们来看下使用Zookeeper如何实现分布式锁。</p>
+<h2 id="什么是Zookeeper？"><a href="#什么是Zookeeper？" class="headerlink" title="什么是Zookeeper？"></a>什么是Zookeeper？</h2><p>Zookeeper（业界简称zk）是一种提供配置管理、分布式协同以及命名的中心化服务，这些提供的功能都是分布式系统中非常底层且必不可少的基本功能，但是如果自己实现这些功能而且要达到高吞吐、低延迟同时还要保持一致性和可用性，实际上非常困难。因此zookeeper提供了这些功能，开发者在zookeeper之上构建自己的各种分布式系统。</p>
+<p>虽然zookeeper的实现比较复杂，但是它提供的模型抽象却是非常简单的。Zookeeper提供一个多层级的节点命名空间（节点称为znode），每个节点都用一个以斜杠（/）分隔的路径表示，而且每个节点都有父节点（根节点除外），非常类似于文件系统。例如，/foo/doo这个表示一个znode，它的父节点为/foo，父父节点为/，而/为根节点没有父节点。与文件系统不同的是，这些节点都可以设置关联的数据，而文件系统中只有文件节点可以存放数据而目录节点不行。Zookeeper为了保证高吞吐和低延迟，在内存中维护了这个树状的目录结构，这种特性使得Zookeeper不能用于存放大量的数据，每个节点的存放数据上限为1M。</p>
+<p>而为了保证高可用，zookeeper需要以集群形态来部署，这样只要集群中大部分机器是可用的（能够容忍一定的机器故障），那么zookeeper本身仍然是可用的。客户端在使用zookeeper时，需要知道集群机器列表，通过与集群中的某一台机器建立TCP连接来使用服务，客户端使用这个TCP链接来发送请求、获取结果、获取监听事件以及发送心跳包。如果这个连接异常断开了，客户端可以连接到另外的机器上。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/05/16/zookeeper分布式锁/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/15/CDH集群部署/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/15/CDH集群部署/" itemprop="url">CDH集群部署</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-15T10:01:29+08:00">
+                2018-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="CDH集群部署"><a href="#CDH集群部署" class="headerlink" title="CDH集群部署"></a>CDH集群部署</h1><h2 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h2><ol>
+<li><p>安装JDK</p>
+</li>
+<li><p>host修改</p>
+<p>/etc/hosts配置文件</p>
+</li>
+<li><p>NTP时间同步</p>
+</li>
+<li><p>SSH免秘钥登录</p>
+</li>
+<li><p>安装mariadb</p>
+<p>yum install install mariadb -y</p>
+</li>
+<li><p>mariadb 建表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SET PASSWORD=PASSWORD(&apos;xcloud2017&apos;);</span><br><span class="line">grant all privileges on *.* to &apos;root&apos;@&apos;%&apos; identified by &apos;xcloud2017&apos; with grant option; flush privileges;</span><br><span class="line">create database scmdbn DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</span><br><span class="line">create database hive DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</span><br><span class="line">create database amon DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</span><br><span class="line">create database hue DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</span><br><span class="line">create database monitor DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</span><br><span class="line">create database report DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</span><br><span class="line">create database oozie DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/05/15/CDH集群部署/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/02/分布式锁的设计/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1024,579 +1575,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/15/lighttpd-程序框架/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/10/15/lighttpd-程序框架/" itemprop="url">lighttpd 程序框架</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-15T11:37:28+08:00">
-                2016-10-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>由于历史的原因，公司部门在多个组件中使用了lighttpd，具体为何当时技术选型的时候没选nginx而选择lighttpd就不得而知了。lighttpd的社区相对nginx差距还是很大的，明显nginx的社区更活跃。lighttpd网上的资料以及第三方模块相对比较少，学习的成本会相对高一点。不过lighttpd的源码相对nginx会少一点，毕竟lighttpd比较轻量级，功能上没nginx那么多。网上nginx/lighttpd/appache 三种web server的测试结果，lighttpd占用内存最小，请求响应时间中等，apache最差。</p>
-<h2 id="进程模型"><a href="#进程模型" class="headerlink" title="进程模型"></a>进程模型</h2><p>lighttpd采用master-worker进程模型，master进程主要负责加载配置、fork worker进程、管理worker进程，worker进程主要负责接收请求、处理请求、返回请求结果，worker进程个数可以在配置文件中配置，master进程会根据配置的个数，fork worker进程</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/10/15/lighttpd-程序框架/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/09/24/python装饰器函数式编程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/09/24/python装饰器函数式编程/" itemprop="url">python装饰器函数式编程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-24T13:52:36+08:00">
-                2016-09-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="函数式编程"><a href="#函数式编程" class="headerlink" title="函数式编程"></a>函数式编程</h1><blockquote>
-<p>函数式编程（英语：functional programming）或称函数程序设计,又称泛函编程,是一种编程典范,它将电脑运算视为数学上的函数计算,并且避免使用程序状态以及易变对象,函数编程语言最重要的基础是λ演算（lambda calculus,而且λ演算的函数可以接受函数当作输入（引数）和输出（传出值）</p>
-</blockquote>
-<p>函数式编程范式相对命令式编程(Imperative programming),函数式编程更加强调程序执行的结果而非执行的过程,倡导利用若干简单的执行单元让计算结果不断渐进,逐层推导复杂的运算,而不是设计一个复杂的执行过程.而命令式编程使用各种变量以及复杂的控制语句来编写逻辑代码,最初图灵机的设计就是属于命令式编程,在纸带上面刻各种孔,然后机器根据纸带上的孔执行各种命令.C/C++ Java Python等各种面向对象编程其实都属于命令式编程范围,虽然现在这些高级语言或多或少都已经支持Lambda表达式以开始支持函数式编程,但是相比Lisp Haskell Clojure等这些纯正函数式语言,Python在函数式编程方面支持的相对少一点.</p>
-<h2 id="Python-Lambda"><a href="#Python-Lambda" class="headerlink" title="Python Lambda"></a>Python Lambda</h2><blockquote>
-<p>λ演算（英语：lambda calculus，λ-calculus）是一套从数学逻辑中发展，以变量绑定和替换的规则，来研究函数如何抽象化定义、函数如何被应用以及递归的形式系统。它由数学家阿隆佐·邱奇在20世纪30年代首次发表。Lambda演算作为一种广泛用途的计算模型，可以清晰地定义什么是一个可计算函数，而任何可计算函数都能以这种形式表达和求值，它能模拟单一磁带图灵机的计算过程；尽管如此，Lambda演算强调的是变换规则的运用，而非实现它们的具体机器。</p>
-</blockquote>
-<p>说到Python支持函数式编程必须得说道Lambda表达式,Lambda按照wiki上说法比较复杂,其实简单的说Lambda表达式就是匿名函数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lambda argument: manipulate(argument)</span><br></pre></td></tr></table></figure>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">squares = map(lambda x: x * x, range(9))</span><br><span class="line">print squares</span><br></pre></td></tr></table></figure>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">number_list = range(-5, 5)</span><br><span class="line">less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</span><br><span class="line">print(less_than_zero)</span><br></pre></td></tr></table></figure>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">number_list = range(-5, 5)</span><br><span class="line">less_than_zero = list(filter(lambda x: x &lt; 0, number_list))</span><br><span class="line">print(less_than_zero)</span><br></pre></td></tr></table></figure>
-<p>上面三个代码片段就是map/reduce/filter和lambda表达式结合的一个例子,python在支持lambda时,为了不让开发者乱用这个特性,lambda设计的比较简单,就是在lamba后面加函数以及操作,只要使用得当lambda可以让代码看起来更加简洁优雅,但是如果使用不当代码可读性会很差</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/09/24/python装饰器函数式编程/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/04/15/rsync 使用/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/04/15/rsync 使用/" itemprop="url">Rsync使用</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-04-15T21:01:29+08:00">
-                2016-04-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Rsync-使用"><a href="#Rsync-使用" class="headerlink" title="Rsync 使用"></a>Rsync 使用</h1><p>1、服务端与客户端的定义</p>
-<p>​    A机器向B机器发送数据，  或者A机器向B机器拉取数据</p>
-<p>​    那么A均为客户端， B均为服务端</p>
-<p>2、是否需要启动rsync服务</p>
-<p>​    客户端不需要， 服务端需要</p>
-<p>​    启动rsync进程： systemctl start rsyncd</p>
-<p>​    设置rsync开机自启动： systemctl enable rsyncd</p>
-<p>3、rsync相关配置</p>
-<p>​    1）模块配置， 固定为/etc/rsyncd.conf, 权限644即可</p>
-<p>​    2）用户密码配置， 可以在/etc/rsyncd.conf配置该文件路径， 推荐使用/etc/rsyncd.secret, 权限必须为600</p>
-<p>​    3）日志回滚配置 /etc/logrotate.d/rsyncd.rotate， 按需添加</p>
-<p>4、rsyncd.conf举例说明</p>
-<blockquote>
-<p>###全局配置， 生效于每个模块， 并会被模块中相同的配置项覆盖</p>
-<p>uid = root</p>
-<p>gid = root</p>
-<p>use chroot = no</p>
-<p>pid file = /var/run/rsyncd.pid</p>
-<p>#设置rsync用户密码配置文件路径</p>
-<p>secrets file = /etc/rsyncd.secret</p>
-<p>timeout = 300</p>
-<p>read only = yes</p>
-<p>write only = no</p>
-<p>#设置最大连接数</p>
-<p>max connections = 2048</p>
-<p>dont compress = <em>.gz </em>.tgz <em>.zip </em>.z <em>.Z </em>.rpm <em>.deb </em>.bz2</p>
-<p>#设置rsync日志文件， 若未设置， 则默认将日志写入syslog， 即/var/log/message，  当前版本的rsync不支持关闭日志， 所以若设置了该项， 记得添加日志回滚， 避免日志文件挤爆磁盘</p>
-<p>log file = /var/log/rsync.log</p>
-<p>syslog facility = local3</p>
-<p>###分模块配置， 注意rsync配置时，注释必须另起一行 </p>
-<p>#模块名</p>
-<p>[test-module]</p>
-<p>#模块根目录，注意该目录若不存在， rsync不会自动创建， 传输将报错</p>
-<p>path = /mylog/test/ori_data/</p>
-<p>#设置为可写</p>
-<p>read only = no</p>
-<p>#rsync用户名</p>
-<p>auth users = mylog</p>
-</blockquote>
-<p>5、rsyncd.secret举例说明</p>
-<p>格式为 用户名:密码 ， 例如</p>
-<p>mylog:abc123</p>
-<p>mylog2:abc456</p>
-<p>6、rsync基础命令</p>
-<p>在使用rsync传输之前， 需要在本机创建一个密码文件， 名称随意，例如命名为rsync.key， 权限必须是600， 并且内容只包含要使用的密码（例如 abc123）</p>
-<ol>
-<li><p>这条命令， 表示将本机/home/test/目录下的所有内容，使用模块test-module传输到192.168.1.2， 根据模块配置， 这些内容将被传输到/mylog/test/ori_data/目录下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/rsync-az–timeout=30–contimeout=15–password-file=rsync.key /home/test/ mylog@192.168.1.2::test-module</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<ol>
-<li><p>注意这里/home/test/改为/home/test ， test-module模块名后面添加了一层子目录/test/ ， 这条命令表示将本机的/home/test目录本身， 使用模块test-module传输到192.168.1.2， 根据模块配置， 这些内容将被传输到/mylog/test/ori_data/test/目录下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/rsync-az–timeout=30–contimeout=15–password-file=rsync.key /home/test mylog@192.168.1.2::test-module/test/</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<ol>
-<li><p>相比于第一条命令， 这里修改了最后两个参数的顺序， 表示从192.168.1.2拉取数据到本机的/home/test/目录下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/rsync-az–timeout=30–contimeout=15–password-file=rsync.key  mylog@192.168.1.2::test-module /home/test/</span><br></pre></td></tr></table></figure></li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/15/sock5协议原理分析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/01/15/sock5协议原理分析/" itemprop="url">sock5协议原理分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-01-15T22:47:03+08:00">
-                2016-01-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>早点两年前就开始使用shadowsocks了,那时候买了搬瓦工一年19$的vps,由于搬瓦工数据中心比较少,且大部分位于美国,经过测试选了个在凤凰城的机房,但是网速一直不稳定时不时的断线,前阵子买了vultr位于东京数据中心的vps,网络稳定,看youtube 1080p 毫无压力.虽然用了很久的shandowsock5,但是一直对sock5协知之甚少,决定解下这个牛逼的翻墙协议,简单的说就是在墙外搭一个sock5服务器,墙内的客户端把tcp数据加密后发往墙外的服务器,server按照sock5协议解密后再发往目标机器</p>
-<div style="align: center"><br><img src="https://yuerblog.cc/wp-content/uploads/2016/11/WechatIMG938.jpeg" width="100%" height="100%"><br></div>
-
-<ol>
-<li>PC客户端（即你的电脑）发出请求基于Socks5协议跟SS-Local端进行通讯，由于这个SS-Local一般是本机或路由器等局域网的其他机器，不经过GFW，所以解决GFW通过特征分析进行干扰的问题</li>
-<li>SS-Local和SS-Server两端通过多种可选的加密方法(“aes-256-cfb”等)进行通讯，经过GFW的时候因为是常规的TCP包，没有明显特征码GFW也无法对通讯数据进行解密</li>
-<li>SS-Server将收到的加密数据进行解密，还原初始请求，再发送到用户需要访问的服务网站，获取响应原路再返回SS-04，返回途中依然使用了加密，使得流量是普通TCP包，并成功穿过GFW防火墙</li>
-</ol>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/01/15/sock5协议原理分析/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1647,7 +1625,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">32</span>
+                <span class="site-state-item-count">36</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1660,7 +1638,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-count">15</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

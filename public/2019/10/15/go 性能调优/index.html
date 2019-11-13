@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="go," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="优化前提 基础功能  架构设计  硬件资源   基本思路​    思想同c/c++系统优化基本相同  CPU密集型/IO密集型 先分析程序是属于CPU密集型还是IO密集，如果是IO密集型，数据读写是否可使用内存盘、固态盘? 如果是CPU密集型，单线程程序是否可以改造成多线程?  多线程是否存在抢锁，或者同步?  是否可以减小锁粒度设置实现无锁设计  函数高频调用 高频调用的函数性能能有所提升，基本">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="golang 性能调优">
+<meta property="og:url" content="http://yoursite.com/2019/10/15/go 性能调优/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="优化前提 基础功能  架构设计  硬件资源   基本思路​    思想同c/c++系统优化基本相同  CPU密集型/IO密集型 先分析程序是属于CPU密集型还是IO密集，如果是IO密集型，数据读写是否可使用内存盘、固态盘? 如果是CPU密集型，单线程程序是否可以改造成多线程?  多线程是否存在抢锁，或者同步?  是否可以减小锁粒度设置实现无锁设计  函数高频调用 高频调用的函数性能能有所提升，基本">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/Users/knife/Library/Application%20Support/typora-user-images/image-20190505234653119.png">
+<meta property="og:image" content="http://yoursite.com/Users/knife/Library/Application%20Support/typora-user-images/image-20190506112408391.png">
+<meta property="og:image" content="http://yoursite.com/Users/knife/Library/Application%20Support/typora-user-images/image-20190506112138466.png">
+<meta property="og:image" content="http://yoursite.com/Users/knife/Library/Application%20Support/typora-user-images/image-20190517145840811.png">
+<meta property="og:image" content="http://yoursite.com/Users/knife/Library/Application%20Support/typora-user-images/image-20190520175255103.png">
+<meta property="og:updated_time" content="2019-11-02T04:30:54.511Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="golang 性能调优">
+<meta name="twitter:description" content="优化前提 基础功能  架构设计  硬件资源   基本思路​    思想同c/c++系统优化基本相同  CPU密集型/IO密集型 先分析程序是属于CPU密集型还是IO密集，如果是IO密集型，数据读写是否可使用内存盘、固态盘? 如果是CPU密集型，单线程程序是否可以改造成多线程?  多线程是否存在抢锁，或者同步?  是否可以减小锁粒度设置实现无锁设计  函数高频调用 高频调用的函数性能能有所提升，基本">
+<meta name="twitter:image" content="http://yoursite.com/Users/knife/Library/Application%20Support/typora-user-images/image-20190505234653119.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/10/15/go 性能调优/"/>
+
+
+
+
+
+  <title>golang 性能调优 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/15/go 性能调优/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">golang 性能调优</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-15T21:18:39+08:00">
+                2019-10-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="优化前提"><a href="#优化前提" class="headerlink" title="优化前提"></a>优化前提</h2><ul>
+<li><p>基础功能</p>
+</li>
+<li><p>架构设计</p>
+</li>
+<li><p>硬件资源</p>
+</li>
+</ul>
+<h2 id="基本思路"><a href="#基本思路" class="headerlink" title="基本思路"></a>基本思路</h2><p>​    思想同c/c++系统优化基本相同</p>
+<ul>
+<li><p>CPU密集型/IO密集型</p>
+<p>先分析程序是属于CPU密集型还是IO密集，如果是IO密集型，数据读写是否可使用内存盘、固态盘? 如果是CPU密集型，单线程程序是否可以改造成多线程?  多线程是否存在抢锁，或者同步?  是否可以减小锁粒度设置实现无锁设计</p>
+</li>
+<li><p>函数高频调用</p>
+<p>高频调用的函数性能能有所提升，基本上可直接提升程序的整体性能</p>
+</li>
+<li><p>锁粒度</p>
+<p>对于高性能计算程序，最好不要设计多线程抢锁的程序架构，如果锁设计不可避免那是否可以优化到减小锁粒度? </p>
+</li>
+<li><p>线程池/协程池</p>
+<p>如果程序中存在大量创建线程的情况，可加一个线程池，减小创建线程的消耗在一定程序上可提高系统吞吐量。在Go中虽然创建协程开销很小，但是系统创建大量程序可能奔溃</p>
+</li>
+<li><p>对象池</p>
+<p>如果程序中不可避免的创建大量小对象，可用对象池来减小GC压力，类似内存池</p>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="Profiling"><a href="#Profiling" class="headerlink" title="Profiling"></a>Profiling</h2><p>   Golang 提供的两个官方包 <a href="https://golang.org/pkg/runtime/pprof/" target="_blank" rel="noopener">runtime/pprof</a>，<a href="https://golang.org/pkg/net/http/pprof/" target="_blank" rel="noopener">net/http/pprof</a> 能方便的采集程序运行的堆栈、goroutine、内存分配和占用、io 等信息的 <code>.prof</code> 文件，可以使用 go tool pprof 分析 <code>.prof</code> 文件。两个包的作用是一样的，只是使用方式的差异。对于线上服务通常是使用<a href="https://golang.org/pkg/net/http/pprof/" target="_blank" rel="noopener">net/http/pprof</a> 通过暴露外部接口在必要时通过访问接口是profile; runtime/pprof可以在go test压测的时候用。</p>
+<p>   通过profile可以查看cpu/heap/gorotinue/stack/threadcreate/block/mutex的信息</p>
+<h4 id="pprof示例"><a href="#pprof示例" class="headerlink" title="pprof示例:"></a>pprof示例:</h4><ol>
+<li>runtime pprof</li>
+</ol>
+<p>通常用于一次性运行的profile分析</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">"runtime/pprof"</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">cpuProfile, _ := os.Create(<span class="string">"cpu_profile"</span>)</span><br><span class="line">pprof.StartCPUProfile(cpuProfile)</span><br><span class="line"><span class="keyword">defer</span> pprof.StopCPUProfile()</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>go test bench</li>
+</ol>
+<p>go bench压测可生成cpu/mem的profile文件，压测时的profile分析</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go test -bench . -benchmem -cpuprofile prof.cpu -memprofile prof.mem</span><br></pre></td></tr></table></figure>
+<ol>
+<li>http pprof</li>
+</ol>
+<p>通常用于后台服务的profile分析</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span></span><br><span class="line">(</span><br><span class="line">  <span class="string">"log"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">  _<span class="string">"net/http/pprof"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">goPprof</span><span class="params">(b *beat.BeatConfig)</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">if</span> b.GlobalConfig.Port == <span class="string">""</span> &#123;</span><br><span class="line">			b.GlobalConfig.Port = beat.DefaultPort</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		s := fmt.Sprintf(<span class="string">"0.0.0.0:%s"</span>, b.GlobalConfig.Port)</span><br><span class="line">		http.ListenAndServe(s, <span class="literal">nil</span>)</span><br><span class="line">	&#125;()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">   goPprof(c)</span><br><span class="line">   <span class="comment">//... </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="pprof-实现"><a href="#pprof-实现" class="headerlink" title="pprof 实现"></a>pprof 实现</h4><p>​    pprof不会实时采集程序数据，而是在pprof端口有访问的时候才会开始采集，所以在程序中开启pprof并不会实时采集导致程序性能下降。</p>
+<ol>
+<li>http路由</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// net/http/pprof.go</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	http.HandleFunc(<span class="string">"/debug/pprof/"</span>, Index)</span><br><span class="line">	http.HandleFunc(<span class="string">"/debug/pprof/cmdline"</span>, Cmdline)</span><br><span class="line">	http.HandleFunc(<span class="string">"/debug/pprof/profile"</span>, Profile)</span><br><span class="line">	http.HandleFunc(<span class="string">"/debug/pprof/symbol"</span>, Symbol)</span><br><span class="line">	http.HandleFunc(<span class="string">"/debug/pprof/trace"</span>, Trace)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>各种profile对应的采集方法</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// profiles records all registered profiles.</span></span><br><span class="line"><span class="keyword">var</span> profiles <span class="keyword">struct</span> &#123;</span><br><span class="line">	mu sync.Mutex</span><br><span class="line">	m  <span class="keyword">map</span>[<span class="keyword">string</span>]*Profile</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> goroutineProfile = &amp;Profile&#123;</span><br><span class="line">	name:  <span class="string">"goroutine"</span>,</span><br><span class="line">	count: countGoroutine,</span><br><span class="line">	write: writeGoroutine,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> threadcreateProfile = &amp;Profile&#123;</span><br><span class="line">	name:  <span class="string">"threadcreate"</span>,</span><br><span class="line">	count: countThreadCreate,</span><br><span class="line">	write: writeThreadCreate,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> heapProfile = &amp;Profile&#123;</span><br><span class="line">	name:  <span class="string">"heap"</span>,</span><br><span class="line">	count: countHeap,</span><br><span class="line">	write: writeHeap,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> blockProfile = &amp;Profile&#123;</span><br><span class="line">	name:  <span class="string">"block"</span>,</span><br><span class="line">	count: countBlock,</span><br><span class="line">	write: writeBlock,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> mutexProfile = &amp;Profile&#123;</span><br><span class="line">	name:  <span class="string">"mutex"</span>,</span><br><span class="line">	count: countMutex,</span><br><span class="line">	write: writeMutex,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Profile-概览"><a href="#Profile-概览" class="headerlink" title="Profile 概览"></a>Profile 概览</h3><p>​     通过访问debug/pprof/heap可以大体上掌握程序运行时状态，web访问示例:  <a href="http://ip:19194/debug/pprof" target="_blank" rel="noopener">http://ip:19194/debug/pprof</a></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/debug/pprof/</span><br><span class="line"></span><br><span class="line">profiles:</span><br><span class="line"><span class="number">0</span>	block</span><br><span class="line"><span class="number">345</span>	goroutine</span><br><span class="line"><span class="number">1142</span>	heap</span><br><span class="line"><span class="number">0</span>	mutex</span><br><span class="line"><span class="number">29</span>	threadcreate</span><br><span class="line"></span><br><span class="line">full goroutine stack dump</span><br></pre></td></tr></table></figure>
+<h3 id="pprof-详情"><a href="#pprof-详情" class="headerlink" title="pprof 详情"></a>pprof 详情</h3><p>​     使用函数调用图/矢量图/动态top等手段来查看程序当前运行情况</p>
+<p>​     <a href="https://github.com/google/pprof" target="_blank" rel="noopener">google pprof</a>相比go tool中字段的pprof工具会更好用，相比go tool pprof工具，该工具集成了更好的web功能，方便生成矢量图以及火焰图，如果用go tool pprof工具在生成火焰图时需要手动安装go torch组件</p>
+<ol>
+<li><p>cpu（CPU Profiling）: <code>$HOST/debug/pprof/profile</code>，默认进行 30s 的 CPU Profiling，得到一个分析用的 profile 文件。报告程序的 CPU 使用情况，按照一定频率去采集应用程序在 CPU 和寄存器上面的数据</p>
+</li>
+<li><p>block（Block Profiling）：<code>$HOST/debug/pprof/block</code>，查看导致阻塞同步的堆栈跟踪。报告 goroutines 不在运行状态的情况，可以用来分析和查找死锁等性能瓶颈</p>
+</li>
+<li><p>goroutine：<code>$HOST/debug/pprof/goroutine</code>，查看当前所有运行的 goroutines 堆栈跟踪</p>
+</li>
+<li><p>heap（Memory Profiling）: <code>$HOST/debug/pprof/heap</code>，查看活动对象的内存分配情况</p>
+</li>
+<li><p>mutex（Mutex Profiling）：<code>$HOST/debug/pprof/mutex</code>，查看导致互斥锁的竞争持有者的堆栈跟踪</p>
+</li>
+<li><p>threadcreate：<code>$HOST/debug/pprof/threadcreate</code>，查看创建新OS线程的堆栈跟踪</p>
+</li>
+</ol>
+<h5 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h5><p>  CPU: pprof -seconds=60 -http=”:8081” ./logbeat <a href="http://ip:19194/debug/pprof/profile" target="_blank" rel="noopener">http://ip:19194/debug/pprof/profile</a></p>
+<p>  矢量图graph:</p>
+<p><img src="/Users/knife/Library/Application Support/typora-user-images/image-20190505234653119.png" alt="image-20190505234653119"></p>
+<ul>
+<li><p>flat：给定函数上运行耗时</p>
+</li>
+<li><p>flat%：同上的 CPU 运行耗时总比例</p>
+</li>
+<li><p>sum%：给定函数累积使用 CPU 总比例</p>
+</li>
+<li><p>cum：当前函数加上它之上的调用运行总耗时</p>
+</li>
+<li><p>cum%：同上的 CPU 运行耗时总比例</p>
+</li>
+</ul>
+<p><img src="/Users/knife/Library/Application Support/typora-user-images/image-20190506112408391.png" alt="image-20190506112408391"></p>
+<p>  CPU火焰图:</p>
+<p><img src="/Users/knife/Library/Application Support/typora-user-images/image-20190506112138466.png" alt="image-20190506112138466"></p>
+<h5 id="Heap"><a href="#Heap" class="headerlink" title="Heap"></a>Heap</h5><p><img src="/Users/knife/Library/Application Support/typora-user-images/image-20190517145840811.png" alt="image-20190517145840811"></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// runtime.MemProfile()</span></span><br><span class="line"></span><br><span class="line">heap profile: <span class="number">5385</span>: <span class="number">280442048</span> [<span class="number">104285541</span>: <span class="number">1036510626632</span>] @ heap/<span class="number">1048576</span></span><br><span class="line"><span class="number">1</span>: <span class="number">115867648</span> [<span class="number">1</span>: <span class="number">115867648</span>] @ <span class="number">0x40a7d</span>2 <span class="number">0x40a950</span> <span class="number">0x40d</span>34e <span class="number">0x74f</span>629 <span class="number">0x74d</span>6c6 <span class="number">0x7694ed</span> <span class="number">0x42df</span>b2 <span class="number">0x45b781</span></span><br><span class="line">#	<span class="number">0x74f</span>628	_/tmp/logbeat/beat.(*ConfigMap).load+<span class="number">0x348</span>	/tmp/logbeat/beat/configMap.<span class="keyword">go</span>:<span class="number">113</span></span><br><span class="line">#	<span class="number">0x74d</span>6c5	_/tmp/logbeat/beat.(*BeatConfig).Run+<span class="number">0xd5</span>	/tmp/logbeat/beat/beatConfig.<span class="keyword">go</span>:<span class="number">71</span></span><br><span class="line">#	<span class="number">0x7694ec</span>	main.main+<span class="number">0x27c</span>					/tmp/logbeat/beat.<span class="keyword">go</span>:<span class="number">88</span></span><br><span class="line">#	<span class="number">0x42df</span>b1	runtime.main+<span class="number">0x211</span>				/usr/local/<span class="keyword">go</span>/src/runtime/proc.<span class="keyword">go</span>:<span class="number">198</span></span><br><span class="line"></span><br><span class="line"><span class="number">1</span>: <span class="number">57933824</span> [<span class="number">1</span>: <span class="number">57933824</span>] @ <span class="number">0x40a7d</span>2 <span class="number">0x40a950</span> <span class="number">0x40d</span>34e <span class="number">0x74f</span>629 <span class="number">0x74d</span>6c6 <span class="number">0x7694ed</span> <span class="number">0x42df</span>b2 <span class="number">0x45b781</span></span><br><span class="line">#	<span class="number">0x74f</span>628	_/tmp/logbeat/beat.(*ConfigMap).load+<span class="number">0x348</span>	/tmp/logbeat/beat/configMap.<span class="keyword">go</span>:<span class="number">113</span></span><br><span class="line">#	<span class="number">0x74d</span>6c5	_/tmp/logbeat/beat.(*BeatConfig).Run+<span class="number">0xd5</span>	/tmp/logbeat/beat/beatConfig.<span class="keyword">go</span>:<span class="number">71</span></span><br><span class="line">#	<span class="number">0x7694ec</span>	main.main+<span class="number">0x27c</span>					/tmp/logbeat/beat.<span class="keyword">go</span>:<span class="number">88</span></span><br><span class="line">#	<span class="number">0x42df</span>b1	runtime.main+<span class="number">0x211</span>				/usr/local/<span class="keyword">go</span>/src/runtime/proc.<span class="keyword">go</span>:<span class="number">198</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 每行前几个数字的含义：</span></span><br><span class="line"><span class="comment">// 1: 57933824 [1: 57933824] 分别表示: 当前存活对象的数量: 存活对象已经占用的内存 [分配的总的数量: 所有分配已经占用的内存]</span></span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="comment">// runtime.ReadMemStats()</span></span><br><span class="line"></span><br><span class="line"># runtime.MemStats</span><br><span class="line"># Alloc = <span class="number">3676961880</span></span><br><span class="line"># TotalAlloc = <span class="number">55069863469432</span></span><br><span class="line"># Sys = <span class="number">11084658696</span>    <span class="comment">//进程从系统获得的内存空间，虚拟地址空间</span></span><br><span class="line"># Lookups = <span class="number">6768278</span></span><br><span class="line"># Mallocs = <span class="number">99007906159</span></span><br><span class="line"># Frees = <span class="number">98982275533</span></span><br><span class="line"># HeapAlloc = <span class="number">3676961880</span> <span class="comment">// 进程堆内存分配使用的空间，通常是用户new出来的堆对象，包含未被gc掉的</span></span><br><span class="line"># HeapSys = <span class="number">10563321856</span>  <span class="comment">// 进程从系统获得的堆内存，底层使用TCmalloc机制，会缓存一部分堆内存，虚拟地址空间</span></span><br><span class="line"># HeapIdle = <span class="number">6811181056</span>   </span><br><span class="line"># HeapInuse = <span class="number">3752140800</span></span><br><span class="line"># HeapReleased = <span class="number">4199178240</span></span><br><span class="line"># HeapObjects = <span class="number">25630626</span></span><br><span class="line"># Stack = <span class="number">2588672</span> / <span class="number">2588672</span></span><br><span class="line"># MSpan = <span class="number">49810248</span> / <span class="number">110379008</span></span><br><span class="line"># MCache = <span class="number">10416</span> / <span class="number">81920</span></span><br><span class="line"># BuckHashSys = <span class="number">1689317</span></span><br><span class="line"># GCSys = <span class="number">383721472</span></span><br><span class="line"># OtherSys = <span class="number">22876451</span></span><br><span class="line"># NextGC = <span class="number">6101847904</span></span><br><span class="line"># LastGC = <span class="number">1557067985391699853</span></span><br><span class="line"># PauseNs = []   <span class="comment">// 记录每次gc暂停的时间(纳秒)，最多记录256个最新记录</span></span><br><span class="line"># PauseEnd = []</span><br><span class="line"># NumGC = <span class="number">17797</span>  <span class="comment">// 记录gc发生的次数</span></span><br><span class="line"># NumForcedGC = <span class="number">0</span></span><br><span class="line"># GCCPUFraction = <span class="number">0.035383945386859995</span></span><br><span class="line"># DebugGC = <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<h5 id="Goroutine"><a href="#Goroutine" class="headerlink" title="Goroutine"></a>Goroutine</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pprof -seconds=60 -http=":8082" ./logbeat http://ip:19194/debug/pprof/goroutine</span><br></pre></td></tr></table></figure>
+<p><img src="/Users/knife/Library/Application Support/typora-user-images/image-20190520175255103.png" alt="image-20190520175255103"></p>
+<h2 id="优化点"><a href="#优化点" class="headerlink" title="优化点"></a>优化点</h2><ol>
+<li>字符串拼接效率低，采用buffer.WriteString</li>
+<li>time.LoadLocation非常耗时，会打开时区文件进行解析</li>
+<li>go map/slice 最好可预先分配大小</li>
+<li>尽量采用[]byte替代string，减少[]byte和string之间想换转换</li>
+<li>goroutinue池代替大量创建goroutinue</li>
+<li>多用channel实现同步，尽量不用互斥锁</li>
+</ol>
+<h3 id="优化资料"><a href="#优化资料" class="headerlink" title="优化资料"></a>优化资料</h3><ol>
+<li><a href="https://segmentfault.com/blog/qyuhen" target="_blank" rel="noopener">https://segmentfault.com/blog/qyuhen</a></li>
+<li><a href="https://segmentfault.com/a/1190000016354883" target="_blank" rel="noopener">https://segmentfault.com/a/1190000016354883</a></li>
+<li><a href="http://yangxikun.com/golang/2017/12/24/golang-profiling-optimizing.html" target="_blank" rel="noopener">http://yangxikun.com/golang/2017/12/24/golang-profiling-optimizing.html</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/04/ClickHoue 表引擎概述/" rel="next" title="ClickHouse 表引擎概述">
+                <i class="fa fa-chevron-left"></i> ClickHouse 表引擎概述
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/17/LSM存储概述/" rel="prev" title="Log Structured Merge Trees 概述">
+                Log Structured Merge Trees 概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">36</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#优化前提"><span class="nav-number">1.</span> <span class="nav-text">优化前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思路"><span class="nav-number">2.</span> <span class="nav-text">基本思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Profiling"><span class="nav-number">3.</span> <span class="nav-text">Profiling</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pprof示例"><span class="nav-number">3.0.1.</span> <span class="nav-text">pprof示例:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pprof-实现"><span class="nav-number">3.0.2.</span> <span class="nav-text">pprof 实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Profile-概览"><span class="nav-number">3.1.</span> <span class="nav-text">Profile 概览</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pprof-详情"><span class="nav-number">3.2.</span> <span class="nav-text">pprof 详情</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#CPU"><span class="nav-number">3.2.0.1.</span> <span class="nav-text">CPU</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Heap"><span class="nav-number">3.2.0.2.</span> <span class="nav-text">Heap</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Goroutine"><span class="nav-number">3.2.0.3.</span> <span class="nav-text">Goroutine</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化点"><span class="nav-number">4.</span> <span class="nav-text">优化点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优化资料"><span class="nav-number">4.1.</span> <span class="nav-text">优化资料</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
