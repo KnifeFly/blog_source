@@ -260,6 +260,689 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/15/nginx-信号处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/09/15/nginx-信号处理/" itemprop="url">nginx 信号处理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-15T11:37:28+08:00">
+                2017-09-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>​    因为Nginx是利用信号来实现平滑升级、更换日志文件、配置文件实时生效、重启服务等功能的，所以在Nginx的启动过程中会向操作系统内核注册所使用到的信号，其代码实现如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ngx_cdecl</span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span> *<span class="keyword">const</span> *argv)</span><br><span class="line">&#123;</span><br><span class="line">    ……</span><br><span class="line">    <span class="comment">// 初始化信号</span></span><br><span class="line">    <span class="keyword">if</span> (ngx_init_signals(cycle-&gt;<span class="built_in">log</span>) != NGX_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ……</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/09/15/nginx-信号处理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/15/nginx-系统框架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/07/15/nginx-系统框架/" itemprop="url">nginx 系统框架</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-15T20:35:19+08:00">
+                2017-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="Nginx-进程模型"><a href="#Nginx-进程模型" class="headerlink" title="Nginx 进程模型"></a>Nginx 进程模型</h1><p>Nginx 进程模型采用master/worker进程模型，一个master进程，多个worker进程。master进程主要工作就是重载配置文件、监听信号(重载配置文件/重新打开日志文件等)、监控worker，而worker进程核心就是处理网络事件以及定时相关操作，maser和worker之间通信机制采用socketpair + 共享内存 + 信号，worker和worker之间通信机制采用socketpair通信。</p>
+<hr>
+<h2 id="1-Nginx启动流程"><a href="#1-Nginx启动流程" class="headerlink" title="1. Nginx启动流程"></a>1. Nginx启动流程</h2><ul>
+<li>命令行参数解析，获取主配置文件路径等，ngx_process_options</li>
+<li>各种初始化工作，调用各个模块create_conf和init_conf方法、创建pid文件、创建共享内存、监听套接字、调用各个模块init_module方法…，初始化工作主要在ngx_init_cycle这个函数中完成</li>
+<li>注册各种信号处理函数，主要在ngx_init_signals函数中完成，在signals全局数组中保存了各种信号以及相应的信号处理函数</li>
+<li>创建后台daemon进程</li>
+<li>创建pid文件</li>
+<li>根据启动参数判断启动哪种模式，master/worker进程模式则进入ngx_master_process_cycle函数</li>
+</ul>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/07/15/nginx-系统框架/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/15/Linux信号安全处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/15/Linux信号安全处理/" itemprop="url">Linux信号安全处理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-15T15:37:21+08:00">
+                2017-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="信号处理机制"><a href="#信号处理机制" class="headerlink" title="信号处理机制"></a>信号处理机制</h2><p>在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：</p>
+<pre><code>- 在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：
+- 在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：
+</code></pre><p>当内核发送一个信号给进程时，它将会修改进程的pending位向量，譬如说，当内核发送一个SIGINT信号给进程，那么它会将进程的pending[SIGINT]的值设置成 1。同样地，当进程屏蔽掉一个信号时，那么它会修改blocked位向量。当进程屏蔽掉一个信号之后，内核仍然可以发送这个信号给进程(保存在进程的pending位向量中)，但进程不会接收并处理这个信号。只有当进程解除了对这个信号的屏蔽之后，进程才会接收并处理这个信号。</p>
+<p>下面的程序一开始就屏蔽了SIGINT信号，所以即使内核发送SIGINT信号给这个程序，这个信号也不会得到处理。而当程序解除了对SIGINT的屏蔽之后，这个SIGINT信号才会得到处理：</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/05/15/Linux信号安全处理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/15/MySQL 存储引擎-MyISAM与InnoDB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/04/15/MySQL 存储引擎-MyISAM与InnoDB/" itemprop="url">MySQL 存储引擎-MyISAM与InnoDB差异</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-15T10:01:29+08:00">
+                2017-04-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="MySQL-存储引擎-MyISAM与InnoDB差异"><a href="#MySQL-存储引擎-MyISAM与InnoDB差异" class="headerlink" title="MySQL 存储引擎-MyISAM与InnoDB差异"></a>MySQL 存储引擎-MyISAM与InnoDB差异</h1><p>&lt;高性能mysql&gt;对两者差异的评价如下:</p>
+<p><strong>InnoDB：</strong>MySQL默认的事务型引擎，也是最重要和使用最广泛的存储引擎。它被设计成为大量的短期事务，短期事务大部分情况下是正常提交的，很少被回滚。InnoDB的性能与自动崩溃恢复的特性，使得它在非事务存储需求中也很流行。除非有非常特别的原因需要使用其他的存储引擎，否则应该优先考虑InnoDB引擎。</p>
+<p><strong>MyISAM：</strong>在MySQL 5.1 及之前的版本，MyISAM是默认引擎。MyISAM提供的大量的特性，包括全文索引、压缩、空间函数（GIS）等，但MyISAM并不支持事务以及行级锁，而且一个毫无疑问的缺陷是崩溃后无法安全恢复。正是由于MyISAM引擎的缘故，即使MySQL支持事务已经很长时间了，在很多人的概念中MySQL还是非事务型数据库。尽管这样，它并不是一无是处的。对于只读的数据，或者表比较小，可以忍受修复操作，则依然可以使用MyISAM</p>
+<ol>
+<li>InnoDB 支持事务，MyISAM 不支持事务。这是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一；</li>
+</ol>
+<ol>
+<li>InnoDB 支持外键，而 MyISAM 不支持。对一个包含外键的 InnoDB 表转为 MYISAM 会失败;</li>
+</ol>
+<ol>
+<li>InnoDB 是聚集索引，MyISAM 是非聚集索引。聚簇索引的文件存放在主键索引的叶子节点上，因此 InnoDB 必须要有主键，通过主键索引效率很高。但是辅助索引需要两次查询，先查询到主键，然后再通过主键查询到数据。因此，主键不应该过大，因为主键太大，其他索引也都会很大。而 MyISAM 是非聚集索引，数据文件是分离的，索引保存的是数据文件的指针。主键索引和辅助索引是独立的;</li>
+</ol>
+<ol>
+<li>InnoDB 不保存表的具体行数，执行 select count(*) from table 时需要全表扫描。而MyISAM 用一个变量保存了整个表的行数，执行上述语句时只需要读出该变量即可，速度很快;</li>
+</ol>
+<ol>
+<li>InnoDB 最小的锁粒度是行锁，MyISAM 最小的锁粒度是表锁。一个更新语句会锁住整张表，导致其他查询和更新都会被阻塞，因此并发访问受限。这也是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一;</li>
+</ol>
+<ol>
+<li>MyISAM支持fulltext类型的全文索引，InnoDB不支持，但是innodb可以使用sphinx插件支持全文索引，并且效果更好；</li>
+</ol>
+<ol>
+<li>MyISAM允许没有任何索引和主键的表存在，索引都是保存行的地址；InnoDB如果没有设定主键或者非空唯一索引，<strong>就会自动生成一个6字节的主键(用户不可见)</strong>，数据是主索引的一部分，附加索引保存的是主索引的值。</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/15/MySQL 索引失效/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/03/15/MySQL 索引失效/" itemprop="url">MySQL 索引失效</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-15T10:01:29+08:00">
+                2017-03-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="MySQL-索引失效"><a href="#MySQL-索引失效" class="headerlink" title="MySQL 索引失效"></a>MySQL 索引失效</h1><p>为了测试索引失效，首先创建一个用于测试的数据表</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> </span><br><span class="line">	student(<span class="keyword">id</span> <span class="built_in">int</span> <span class="keyword">not</span> <span class="literal">null</span> primary <span class="keyword">key</span>, <span class="keyword">name</span> <span class="built_in">varchar</span>(<span class="number">10</span>) <span class="keyword">not</span> <span class="literal">null</span>, </span><br><span class="line">	age <span class="built_in">int</span>, </span><br><span class="line">	address <span class="built_in">varchar</span>(<span class="number">200</span>), </span><br><span class="line">	hobby <span class="built_in">varchar</span>(<span class="number">200</span>), </span><br><span class="line">	<span class="keyword">key</span>(<span class="keyword">name</span>, age, address)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> student(<span class="keyword">id</span>, <span class="keyword">name</span>, age, address, hobby) </span><br><span class="line">	<span class="keyword">values</span>(<span class="number">1</span>, <span class="string">'a'</span>, <span class="number">20</span>, <span class="string">'a'</span>, <span class="string">'a'</span>),(<span class="number">2</span>, <span class="string">'b'</span>, <span class="number">30</span>, <span class="string">'b'</span>, <span class="string">'b'</span>),(<span class="number">3</span>, <span class="string">'c'</span>, <span class="number">30</span>, <span class="string">'c'</span>, <span class="string">'c'</span>);</span><br></pre></td></tr></table></figure>
+<p>索引失效的几种常见场景</p>
+<ol>
+<li>select语句中有is null或者is not null查询判断。索引是一棵B+树，节点中不会存储NULL值。</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where age is null \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">MariaDB [<span class="keyword">test</span>]&gt; <span class="keyword">explain</span> <span class="keyword">select</span> * <span class="keyword">from</span> student <span class="keyword">where</span> age <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">null</span> \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in <span class="keyword">set</span> (<span class="number">0.01</span> sec)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>前导模糊查询不能利用索引，例如查询字段使用<code>like &#39;%XX&#39;</code>或者<code>like &#39;%XX%&#39;</code></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where name like '%a' \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">MariaDB [test]&gt; explain select * from student where name like '%a%' \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// like 'a%' 场景是可以使用到索引</span><br><span class="line">MariaDB [test]&gt; explain select * from student where name like 'a%' \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: range</span><br><span class="line">possible_keys: name</span><br><span class="line">          key: name</span><br><span class="line">      key_len: 12</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 1</span><br><span class="line">        Extra: Using index condition</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>查询条件有or</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where name='a' or name='b' \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: name</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>不符合左前缀法则的查询，跳过多列索引的第一列</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where age=10 \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>范围查询 <code>&gt; &lt; between</code></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where name&gt;=&apos;a&apos; \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: name</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>查询条件使用函数在索引列上，或者对索引列进行运算</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where left(name, 1)='a' \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>not in/not exists</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where name not in ('c', 'b') \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: name</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>隐式转换导致索引失效，<code>name</code>是一个字符串字段，<code>select</code>查询时传入数字，mysql会把数字转换为字符串，然后做全表扫描</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; explain select * from student where name = 11 \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: student</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: name</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 3</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/15/lighttpd-程序框架/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -965,178 +1648,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/12/linux中最大文件描述符数/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/01/12/linux中最大文件描述符数/" itemprop="url">linux 最大文件描述符</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-01-12T20:41:42+08:00">
-                2016-01-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="linux最大文件描述符数"><a href="#linux最大文件描述符数" class="headerlink" title="linux最大文件描述符数"></a>linux最大文件描述符数</h1><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><blockquote>
-<p>关于Linux下系统,进程能最大能打开的文件描述符数看过好多文章,但大都没有完整,详细说明每个值表示什么意思,在实践中该怎么设置.今天刚好有时间就通过Google来整理了如下的内容.如有错误请指出,谢谢.</p>
-</blockquote>
-<h3 id="系统级别"><a href="#系统级别" class="headerlink" title="系统级别"></a>系统级别</h3><p>Linux系统级别限制所有用户进程能打开的文件描述符总数可以通过如下的命令查看</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/sys/fs/file-max </span><br><span class="line">2259544</span><br></pre></td></tr></table></figure>
-<p>有2中方法修改系统级别的限制：</p>
-<ol>
-<li><p>通过命令动态修改(重启后失效)</p>
-<p>sysctl -w fs.file-max=102400</p>
-</li>
-</ol>
-<p>2.通过配置文件修改</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysctl.conf</span><br><span class="line">在文件末尾添加</span><br><span class="line">fs.file-max=102400</span><br><span class="line">保存退出后使用sysctl -p 命令使其生效</span><br></pre></td></tr></table></figure>
-<p>和<code>fs.file-max</code>有关的一个参数是<code>file-nr</code>, 该参数是只读的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/sys/fs/file-nr </span><br><span class="line">3296    0       2259544</span><br></pre></td></tr></table></figure>
-<p><code>file-nr</code>的值由3部分组成：1，已经分配的文件描述符数；2，已经分配但未使用的文件描述符数；<br>3，内核最大能分配的文件描述符数</p>
-<p><strong>注意：</strong> 只要你的内存足够大，file-max的值可以非常大。</p>
-<h3 id="用户级别"><a href="#用户级别" class="headerlink" title="用户级别"></a>用户级别</h3><p>用户级别的限制是通过可以通过命令<code>ulimit</code>命令和文件<code>/etc/security/limits.conf</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ ulimit  -n</span><br><span class="line">655350</span><br><span class="line">//查看硬件资源限制</span><br><span class="line">$ ulimit  -Hn</span><br><span class="line">655350</span><br><span class="line">//软件资源限制</span><br><span class="line">$ ulimit  -Sn</span><br><span class="line">655350</span><br><span class="line">//设置软/硬件资源限制</span><br><span class="line">ulimit  -Sn 655350 或 ulimit  -Hn 655350</span><br></pre></td></tr></table></figure>
-<p>查看limits.conf文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/security/limits.conf</span><br><span class="line">//输出</span><br><span class="line">* hard nofile 655350</span><br><span class="line">* soft nofile 655350</span><br></pre></td></tr></table></figure>
-<p>limits.conf 文件的格式是：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;domain&gt; &lt;type&gt; &lt;item&gt; &lt;value&gt;</span><br></pre></td></tr></table></figure>
-<p>每个域的取值可以<a href="https://linux.die.net/man/5/limits.conf" target="_blank" rel="noopener">参考</a></p>
-<p>如果domain的值是一个用户名，则可以限制该用户下的所有进程能打开的文件描述符总数，如果是<code>*</code>则表示针对每个用户都起作用</p>
-<p><strong>注意</strong> 针对同一个item取值， soft的值不能大于hard</p>
-<h3 id="nr-open"><a href="#nr-open" class="headerlink" title="nr_open"></a>nr_open</h3><blockquote>
-<p>This denotes the maximum number of file-handles a process can<br>allocate. Default value is 1024*1024 (1048576) which should be<br>enough for most machines. Actual limit depends on RLIMIT_NOFILE<br>resource limit.</p>
-</blockquote>
-<p>就是说nr_open表示一个进程做多能分配的文件句柄数，默认值是1048576。针对大多数的情况该值是足够的。</p>
-<h3 id="NR-FILE"><a href="#NR-FILE" class="headerlink" title="NR_FILE"></a>NR_FILE</h3><blockquote>
-<p>NR_FILE is the limit on total number of files in the system at any given point in time</p>
-</blockquote>
-<p>NR_FILE 是系统在某一给定时刻，限制的文件总数</p>
-<blockquote>
-<p>While initializing the kernel we setup the vfs cache with start_kernel<br>vfs_caches_init(num_physpages);<br>files_init(mempages);<br>fs/file_table.c says<br>/* One file with associated inode and dcache is very roughly 1K.</p>
-<ul>
-<li>Per default don’t use more than 10% of our memory for files.<br>n = (mempages * (PAGE_SIZE / 1024)) / 10;<br>this n can never be greater than NR_FILE</li>
-</ul>
-</blockquote>
-<h3 id="ulimit-命令"><a href="#ulimit-命令" class="headerlink" title="ulimit 命令"></a>ulimit 命令</h3><p>1.只对当前tty（终端有效），若要每次都生效的话，可以把ulimit参数放到对应用户的.bash_profile里面；<br>2.ulimit命令本身就有分软硬设置，加-H就是硬，加-S就是软；<br>3.默认显示的是软限制，如果运行ulimit命令修改的时候没有加上的话，就是两个参数一起改变.生效；</p>
-<p>命令参数<br>-H 设置硬件资源限制.<br>-S 设置软件资源限制.<br>-a 显示当前所有的资源限制.<br>-c size:设置core文件的最大值.单位:blocks<br>-d size:设置数据段的最大值.单位:kbytes<br>-f size:设置创建文件的最大值.单位:blocks<br>-l size:设置在内存中锁定进程的最大值.单位:kbytes<br>-m size:设置可以使用的常驻内存的最大值.单位:kbytes<br>-n size:设置内核可以同时打开的文件描述符的最大值.单位:n<br>-p size:设置管道缓冲区的最大值.单位:kbytes<br>-s size:设置堆栈的最大值.单位:kbytes<br>-t size:设置CPU使用时间的最大上限.单位:seconds<br>-v size:设置虚拟内存的最大值.单位:kbytes<br>unlimited 是一个特殊值，用于表示不限制</p>
-<h3 id="总结-file-max-nr-open-nofile之间的关系"><a href="#总结-file-max-nr-open-nofile之间的关系" class="headerlink" title="总结 file-max, nr_open, nofile之间的关系"></a>总结 file-max, nr_open, nofile之间的关系</h3><ol>
-<li>针对用户打开最大文件数的限制，可以通过修改文件<code>limits.conf</code>来实现</li>
-<li>nofile中soft的值小于hard, 最大值由nr_open来决定</li>
-<li>file-max表示内核针对整个系统，限制能所有进程能打开的文件描述符数</li>
-<li>nofile &lt; nr_open &lt; file-max</li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1182,7 +1698,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">36</span>
+                <span class="site-state-item-count">41</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1195,7 +1711,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

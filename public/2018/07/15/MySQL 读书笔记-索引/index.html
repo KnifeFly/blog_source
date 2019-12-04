@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="sql," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="MySQL 读书笔记-索引MySQ索引在存储引擎层实现不是在服务器层，不同的存储引擎的索引的实现方式不一样。本文重点关注采用B-Tree实现的索引，还有内存引擎使用的哈希索引、空间索引、全文索引不在本文描述范围内。 为何使用索引 查询时减少扫描数据量，加快查询速度 避免排序和临时表 将随机IO变为顺序IO  索引实现方式MySQL 索引对于数据查询性能有很重要的影响，好的索引可能能让查询性能提升">
+<meta name="keywords" content="sql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL 读书笔记-索引">
+<meta property="og:url" content="http://yoursite.com/2018/07/15/MySQL 读书笔记-索引/index.html">
+<meta property="og:site_name" content="KnifeFly">
+<meta property="og:description" content="MySQL 读书笔记-索引MySQ索引在存储引擎层实现不是在服务器层，不同的存储引擎的索引的实现方式不一样。本文重点关注采用B-Tree实现的索引，还有内存引擎使用的哈希索引、空间索引、全文索引不在本文描述范围内。 为何使用索引 查询时减少扫描数据量，加快查询速度 避免排序和临时表 将随机IO变为顺序IO  索引实现方式MySQL 索引对于数据查询性能有很重要的影响，好的索引可能能让查询性能提升">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/07/15/images/mysql_clustered_index.png">
+<meta property="og:updated_time" content="2019-11-19T08:03:42.051Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL 读书笔记-索引">
+<meta name="twitter:description" content="MySQL 读书笔记-索引MySQ索引在存储引擎层实现不是在服务器层，不同的存储引擎的索引的实现方式不一样。本文重点关注采用B-Tree实现的索引，还有内存引擎使用的哈希索引、空间索引、全文索引不在本文描述范围内。 为何使用索引 查询时减少扫描数据量，加快查询速度 避免排序和临时表 将随机IO变为顺序IO  索引实现方式MySQL 索引对于数据查询性能有很重要的影响，好的索引可能能让查询性能提升">
+<meta name="twitter:image" content="http://yoursite.com/2018/07/15/images/mysql_clustered_index.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/15/MySQL 读书笔记-索引/"/>
+
+
+
+
+
+  <title>MySQL 读书笔记-索引 | KnifeFly</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">KnifeFly</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/15/MySQL 读书笔记-索引/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MySQL 读书笔记-索引</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-15T11:01:29+08:00">
+                2018-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="MySQL-读书笔记-索引"><a href="#MySQL-读书笔记-索引" class="headerlink" title="MySQL 读书笔记-索引"></a>MySQL 读书笔记-索引</h1><p>MySQ索引在存储引擎层实现不是在服务器层，不同的存储引擎的索引的实现方式不一样。本文重点关注采用B-Tree实现的索引，还有内存引擎使用的哈希索引、空间索引、全文索引不在本文描述范围内。</p>
+<h3 id="为何使用索引"><a href="#为何使用索引" class="headerlink" title="为何使用索引"></a>为何使用索引</h3><ol>
+<li>查询时减少扫描数据量，加快查询速度</li>
+<li>避免排序和临时表</li>
+<li>将随机IO变为顺序IO</li>
+</ol>
+<h3 id="索引实现方式"><a href="#索引实现方式" class="headerlink" title="索引实现方式"></a>索引实现方式</h3><p>MySQL 索引对于数据查询性能有很重要的影响，好的索引可能能让查询性能提升好几个数量级。MySQL先利用索引查找到对应值，然后根据匹配的索引记录找到对应的数据行。如果索引有多列则列的顺序很重要，因为MySQL有<code>最左前缀匹配</code>限制。</p>
+<p>MySQL大部分存储引擎支持B-Tree索引，不过每个存储引擎的B-Tree数据结构可能不太一致。<strong>MyISAM采用前缀压缩技术使索引更小，InnoDB按照原始数据格式存储；MyISAM索引通过数据的物理位置引用被索引的行，InndoDB则根据主键引用被索引的行。</strong></p>
+<p><img src="../images/mysql_clustered_index.png" alt="mysql_clustered_index"></p>
+<p>InnoDB有主键索引和非主键索引区分 ，对于主键索引来说叶子节点存放的是整行数据，主键索引又叫<code>聚簇索引(clustered index)</code>；非主键索引的叶子节点内容是主键的值，又叫<code>二级索引(secondary index)</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; desc tt;</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line">| Field | Type        | Null | Key | Default | Extra |</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line">| id    | int(11)     | NO   | PRI | NULL    |       |</span><br><span class="line">| k     | int(11)     | NO   | MUL | NULL    |       |</span><br><span class="line">| name  | varchar(20) | YES  |     | NULL    |       |</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line"></span><br><span class="line">// 搜索Id的B+Tree搜索树</span><br><span class="line">select * from tt where id=100;</span><br><span class="line"></span><br><span class="line">// 搜索k的B+Tree搜索树得到id的值，然后在用id值搜索id搜索树，回表</span><br><span class="line">select * from tt where k=5;</span><br></pre></td></tr></table></figure>
+<h3 id="索引与自增主键"><a href="#索引与自增主键" class="headerlink" title="索引与自增主键"></a>索引与自增主键</h3><p>索引采用B+Tree数据结构来存储，B+Tree数据结构父接口大于左节点小于右节点，所以数据表在插入数据时索引树存在维护操作，数据插入可能存在页分裂，数据删除存在可能页合并，此时会影响性能。</p>
+<p>通常在建表规范中有描述建需要自增主键，自增主键定义<code>NOT NULL PRIMARY AUTO_INTREMENT</code>，采用自增主键在插入数据时采用追加操作，不涉及到数据移动，也不会触发叶子节点的分裂。</p>
+<p>对于有业务字段做主键的场景，往往不容易保证有序插入，这样数据写成本比较高。此外还有一个考虑点业务主键的大小，假如以身份证作为业务主键，则该字段大小为20字节 ，此时每个二级索引的叶子节点占用20字节，相比用自增主键，二级索引叶子节点主要8字节。<strong>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小</strong>。</p>
+<h2 id="索引查询"><a href="#索引查询" class="headerlink" title="索引查询"></a>索引查询</h2><p>B-Tree索引使用的查询场景有：<strong>全值匹配, 最左前缀匹配,列前缀匹配,范围值匹配,精确匹配某一列并范围匹配另一列</strong>。</p>
+<p>全值匹配：被索引的每个列在where查询条件里面都有比较值</p>
+<p>最左前缀匹配： 假设有多个索引列，where查询条件里面用到了第一列全值匹配</p>
+<p>列前缀匹配：假设有多个索引列，where查询条件里面用到了第一列前几个字符匹配</p>
+<p>范围值匹配：假设有多个索引列，where查询条件里面用到了第一列 between and </p>
+<p>B-Tree索引限制：</p>
+<ol>
+<li>如果不是按照索引的最左列开始查找，则无法使用索引</li>
+<li>不能跳过索引的列</li>
+<li>如果查询中有某个列的范围查询，则其右边所有列都不能使用索引优化查找 (like)</li>
+</ol>
+<p><strong>MySQ 5.6之后引入一个叫<code>索引下推</code>的功能，可以在索引遍历过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数。</strong></p>
+<h3 id="聚簇索引"><a href="#聚簇索引" class="headerlink" title="聚簇索引"></a>聚簇索引</h3><p>聚集索引与非聚集索引的区别是，在同一颗B-Tree数据结构中是否同时保存了索引和数据行，当表有聚簇索引时它的数据行放在索引的叶子页中。一个表只能有一个聚簇索引，因为在一个表中数据的存放方式只有一种。<strong>InnoDB 主键使用的是聚簇索引，MyISAM 不管是主键索引，还是二级索引使用的都是非聚簇索引。</strong>InnoDB采用主键聚集数据，如果没有定义主键InnoDB会选择一个唯一的非空索引代替。</p>
+<p>​    </p>
+<p>聚簇索引优点：</p>
+<ol>
+<li>可以把相关数据存储在一起，在一定场景下可以减少IO操作</li>
+<li>数据访问更快，因为聚簇索引把索引和数据保存在一起在同一个B-Tree中因此从聚簇索引中获取数据比非聚簇索引查找更快</li>
+<li>使用覆盖索引扫描的查询可以直接使用叶节点中的主键值</li>
+</ol>
+<p>聚餐索引缺点：</p>
+<ol>
+<li>插入速度严重依赖插入顺序，按照主键顺序插入是加载数据到InnoDB表中速度最快的方式 。<strong>使用InnoDB时应该尽可能按主键顺序插入数据并尽可能使用单调增加聚簇键的值来插入新行。</strong></li>
+<li>更新聚簇索引的代价大</li>
+<li>基于聚餐索引的表在插入新行或者主键更新需要移动行的时候，可能面临<code>页分裂</code>问题，<code>页分裂</code>导致表占用更多的磁盘空间</li>
+<li>二级索引访问需要两次索引查找，而不是一次。通过二级索引获取对应的主键值，然后根据主键值去聚簇索引中查找对应数据行。这样做的好处当出现数据行移动时减少二级索引的维护工作</li>
+</ol>
+<h3 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h3><p>如果一个索引包含所有查询字段的值，无需再读取数据行，则称为<code>覆盖索引</code>，覆盖索引可以减少搜索次数能够极大的提高查询性能。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; desc fulltest;</span><br><span class="line">+-----------+----------+------+-----+---------+----------------+</span><br><span class="line">| Field     | Type     | Null | Key | Default | Extra          |</span><br><span class="line">+-----------+----------+------+-----+---------+----------------+</span><br><span class="line">| node_id   | int(11)  | NO   | PRI | NULL    | auto_increment |</span><br><span class="line">| prod_id   | char(10) | NO   |     | NULL    |                |</span><br><span class="line">| note_date | datetime | NO   |     | NULL    |                |</span><br><span class="line">| note_text | text     | YES  | MUL | NULL    |                |</span><br><span class="line">+-----------+----------+------+-----+---------+----------------+</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">MariaDB [test]&gt; explain select node_id from fulltest \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: fulltest</span><br><span class="line">         type: index</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: PRIMARY</span><br><span class="line">      key_len: 4</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 2</span><br><span class="line">        Extra: Using index</span><br><span class="line">        </span><br><span class="line">MariaDB [test]&gt; explain select * from fulltest where note_text='' \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: fulltest</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: note_text</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 2</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/sql/" rel="tag"># sql</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/12/spark on Yarn 调优/" rel="next" title="Spark On YARN 资源配置">
+                <i class="fa fa-chevron-left"></i> Spark On YARN 资源配置
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/03/kafka运营-NotLeaderForPartitionException异常/" rel="prev" title="Kafka运营-NotLeaderForPartitionException异常">
+                Kafka运营-NotLeaderForPartitionException异常 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Yujie" />
+          <p class="site-author-name" itemprop="name">Yujie</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">41</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MySQL-读书笔记-索引"><span class="nav-number">1.</span> <span class="nav-text">MySQL 读书笔记-索引</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为何使用索引"><span class="nav-number">1.0.1.</span> <span class="nav-text">为何使用索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引实现方式"><span class="nav-number">1.0.2.</span> <span class="nav-text">索引实现方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引与自增主键"><span class="nav-number">1.0.3.</span> <span class="nav-text">索引与自增主键</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引查询"><span class="nav-number">1.1.</span> <span class="nav-text">索引查询</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#聚簇索引"><span class="nav-number">1.1.1.</span> <span class="nav-text">聚簇索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#覆盖索引"><span class="nav-number">1.1.2.</span> <span class="nav-text">覆盖索引</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yujie</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

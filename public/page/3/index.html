@@ -260,6 +260,488 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/15/MySQL 读书笔记-索引/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/15/MySQL 读书笔记-索引/" itemprop="url">MySQL 读书笔记-索引</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-15T11:01:29+08:00">
+                2018-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="MySQL-读书笔记-索引"><a href="#MySQL-读书笔记-索引" class="headerlink" title="MySQL 读书笔记-索引"></a>MySQL 读书笔记-索引</h1><p>MySQ索引在存储引擎层实现不是在服务器层，不同的存储引擎的索引的实现方式不一样。本文重点关注采用B-Tree实现的索引，还有内存引擎使用的哈希索引、空间索引、全文索引不在本文描述范围内。</p>
+<h3 id="为何使用索引"><a href="#为何使用索引" class="headerlink" title="为何使用索引"></a>为何使用索引</h3><ol>
+<li>查询时减少扫描数据量，加快查询速度</li>
+<li>避免排序和临时表</li>
+<li>将随机IO变为顺序IO</li>
+</ol>
+<h3 id="索引实现方式"><a href="#索引实现方式" class="headerlink" title="索引实现方式"></a>索引实现方式</h3><p>MySQL 索引对于数据查询性能有很重要的影响，好的索引可能能让查询性能提升好几个数量级。MySQL先利用索引查找到对应值，然后根据匹配的索引记录找到对应的数据行。如果索引有多列则列的顺序很重要，因为MySQL有<code>最左前缀匹配</code>限制。</p>
+<p>MySQL大部分存储引擎支持B-Tree索引，不过每个存储引擎的B-Tree数据结构可能不太一致。<strong>MyISAM采用前缀压缩技术使索引更小，InnoDB按照原始数据格式存储；MyISAM索引通过数据的物理位置引用被索引的行，InndoDB则根据主键引用被索引的行。</strong></p>
+<p><img src="../images/mysql_clustered_index.png" alt="mysql_clustered_index"></p>
+<p>InnoDB有主键索引和非主键索引区分 ，对于主键索引来说叶子节点存放的是整行数据，主键索引又叫<code>聚簇索引(clustered index)</code>；非主键索引的叶子节点内容是主键的值，又叫<code>二级索引(secondary index)</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; desc tt;</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line">| Field | Type        | Null | Key | Default | Extra |</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line">| id    | int(11)     | NO   | PRI | NULL    |       |</span><br><span class="line">| k     | int(11)     | NO   | MUL | NULL    |       |</span><br><span class="line">| name  | varchar(20) | YES  |     | NULL    |       |</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line"></span><br><span class="line">// 搜索Id的B+Tree搜索树</span><br><span class="line">select * from tt where id=100;</span><br><span class="line"></span><br><span class="line">// 搜索k的B+Tree搜索树得到id的值，然后在用id值搜索id搜索树，回表</span><br><span class="line">select * from tt where k=5;</span><br></pre></td></tr></table></figure>
+<h3 id="索引与自增主键"><a href="#索引与自增主键" class="headerlink" title="索引与自增主键"></a>索引与自增主键</h3><p>索引采用B+Tree数据结构来存储，B+Tree数据结构父接口大于左节点小于右节点，所以数据表在插入数据时索引树存在维护操作，数据插入可能存在页分裂，数据删除存在可能页合并，此时会影响性能。</p>
+<p>通常在建表规范中有描述建需要自增主键，自增主键定义<code>NOT NULL PRIMARY AUTO_INTREMENT</code>，采用自增主键在插入数据时采用追加操作，不涉及到数据移动，也不会触发叶子节点的分裂。</p>
+<p>对于有业务字段做主键的场景，往往不容易保证有序插入，这样数据写成本比较高。此外还有一个考虑点业务主键的大小，假如以身份证作为业务主键，则该字段大小为20字节 ，此时每个二级索引的叶子节点占用20字节，相比用自增主键，二级索引叶子节点主要8字节。<strong>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小</strong>。</p>
+<h2 id="索引查询"><a href="#索引查询" class="headerlink" title="索引查询"></a>索引查询</h2><p>B-Tree索引使用的查询场景有：<strong>全值匹配, 最左前缀匹配,列前缀匹配,范围值匹配,精确匹配某一列并范围匹配另一列</strong>。</p>
+<p>全值匹配：被索引的每个列在where查询条件里面都有比较值</p>
+<p>最左前缀匹配： 假设有多个索引列，where查询条件里面用到了第一列全值匹配</p>
+<p>列前缀匹配：假设有多个索引列，where查询条件里面用到了第一列前几个字符匹配</p>
+<p>范围值匹配：假设有多个索引列，where查询条件里面用到了第一列 between and </p>
+<p>B-Tree索引限制：</p>
+<ol>
+<li>如果不是按照索引的最左列开始查找，则无法使用索引</li>
+<li>不能跳过索引的列</li>
+<li>如果查询中有某个列的范围查询，则其右边所有列都不能使用索引优化查找 (like)</li>
+</ol>
+<p><strong>MySQ 5.6之后引入一个叫<code>索引下推</code>的功能，可以在索引遍历过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数。</strong></p>
+<h3 id="聚簇索引"><a href="#聚簇索引" class="headerlink" title="聚簇索引"></a>聚簇索引</h3><p>聚集索引与非聚集索引的区别是，在同一颗B-Tree数据结构中是否同时保存了索引和数据行，当表有聚簇索引时它的数据行放在索引的叶子页中。一个表只能有一个聚簇索引，因为在一个表中数据的存放方式只有一种。<strong>InnoDB 主键使用的是聚簇索引，MyISAM 不管是主键索引，还是二级索引使用的都是非聚簇索引。</strong>InnoDB采用主键聚集数据，如果没有定义主键InnoDB会选择一个唯一的非空索引代替。</p>
+<p>​    </p>
+<p>聚簇索引优点：</p>
+<ol>
+<li>可以把相关数据存储在一起，在一定场景下可以减少IO操作</li>
+<li>数据访问更快，因为聚簇索引把索引和数据保存在一起在同一个B-Tree中因此从聚簇索引中获取数据比非聚簇索引查找更快</li>
+<li>使用覆盖索引扫描的查询可以直接使用叶节点中的主键值</li>
+</ol>
+<p>聚餐索引缺点：</p>
+<ol>
+<li>插入速度严重依赖插入顺序，按照主键顺序插入是加载数据到InnoDB表中速度最快的方式 。<strong>使用InnoDB时应该尽可能按主键顺序插入数据并尽可能使用单调增加聚簇键的值来插入新行。</strong></li>
+<li>更新聚簇索引的代价大</li>
+<li>基于聚餐索引的表在插入新行或者主键更新需要移动行的时候，可能面临<code>页分裂</code>问题，<code>页分裂</code>导致表占用更多的磁盘空间</li>
+<li>二级索引访问需要两次索引查找，而不是一次。通过二级索引获取对应的主键值，然后根据主键值去聚簇索引中查找对应数据行。这样做的好处当出现数据行移动时减少二级索引的维护工作</li>
+</ol>
+<h3 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h3><p>如果一个索引包含所有查询字段的值，无需再读取数据行，则称为<code>覆盖索引</code>，覆盖索引可以减少搜索次数能够极大的提高查询性能。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]&gt; desc fulltest;</span><br><span class="line">+-----------+----------+------+-----+---------+----------------+</span><br><span class="line">| Field     | Type     | Null | Key | Default | Extra          |</span><br><span class="line">+-----------+----------+------+-----+---------+----------------+</span><br><span class="line">| node_id   | int(11)  | NO   | PRI | NULL    | auto_increment |</span><br><span class="line">| prod_id   | char(10) | NO   |     | NULL    |                |</span><br><span class="line">| note_date | datetime | NO   |     | NULL    |                |</span><br><span class="line">| note_text | text     | YES  | MUL | NULL    |                |</span><br><span class="line">+-----------+----------+------+-----+---------+----------------+</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">MariaDB [test]&gt; explain select node_id from fulltest \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: fulltest</span><br><span class="line">         type: index</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: PRIMARY</span><br><span class="line">      key_len: 4</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 2</span><br><span class="line">        Extra: Using index</span><br><span class="line">        </span><br><span class="line">MariaDB [test]&gt; explain select * from fulltest where note_text='' \G;</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: fulltest</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: note_text</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 2</span><br><span class="line">        Extra: Using where</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/12/spark on Yarn 调优/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/12/spark on Yarn 调优/" itemprop="url">Spark On YARN 资源配置</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-12T19:54:10+08:00">
+                2018-07-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Spark-On-YARN-资源配置"><a href="#Spark-On-YARN-资源配置" class="headerlink" title="Spark On YARN 资源配置"></a>Spark On YARN 资源配置</h1><h2 id="YARN-调度模型"><a href="#YARN-调度模型" class="headerlink" title="YARN 调度模型"></a>YARN 调度模型</h2><p>CDH YARN 界面中可以选择调度模型，有三种调度模型可供选择，分别是：Capacity Scheduler、FIFO Scheduler、Fair Scheduler，CDH YARN界面中Scheduler类配置项可以选择：</p>
+<ul>
+<li><p>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</p>
+</li>
+<li><p>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler</p>
+</li>
+<li><p>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</p>
+</li>
+</ul>
+<p>FIFO Scheduler:</p>
+<p>任务调度先进先出，很好理解，且该调度模式不需要配置，不过它并不适用于共享集群。大的应用可能会占用所有集群资源，小任务有可能会一致阻塞。在共享集群中，更适合采用<code>Capacity Scheduler</code>或<code>Fair Scheduler</code>，这两个调度器都允许大任务和小任务在提交的同时获得一定的系统资源</p>
+<p>Capacity Scheduler</p>
+<p>有一个专门的队列用来运行小任务，但是为小任务专门设置一个队列会预先占用一定的集群资源，这就导致大任务的执行时间会落后于使用FIFO调度器时的时间。</p>
+<p>Fair Scheduler</p>
+<p>在Fair调度器中，不需要预先占用一定的系统资源，Fair调度器会为所有运行的job动态的调整系统资源。需要注意的是，小任务执行完成之后也会释放自己占用的资源，大任务又获得了全部的系统资源。最终的效果就是Fair调度器即得到了高的资源利用率又能保证小任务及时完成。</p>
+<p>Spark on YARN跑的任务按照日志业务可划分为访问日志计算任务和流量日志计算任务，希望这两种任务资源尽量能隔离，两者之间不要资源抢占。在默认情况下spark运行在YARN上的所有Application公用一个Queue，Queue采用的调度模型是公平调度模型，这种情况下访问日志业务量突增之后会影响流量日志计算任务。为此设置两个队列，分布运行访问日志计算和流量日志计算。YARN总调度模型采用Fair调度模型，两个队列内部也采用Fair调度模型。</p>
+<h2 id="Capacity-Scheduler"><a href="#Capacity-Scheduler" class="headerlink" title="Capacity Scheduler"></a>Capacity Scheduler</h2><p>Capacity 调度器允许多个组织共享整个集群，每个组织可以获得集群的一部分计算能力。通过为每个组织分配专门的队列，然后再为每个队列分配一定的集群资源，这样整个集群就可以通过设置多个队列的方式给多个组织提供服务了。除此之外，队列内部又可以垂直划分，这样一个组织内部的多个成员就可以共享这个队列资源了，在一个队列内部，资源的调度是采用的是先进先出(FIFO)策略。</p>
+<p>在正常的操作中，Capacity调度器不会强制释放Container，当一个队列资源不够用时，这个队列只能获得其它队列释放后的Container资源。当然，我们可以为队列设置一个最大资源使用量，以免这个队列过多的占用空闲资源，导致其它队列无法使用这些空闲资源，这就是”弹性队列”需要权衡的地方。</p>
+<p>主要的特点：</p>
+<ul>
+<li>分级队列–支持队列分级，以确保在允许其他队列使用空闲资源之前，资源在组织的子队列之间共享，从而提供更多的控制和可预测性。</li>
+<li>容量保证–队列被分配了网格容量的一小部分，即一定容量的资源将由它们支配。提交给队列的所有应用程序都可以访问分配给队列的容量。管理员可以对分配给每个队列的容量配置软限制和可选硬限制。</li>
+<li>安全性–每个队列都有严格的ACl，控制哪些用户可以向单个队列提交应用程序。此外，还有安全防护措施来确保用户不能查看和/或修改来自其他用户的应用程序。此外，还支持按队列和系统管理员角色。</li>
+<li>弹性–资源可以分配给超出其容量的任何队列。当未来某个时间点运行在容量不足的队列需要这些资源时，随着这些资源上计划的任务完成，它们将被分配给运行在容量不足的队列上的应用程序(也支持抢占)。这可以确保队列可以以可预测和灵活的方式获得资源，从而防止集群中人为的资源孤岛，这有助于利用率。</li>
+<li>多租户–提供了一组全面的限制，以防止单个应用程序、用户和队列独占队列或整个集群的资源，从而确保集群不会不堪重负。</li>
+<li>基于资源的调度–支持资源密集型应用程序，其中应用程序可以选择性地指定比默认更高的资源需求，从而适应具有不同资源需求的应用程序。目前，内存是支持的资源需求。</li>
+</ul>
+<p>配置示例：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.capacity.root.queues<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>a,b,c<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The queues at the this level (root is the root queue).</span><br><span class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.capacity.root.a.queues<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>a1,a2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The queues at the this level (root is the root queue).</span><br><span class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.capacity.root.b.queues<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>b1,b2,b3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The queues at the this level (root is the root queue).</span><br><span class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Fair-Scheduler"><a href="#Fair-Scheduler" class="headerlink" title="Fair Scheduler"></a>Fair Scheduler</h2><p>公平调度是一种将资源分配给应用程序的方法，这样所有应用程序在一段时间内平均获得相同的资源份额。Hadoop NextGen能够调度多种资源类型。默认情况下，公平调度器仅基于内存来调度公平决策。它可以被配置为使用内存和CPU进行调度，使用Ghodsi等人开发的优势资源公平概念。当有一个应用程序运行时，该应用程序使用整个集群。提交其他应用程序时，释放的资源会分配给新应用程序，这样每个应用程序最终获得的资源量大致相同。与默认的Hadoop调度器不同，Hadoop调度器形成了一个应用队列，它允许短应用在合理的时间内完成，而不会耗尽长寿命应用。这也是一种在多个用户之间共享集群的合理方式。最后，公平共享也可以与应用程序优先级一起工作——优先级被用作权重来确定每个应用程序应该获得的总资源的比例。</p>
+<p>调度程序将应用程序进一步组织成“队列”，并在这些队列之间公平地共享资源。默认情况下，所有用户共享一个名为“default”的队列。如果某个应用程序在容器资源请求中特别列出了一个队列，该请求将被提交到该队列。也可以通过配置根据请求中包含的用户名分配队列。在每个队列中，调度策略用于在运行的应用程序之间共享资源。默认为基于内存的公平共享，但也可以配置先进先出和具有优势资源公平的多资源。队列可以按层次排列以划分资源，并配置权重以按特定比例共享集群。</p>
+<p>除了提供公平共享之外，公平调度器还允许为队列分配有保证的最小共享，这对于确保某些用户、组或生产应用程序始终获得足够的资源非常有用。当一个队列包含应用程序时，它至少会得到它的最小份额，但是当队列不需要它的全部保证份额时，多余的份额会在其他正在运行的应用程序之间分配。这使得调度器能够保证队列的容量，同时在这些队列不包含应用程序时高效地利用资源。</p>
+<p>默认情况下，公平调度程序允许所有应用程序运行，但也可以通过配置文件限制每个用户和每个队列运行的应用程序数量。当用户必须一次提交数百个应用程序时，这可能很有用，如果一次运行太多应用程序会导致创建太多中间数据或太多上下文切换，这通常会提高性能。限制应用程序不会导致任何后续提交的应用程序失败，只会在调度程序的队列中等待，直到用户的一些早期应用程序完成。</p>
+<p>CDH YARN界面中可以为Fair Scheduler、Capacity Scheduler这两种调度模型分别设置配置，在界面中配置项分别是 <strong>容量调度程序配置高级配置代码段（安全阀)</strong>和 <strong>Fair Scheduler XML 高级配置代码段（安全阀）</strong>, 可选择XML视图。</p>
+<p>公平调度XML配置：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">allocations</span>&gt;</span> </span><br><span class="line">  <span class="tag">&lt;<span class="name">defaultQueueSchedulingPolicy</span>&gt;</span>fair<span class="tag">&lt;/<span class="name">defaultQueueSchedulingPolicy</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">queue</span> <span class="attr">name</span>=<span class="string">"logAnalysis"</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">weight</span>&gt;</span>60<span class="tag">&lt;/<span class="name">weight</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">minResources</span>&gt;</span>80000 mb, 30 vcores<span class="tag">&lt;/<span class="name">minResources</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">maxResources</span>&gt;</span>100000 mb, 70 vcores<span class="tag">&lt;/<span class="name">maxResources</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">maxRunningApps</span>&gt;</span>10<span class="tag">&lt;/<span class="name">maxRunningApps</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">minSharePreemptionTimeout</span>&gt;</span>100<span class="tag">&lt;/<span class="name">minSharePreemptionTimeout</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">aclSubmitApps</span>&gt;</span><span class="tag">&lt;/<span class="name">aclSubmitApps</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">aclAdministerApps</span>&gt;</span><span class="tag">&lt;/<span class="name">aclAdministerApps</span>&gt;</span>  </span><br><span class="line">  <span class="tag">&lt;/<span class="name">queue</span>&gt;</span>  </span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">queue</span> <span class="attr">name</span>=<span class="string">"flowAnalysis"</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">weight</span>&gt;</span>40<span class="tag">&lt;/<span class="name">weight</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">minResources</span>&gt;</span>10000 mb, 10 vcores<span class="tag">&lt;/<span class="name">minResources</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">maxResources</span>&gt;</span>40000 mb, 30 vcores<span class="tag">&lt;/<span class="name">maxResources</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">maxRunningApps</span>&gt;</span>10<span class="tag">&lt;/<span class="name">maxRunningApps</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">minSharePreemptionTimeout</span>&gt;</span>100<span class="tag">&lt;/<span class="name">minSharePreemptionTimeout</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">aclSubmitApps</span>&gt;</span><span class="tag">&lt;/<span class="name">aclSubmitApps</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">aclAdministerApps</span>&gt;</span><span class="tag">&lt;/<span class="name">aclAdministerApps</span>&gt;</span> </span><br><span class="line">  <span class="tag">&lt;/<span class="name">queue</span>&gt;</span> </span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">user</span> <span class="attr">name</span>=<span class="string">"root"</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">maxRunningApps</span>&gt;</span>10<span class="tag">&lt;/<span class="name">maxRunningApps</span>&gt;</span> </span><br><span class="line">  <span class="tag">&lt;/<span class="name">user</span>&gt;</span>  </span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">userMaxAppsDefault</span>&gt;</span>50<span class="tag">&lt;/<span class="name">userMaxAppsDefault</span>&gt;</span>  </span><br><span class="line">  <span class="tag">&lt;<span class="name">fairSharePreemptionTimeout</span>&gt;</span>200<span class="tag">&lt;/<span class="name">fairSharePreemptionTimeout</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">allocations</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>设置两个队列，分别是logAnalysis和flowAnalysis，Spark在submit application时需要制定该任务在哪个队列中执行，不然默认情况下会运行在default队列中。Spark制定队列配置项为spark.yarn.queue</p>
+</li>
+<li><p>logAnalysis队列和flowAnalysis队列资源权重为6 : 4</p>
+</li>
+<li><minresources>和<maxresources>分布配置项设置队列占用最小资源和最大资源，包含CPU核数和内存大小，这两个配置项需要根据Spark执行时设置的executor来设置</maxresources></minresources></li>
+<li><defaultqueueschedulingpolicy>配置项设置了调度模型为Fair</defaultqueueschedulingpolicy></li>
+<li><maxrunningapps> 设置队列可同时执行的Application数量</maxrunningapps></li>
+</ul>
+<h3 id="资源抢占"><a href="#资源抢占" class="headerlink" title="资源抢占"></a>资源抢占</h3><p>YARN的yarn.scheduler.fair.preemption配置是否<strong>启用 Fair Scheduler 抢占</strong>，如果开启了资源抢占：</p>
+<ul>
+<li>在资源调度器中，每个队列可设置一个最小资源量和最大资源量，其中，最小资源量是资源紧缺情况下每个队列需保证的资源量，而最大资源量则是极端情况下队列也不能超过的资源使用量</li>
+<li>开启资源抢占后当某个队列资源不足时，调度器会杀死其他队列的container以释放资源，分给这个队列</li>
+<li>每个队列都有minShare、fairShare属性。这两个属性是抢占式调度的阈值。当一个队列使用的资源小于fairShare*X（defaultFairSharePreemptionThreshold）、或者小于minShare，并且持续超过一定时间（这两种情况的超时时间不同，可以设置），就会开始抢占式调度</li>
+<li>具体YARN抢占的算法参考官方文档</li>
+</ul>
+<h2 id="任务提交"><a href="#任务提交" class="headerlink" title="任务提交"></a>任务提交</h2><p>Spark在submit任务时可以用spark.yarn.queue配置项制定把该任务提交到哪个YARN资源队列</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/23/理解channel/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yujie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KnifeFly">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/23/理解channel/" itemprop="url">理解Go Channel</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-23T21:21:46+08:00">
+                2018-05-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="理解Go-Channel"><a href="#理解Go-Channel" class="headerlink" title="理解Go Channel"></a>理解Go Channel</h2><p>CSP 是 Communicating Sequential Process 的简称，中文可以叫做通信顺序进程，是一种并发编程模型，由 <a href="https://en.wikipedia.org/wiki/Tony_Hoare" target="_blank" rel="noopener">Tony Hoare</a> 于 1977 年提出。简单来说，CSP 模型由并发执行的实体（线程或者进程）所组成，实体之间通过发送消息进行通信，这里发送消息时使用的就是通道，或者叫 channel。CSP 模型的关键是关注 channel，而不关注发送消息的实体。Go 语言实现了 CSP 部分理论，goroutine 对应 CSP 中并发执行的实体，channel 也就对应着 CSP 中的 channel。</p>
+<h3 id="Channel类型"><a href="#Channel类型" class="headerlink" title="Channel类型"></a>Channel类型</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chan</span> T          <span class="comment">// 可以接收和发送类型为 T 的数据</span></span><br><span class="line"><span class="keyword">chan</span>&lt;- <span class="keyword">float64</span>  <span class="comment">// 只可以用来发送 float64 类型的数据</span></span><br><span class="line">&lt;-<span class="keyword">chan</span> <span class="keyword">int</span>      <span class="comment">// 只可以用来接收 int 类型的数据</span></span><br></pre></td></tr></table></figure>
+<p>&lt;-总是优先和最左边的类型结合</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chan</span>&lt;- <span class="keyword">chan</span> <span class="keyword">int</span>    <span class="comment">// 等价 chan&lt;- (chan int)</span></span><br><span class="line"><span class="keyword">chan</span>&lt;- &lt;-<span class="keyword">chan</span> <span class="keyword">int</span>  <span class="comment">// 等价 chan&lt;- (&lt;-chan int)</span></span><br><span class="line">&lt;-<span class="keyword">chan</span> &lt;-<span class="keyword">chan</span> <span class="keyword">int</span>  <span class="comment">// 等价 &lt;-chan (&lt;-chan int)</span></span><br><span class="line"><span class="keyword">chan</span> (&lt;-<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="Channel创建"><a href="#Channel创建" class="headerlink" title="Channel创建"></a>Channel创建</h3><p>使用<code>make</code>初始化Channel,并且可以设置容量</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">unBufferChan := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)  <span class="comment">// 1</span></span><br><span class="line">bufferChan := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, N) <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+<p>上面的方式 1 创建的是无缓冲 channel，方式 2 创建的是缓冲 channel。如果使用 channel 之前没有 make，会出现 dead lock 错误。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">fatal error: all goroutines are asleep - deadlock!</span><br><span class="line"></span><br><span class="line">goroutine 1 [chan receive (nil chan)]:</span><br><span class="line">main.main()</span><br><span class="line">	/Users/knife/Work/GoWorkplace/src/test/go.go:8 +0x4a</span><br><span class="line"></span><br><span class="line">goroutine 4 [chan send (nil chan)]:</span><br><span class="line">main.main.func1(0x0)</span><br><span class="line">	/Users/knife/Work/GoWorkplace/src/test/go.go:6 +0x37</span><br><span class="line">created by main.main</span><br><span class="line">	/Users/knife/Work/GoWorkplace/src/test/go.go:5 +0x3e</span><br><span class="line">exit status 2</span><br></pre></td></tr></table></figure>
+<h3 id="Channel发送和接收"><a href="#Channel发送和接收" class="headerlink" title="Channel发送和接收"></a>Channel发送和接收</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 读操作</span></span><br><span class="line">x &lt;- ch</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写操作</span></span><br><span class="line">ch &lt;- x</span><br></pre></td></tr></table></figure>
+<p>channel 分为无缓冲 channel 和有缓冲 channel。</p>
+<ul>
+<li>无缓冲：发送和接收动作是同时发生的。如果没有 goroutine 读取 channel （&lt;- channel），则发送者 (channel &lt;-) 会一直阻塞</li>
+<li>缓冲：缓冲 channel 类似一个有容量的队列。当队列满的时候发送者会阻塞；当队列空的时候接收者会阻塞。</li>
+</ul>
+<h3 id="Channel关闭"><a href="#Channel关闭" class="headerlink" title="Channel关闭"></a>Channel关闭</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 关闭</span></span><br><span class="line"><span class="built_in">close</span>(ch)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>重复关闭 channel 会导致 panic</li>
+<li>向关闭的 channel 发送数据会 panic</li>
+<li>从关闭的 channel 读数据不会 panic，读出 channel 中已有的数据之后再读就是 channel 类似的默认值，比如 chan int 类型的 channel 关闭之后读取到的值为 0</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</span><br><span class="line">...</span><br><span class="line"><span class="built_in">close</span>(ch)</span><br><span class="line"></span><br><span class="line"><span class="comment">// ok-idiom </span></span><br><span class="line">val, ok := &lt;-ch</span><br><span class="line"><span class="keyword">if</span> ok == <span class="literal">false</span> &#123;</span><br><span class="line">    <span class="comment">// channel closed</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Channel-Range"><a href="#Channel-Range" class="headerlink" title="Channel Range"></a>Channel Range</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">consumer</span><span class="params">(ch <span class="keyword">chan</span> <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> x := <span class="keyword">range</span> ch &#123;</span><br><span class="line">        fmt.Println(x)</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">producer</span><span class="params">(ch <span class="keyword">chan</span> <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">for</span> _, v := <span class="keyword">range</span> values &#123;</span><br><span class="line">      ch &lt;- v</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Channel-Select"><a href="#Channel-Select" class="headerlink" title="Channel Select"></a>Channel Select</h3><p>select会一致阻塞直到有case满足条件，select通常和for循环一起用。for + select + time.After可以实现超时，time.After返回一个类型为<code>&lt;-chan Time</code>的单向的channel</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> a &lt;- ch1:</span><br><span class="line">        	<span class="keyword">break</span></span><br><span class="line">    	<span class="keyword">case</span> b &lt;- ch2:</span><br><span class="line">        	<span class="keyword">break</span></span><br><span class="line">        <span class="keyword">case</span> &lt;- time.After(<span class="number">2</span> * time.Second)</span><br><span class="line">        	<span class="keyword">break</span></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">        	<span class="keyword">break</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://blog.golang.org/pipelines" target="_blank" rel="noopener">Go Concurrency Patterns: Pipelines and cancellation</a></li>
+<li><a href="https://colobu.com/2016/04/14/Golang-Channels/" target="_blank" rel="noopener">Go Channel 详解</a></li>
+<li><a href="http://legendtkl.com/2017/07/30/understanding-golang-channel/" target="_blank" rel="noopener">深入理解Go Channel</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/21/理解spark闭包/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1189,397 +1671,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/15/nginx-信号处理/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/09/15/nginx-信号处理/" itemprop="url">nginx 信号处理</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-15T11:37:28+08:00">
-                2017-09-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>​    因为Nginx是利用信号来实现平滑升级、更换日志文件、配置文件实时生效、重启服务等功能的，所以在Nginx的启动过程中会向操作系统内核注册所使用到的信号，其代码实现如下</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ngx_cdecl</span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span> *<span class="keyword">const</span> *argv)</span><br><span class="line">&#123;</span><br><span class="line">    ……</span><br><span class="line">    <span class="comment">// 初始化信号</span></span><br><span class="line">    <span class="keyword">if</span> (ngx_init_signals(cycle-&gt;<span class="built_in">log</span>) != NGX_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ……</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2017/09/15/nginx-信号处理/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/15/nginx-系统框架/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/15/nginx-系统框架/" itemprop="url">nginx 系统框架</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-15T20:35:19+08:00">
-                2017-07-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="Nginx-进程模型"><a href="#Nginx-进程模型" class="headerlink" title="Nginx 进程模型"></a>Nginx 进程模型</h1><p>Nginx 进程模型采用master/worker进程模型，一个master进程，多个worker进程。master进程主要工作就是重载配置文件、监听信号(重载配置文件/重新打开日志文件等)、监控worker，而worker进程核心就是处理网络事件以及定时相关操作，maser和worker之间通信机制采用socketpair + 共享内存 + 信号，worker和worker之间通信机制采用socketpair通信。</p>
-<hr>
-<h2 id="1-Nginx启动流程"><a href="#1-Nginx启动流程" class="headerlink" title="1. Nginx启动流程"></a>1. Nginx启动流程</h2><ul>
-<li>命令行参数解析，获取主配置文件路径等，ngx_process_options</li>
-<li>各种初始化工作，调用各个模块create_conf和init_conf方法、创建pid文件、创建共享内存、监听套接字、调用各个模块init_module方法…，初始化工作主要在ngx_init_cycle这个函数中完成</li>
-<li>注册各种信号处理函数，主要在ngx_init_signals函数中完成，在signals全局数组中保存了各种信号以及相应的信号处理函数</li>
-<li>创建后台daemon进程</li>
-<li>创建pid文件</li>
-<li>根据启动参数判断启动哪种模式，master/worker进程模式则进入ngx_master_process_cycle函数</li>
-</ul>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2017/07/15/nginx-系统框架/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/15/Linux信号安全处理/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yujie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="KnifeFly">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/15/Linux信号安全处理/" itemprop="url">Linux信号安全处理</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-15T15:37:21+08:00">
-                2017-05-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="信号处理机制"><a href="#信号处理机制" class="headerlink" title="信号处理机制"></a>信号处理机制</h2><p>在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：</p>
-<pre><code>- 在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：
-- 在 Linux 中，每个进程都拥有两个位向量，这两个位向量共同决定了进程将如何处理信号：
-</code></pre><p>当内核发送一个信号给进程时，它将会修改进程的pending位向量，譬如说，当内核发送一个SIGINT信号给进程，那么它会将进程的pending[SIGINT]的值设置成 1。同样地，当进程屏蔽掉一个信号时，那么它会修改blocked位向量。当进程屏蔽掉一个信号之后，内核仍然可以发送这个信号给进程(保存在进程的pending位向量中)，但进程不会接收并处理这个信号。只有当进程解除了对这个信号的屏蔽之后，进程才会接收并处理这个信号。</p>
-<p>下面的程序一开始就屏蔽了SIGINT信号，所以即使内核发送SIGINT信号给这个程序，这个信号也不会得到处理。而当程序解除了对SIGINT的屏蔽之后，这个SIGINT信号才会得到处理：</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2017/05/15/Linux信号安全处理/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1625,7 +1721,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">36</span>
+                <span class="site-state-item-count">41</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1638,7 +1734,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
