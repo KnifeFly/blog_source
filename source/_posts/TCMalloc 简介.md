@@ -16,7 +16,7 @@ TCMalloc为每个线程分配一个线程本地缓存。线程本地缓存满足
 
 TCMalloc将大小小于等于32K的对象（“小”对象）与大对象区别对待。使用页面级分配器（页面是内存的4K对齐区域）直接从中央堆分配大对象。即，大对象始终是页面对齐的，并且占据整数页。
 
-![tcmalloc总览](../images/tcmalloc_overview.gif)
+![tcmalloc总览](/images/tcmalloc_overview.gif)
 
 ## 小对象分配
 
@@ -29,7 +29,7 @@ TCMalloc将大小小于等于32K的对象（“小”对象）与大对象区别
 - 如果空闲链表不为空，则返回第一个空闲对象，不需要加锁
 - 如果空闲链表为空，则需要从全局内存池中获取空闲对象
 
-![tcmalloc总览](../images/tcmalloc_threadheap.gif)
+![tcmalloc总览](/images/tcmalloc_threadheap.gif)
 
 
 
@@ -37,7 +37,7 @@ TCMalloc将大小小于等于32K的对象（“小”对象）与大对象区别
 
 对于大于32K的大对象分配则由全局内存来分配。全局内存的组织也是单链表数组，数组长度为256，分别对用1 page大小, 2 page大小(1 page=4k)
 
-![tcmalloc总览](../images/tcmalloc_pageheap.gif)
+![tcmalloc总览](/images/tcmalloc_pageheap.gif)
 
 
 

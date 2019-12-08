@@ -22,7 +22,7 @@ HTTP1.1增加了Keep-alive机制和Pipelining机制，前者主要解决每次HT
 
 Keep-alive指的是客户端和服务器在TCP建联之后双方保持连接，减小因为TCP建连三次握手的开销，HTTP1.1协议默认开启keep-alive，http1.0需要设置Connection: Keep-Alive头部来启用。Chrome浏览器针对单个域名最多支持6个连接，连接开启多了则消耗客户端和服务器资源，连接太少则通信效率低。Keep-alive可缓解请求响应延迟，但是该方案不是最优。
 
-​    ![http1_keepalive](../images/http1_keepalive.png)
+​    ![http1_keepalive](/images/http1_keepalive.png)
 
  
 
@@ -93,7 +93,7 @@ HTTP2采用二进制传输数据，HTTP1.1采用纯文本方式传输，二进�
 
 HTTP2采用数据帧传输的方式有点像TCP协议一样采用报文分片+序号来解决数据分割之后乱序传输问题。HTTP1.1的数据会被划分为`HEADER帧`和`DATA帧`。采用数据分帧+序号的方式传输之后可以解决HTTP1.1每个连接双向传输问题，可以解决单连接上数据队头阻塞问题
 
-![http2_frame_overview](../images/http2_frame_overview.svg)
+![http2_frame_overview](/images/http2_frame_overview.svg)
 
 #### 数据流/消息/帧
 
@@ -112,7 +112,7 @@ HTTP2采用数据帧传输的方式有点像TCP协议一样采用报文分片+�
 
 连接/数据流/帧之间的关系图如下所示，HTTP/2 将 HTTP 协议通信分解为二进制编码帧的交换，这些帧对应着特定数据流中的消息。所有这些都在一个 TCP 连接内复用。 这是 HTTP/2 协议所有其他功能和性能优化的基础。
 
-![http2_stream_frame](../images/http2_stream_frame.svg)
+![http2_stream_frame](/images/http2_stream_frame.svg)
 
 
 
@@ -144,7 +144,7 @@ HTTP/2 并没有使用传统的压缩算法，而是开发了专门的 "HPACK”
 
    利用霍夫曼编码，可以在传输时对各个值进行压缩，而利用之前传输值的索引列表，我们可以通过传输索引值的方式对重复值进行编码，索引值可用于有效查询和重构完整的标头键值对。
 
-   ![http2_stream_header](../images/http2_stream_header.svg)
+   ![http2_stream_header](/images/http2_stream_header.svg)
 
 
 
